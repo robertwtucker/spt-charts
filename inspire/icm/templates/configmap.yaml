@@ -1,0 +1,25 @@
+{{- if (include "icm.createConfigMap" .) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ printf "%s-configuration" (include "icm.fullname" .) }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "icm.labels" . | nindent 4 }}
+data:
+  cx-license: {{ .Values.inspireLicense | quote }}
+  db-host: {{ .Values.icmDatabaseHost | quote }}
+  db-port: {{ .Values.icmDatabasePort | quote }}
+  db-name: {{ .Values.icmDatabaseName | quote }}
+  {{- if .Values.icmDatabaseConnStringAdd }}
+  db-connstring-add: {{ .Values.icmDatabaseConnStringAdd | quote }}
+  {{- else }}
+  db-connstring-add: ""
+  {{- end }}
+  db-type: {{ .Values.icmDatabaseType | quote }}
+  {{- if .Values.additionalParams }}
+  add-params: {{ .Values.additionalParams | quote }}
+  {{- else }}
+  add-params: ""
+  {{- end }}
+{{- end }}

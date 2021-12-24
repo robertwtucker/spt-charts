@@ -1,11 +1,13 @@
 # Hello
 
-Hello is a simple deployment for verifying connectivity to a Kubernetes cluster.
+![Version: 0.1.3](https://img.shields.io/badge/Version-0.1.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.2](https://img.shields.io/badge/AppVersion-0.2-informational?style=flat-square)
+
+hello : A Helm chart for testing Kubernetes cluster connectivity.
 
 ## TL;DR
 
 ```console
-$ helm install hello ./hello
+$ helm install test-release ./hello
 ```
 
 ## Introduction
@@ -16,29 +18,62 @@ This chart deploys an NGINX webserver that serves a simple page containing its h
 
 - Kubernetes 1.12+
 - Helm 3.1.0
-- TBD
 
 ## Installing the Chart
 
-To install the chart with the release name `hello`:
+To install the chart with the release name `test-release`:
 
 ```console
 $ cd charts
-$ helm install hello ./hello
+$ helm install test-release ./hello
 ```
 
 These commands deploy Hello on the Kubernetes cluster in the default configuration. The [Parameters](#parameters) section lists the parameters that can be configured during installation.
 
 ## Uninstalling the Chart
 
-To uninstall/delete the `hello` deployment:
+To uninstall/delete the `test-release` deployment:
 
 ```console
-$ helm uninstall hello
+$ helm uninstall test-release
 ```
 
 The command removes all the Kubernetes components associated with the chart and deletes the release.
 
 ## Parameters
 
-TBD
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| affinity | object | `{}` | Affinity for pod assignment Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity NOTE: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when set |
+| autoscaling.enabled | bool | `false` | Enable auto-scaling for Hello |
+| autoscaling.maxReplicas | int | `100` | Maximum number of replicas that can be deployed |
+| autoscaling.minReplicas | int | `1` | Minimum number of replicas to deploy |
+| autoscaling.targetCPUUtilizationPercentage | int | `80` | Target CPU utilization (percent) for each replica |
+| fullnameOverride | string | `""` | Fully override the name used for chart objects |
+| image.pullPolicy | string | `"IfNotPresent"` | Hello image pull policy |
+| image.repository | string | `"nginxdemos/hello"` | Hello image repository |
+| image.tag | float | `0.2` | Override tag specified by `appVersion` in the chart file |
+| imagePullSecrets | list | `[]` | Hello image pull secrets |
+| ingress.annotations | object | `{}` | Additional annotations for the Ingress resource. To enable certificate autogeneration, place cert-manager annotations here. For a full list of possible ingress annotations, please see ref: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/nginx-configuration/annotations.md Use this parameter to set the required annotations for cert-manager, see ref: https://cert-manager.io/docs/usage/ingress/#supported-annotations e.g: annotations:   kubernetes.io/ingress.class: nginx   cert-manager.io/cluster-issuer: cluster-issuer-name |
+| ingress.apiVersion | string | `""` | Force Ingress API version (automatically detected if not set) |
+| ingress.enabled | bool | `false` | Enable ingress record generation for Hello |
+| ingress.hostname | string | `"hello.local"` | Default host for the ingress record |
+| ingress.path | string | `"/"` | Default path for the ingress record NOTE: You may need to set this to '/*' in order to use this with ALB ingress controllers |
+| ingress.pathType | string | `"ImplementationSpecific"` | Type Ingress path type |
+| ingress.tls | bool | `false` | Enable TLS configuration for the host defined at `ingress.hostname` parameter TLS certificates will be retrieved from a TLS secret with name: `{{- printf "%s-tls" .Values.ingress.hostname }}` |
+| nameOverride | string | `""` | Partially override the name used for chart objects |
+| nodeSelector | object | `{}` | Node labels for pod assignment |
+| podAnnotations | object | `{}` | Annotations for ICM pods |
+| podSecurityContext | object | `{}` | Configure ICM pod security context ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod |
+| replicaCount | int | `1` | Number of Hello containers to deploy |
+| resources | object | `{}` |  |
+| securityContext | object | `{}` | Configure security context (main Hello container only) ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container |
+| service.port | int | `80` | Hello container port |
+| service.type | string | `"ClusterIP"` | Hello service type |
+| serviceAccount.annotations | object | `{}` | Annotations to use with the service account |
+| serviceAccount.create | bool | `false` | Enable service account creation (will use `default` if false) |
+| serviceAccount.name | string | `""` | Force the name used for the service account |
+| tolerations | list | `[]` | Tolerations for pod assignment ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/ |
+
+----------------------------------------------
+Autogenerated from chart metadata using [helm-docs v1.5.0](https://github.com/norwoodj/helm-docs/releases/v1.5.0)

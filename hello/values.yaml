@@ -1,31 +1,50 @@
 # Default values for Hello.
 
+# -- Number of Hello containers to deploy
 replicaCount: 1
 
-# Hello image parameters
+# NGINX-Demos Hello image
+# ref: https://hub.docker.com/r/nginxdemos/hello
 image:
+  # -- Hello image repository
   repository: nginxdemos/hello
-  pullPolicy: IfNotPresent
+  # -- Override tag specified by `appVersion` in the chart file
   tag: 0.2
+  # -- Hello image pull policy
+  pullPolicy: IfNotPresent
 
+# -- Hello image pull secrets
 imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
+# -- Partially override the name used for chart objects
+nameOverride: ''
+# -- Fully override the name used for chart objects
+fullnameOverride: ''
 
+## Hello service account parameters
 serviceAccount:
+  # -- Enable service account creation (will use `default` if false)
   create: false
+  # -- Annotations to use with the service account
   annotations: {}
-  name: ""
+  # -- Force the name used for the service account
+  name: ''
 
+# -- Annotations for Hello pods
 podAnnotations: {}
 
+# -- Configure Hello pod security context
+# ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
 podSecurityContext: {}
 
+# -- Configure security context (main Hello container only)
+# ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
 securityContext: {}
 
 # Hello service parameters
 service:
+  # -- Hello service type
   type: ClusterIP
+  # -- Hello container port
   port: 80
 
 # Configure the ingress resource that allows you to access the Hello application
@@ -36,7 +55,7 @@ ingress:
   # -- Type Ingress path type
   pathType: ImplementationSpecific
   # -- Force Ingress API version (automatically detected if not set)
-  apiVersion: ""
+  apiVersion: ''
   # -- Default host for the ingress record
   hostname: hello.local
   # -- Default path for the ingress record
@@ -57,7 +76,10 @@ ingress:
   # TLS certificates will be retrieved from a TLS secret with name: `{{- printf "%s-tls" .Values.ingress.hostname }}`
   tls: false
 
-resources: {}
+# Hello container resource requirements
+# ref: https://kubernetes.io/docs/user-guide/compute-resources/
+resources:
+  {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -69,15 +91,27 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
+## Autoscaling parameters
 autoscaling:
+  # -- Enable auto-scaling for Hello
   enabled: false
+  # -- Minimum number of replicas to deploy
   minReplicas: 1
+  # -- Maximum number of replicas that can be deployed
   maxReplicas: 100
+  # -- Target CPU utilization (percent) for each replica
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
+# -- Node labels for pod assignment
+#ref: https://kubernetes.io/docs/user-guide/node-selection/
 nodeSelector: {}
 
+# -- Tolerations for pod assignment
+# ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
 tolerations: []
 
+# -- Affinity for pod assignment
+# Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+# NOTE: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when set
 affinity: {}

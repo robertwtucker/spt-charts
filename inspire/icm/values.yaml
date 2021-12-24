@@ -22,20 +22,20 @@ inspireLicense: 'CL'
 # -- Inspire license server
 inspireLicenseServer: ''
 # -- ICM database host
-icmDatabaseHost: 'postgresql'
+databaseHost: 'postgresql'
 # -- ICM database port
-icmDatabasePort: '5432'
+databasePort: '5432'
 # -- ICM database name
-icmDatabaseName: 'icm'
+databaseName: 'icm'
 # -- Additional ICM database connection string parameters
-icmDatabaseConnStringAdd: ''
+databaseConnStringAdd: ''
 # -- ICM database user
-icmDatabaseUser: ''
+databaseUser: ''
 # -- ICM database password
-icmDatabasePassword: ''
+databasePassword: ''
 # -- ICM database type
 # Must be one of: `MicrosoftSQL` (default), `SQLAzure`, `MySQL`, `PostgreSQL`, `DB2`, `Oracle`
-icmDatabaseType: 'PostgreSQL'
+databaseType: 'PostgreSQL'
 # -- Additional parameters for the ICM command
 additionalParams: '-enablehttpconnections'
 

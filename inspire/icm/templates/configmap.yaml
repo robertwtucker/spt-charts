@@ -7,16 +7,16 @@ metadata:
   labels:
     {{- include "icm.labels" . | nindent 4 }}
 data:
-  cx-license: {{ .Values.inspireLicense | quote }}
-  db-host: {{ .Values.icmDatabaseHost | quote }}
-  db-port: {{ .Values.icmDatabasePort | quote }}
-  db-name: {{ .Values.icmDatabaseName | quote }}
-  {{- if .Values.icmDatabaseConnStringAdd }}
-  db-connstring-add: {{ .Values.icmDatabaseConnStringAdd | quote }}
+  cx-license: {{ required "A value for 'inspireLicense' is required" .Values.inspireLicense | quote }}
+  db-host: {{ required "A value for 'databaseHost' is required" .Values.databaseHost | quote }}
+  db-port: {{ required "A value for 'databasePort' is required" .Values.databasePort | quote }}
+  db-name: {{ required "A value for 'databaseName' is required" .Values.databaseName | quote }}
+  {{- if .Values.databaseConnStringAdd }}
+  db-connstring-add: {{ .Values.databaseConnStringAdd | quote }}
   {{- else }}
   db-connstring-add: ""
   {{- end }}
-  db-type: {{ .Values.icmDatabaseType | quote }}
+  db-type: {{ required "A value for 'databaseType' is required" .Values.databaseType | quote }}
   {{- if .Values.additionalParams }}
   add-params: {{ .Values.additionalParams | quote }}
   {{- else }}

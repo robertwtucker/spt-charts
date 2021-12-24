@@ -1,0 +1,47 @@
+# Hello
+
+{{ template "chart.badgesSection" . }}
+
+{{ template "chart.name" . }} : {{ template "chart.description" .}}.
+
+## TL;DR
+
+```console
+$ helm install test-release ./hello
+```
+
+## Introduction
+
+This chart deploys an NGINX webserver that serves a simple page containing its hostname, IP address and port as wells as the request URI and the local time of the webserver.
+
+## Prerequisites
+
+- Kubernetes 1.12+
+- Helm 3.1.0
+
+## Installing the Chart
+
+To install the chart with the release name `test-release`:
+
+```console
+$ cd charts
+$ helm install test-release ./hello
+```
+
+These commands deploy Hello on the Kubernetes cluster in the default configuration. The [Parameters](#parameters) section lists the parameters that can be configured during installation.
+
+## Uninstalling the Chart
+
+To uninstall/delete the `test-release` deployment:
+
+```console
+$ helm uninstall test-release
+```
+
+The command removes all the Kubernetes components associated with the chart and deletes the release.
+
+## Parameters
+
+{{ template "chart.valuesTable" .}}
+
+{{ template "helm-docs.versionFooter" . }}

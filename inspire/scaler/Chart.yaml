@@ -1,0 +1,6 @@
+apiVersion: v2
+appVersion: "15.0.711.0-HF"
+name: scaler
+description: Chart for Inspire Scaler, a cloud-enabled orchestration component for the Inspire platform.
+type: application
+version: 0.1.0

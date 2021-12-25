@@ -1,0 +1,331 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "scaler.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "scaler.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "scaler.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "scaler.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "scaler.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: scaler-init
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: {{ include "scaler.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /opt/installScripts/initScript.sh
+          env:
+            - name: TYPE
+              value: prepare
+            - name: RESET_EXPECTED_CLUSTER_SIZE
+              value: 'true'
+            - name: CX_LICENSE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "scaler.configMapName" . }}
+                  key: cx-license
+            - name: CX_LIC_SERVER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "scaler.secretName" . }}
+                  key: cx-lic-server
+            - name: ICM_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "scaler.secretName" . }}
+                  key: icm-user
+            - name: ICM_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "scaler.secretName" . }}
+                  key: icm-password
+            - name: ICM_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "scaler.configMapName" . }}
+                  key: icm-host
+            - name: ICM_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "scaler.configMapName" . }}
+                  key: icm-port
+            - name: USE_SSL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "scaler.configMapName" . }}
+                  key: use-ssl
+            - name: DB_TYPE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "scaler.configMapName" . }}
+                  key: db-type
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "scaler.configMapName" . }}
+                  key: db-host
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "scaler.configMapName" . }}
+                  key: db-port
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "scaler.configMapName" . }}
+                  key: db-name
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "scaler.secretName" . }}
+                  key: db-user
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "scaler.secretName" . }}
+                  key: db-password
+            - name: ICM_API_AUTHENTICATION_GROUP
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "scaler.configMapName" . }}
+                  key: icm-api-authentication-group
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      containers:
+        - name: scaler
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: {{ include "scaler.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: TYPE
+              value: run
+            - name: CX_LICENSE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "scaler.configMapName" . }}
+                  key: cx-license
+            - name: CX_LIC_SERVER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "scaler.secretName" . }}
+                  key: cx-lic-server
+            - name: ICM_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "scaler.secretName" . }}
+                  key: icm-user
+            - name: ICM_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "scaler.secretName" . }}
+                  key: icm-password
+            - name: ICM_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "scaler.configMapName" . }}
+                  key: icm-host
+            - name: ICM_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "scaler.configMapName" . }}
+                  key: icm-port
+            - name: USE_SSL
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "scaler.configMapName" . }}
+                  key: use-ssl
+            - name: DB_TYPE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "scaler.configMapName" . }}
+                  key: db-type
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "scaler.configMapName" . }}
+                  key: db-host
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "scaler.configMapName" . }}
+                  key: db-port
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "scaler.configMapName" . }}
+                  key: db-name
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "scaler.secretName" . }}
+                  key: db-user
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "scaler.secretName" . }}
+                  key: db-password
+            - name: ICM_API_AUTHENTICATION_GROUP
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "scaler.configMapName" . }}
+                  key: icm-api-authentication-group
+          ports:
+            - containerPort: {{ .Values.containerPort }}
+              protocol: TCP
+          livenessProbe:
+            tcpSocket:
+              port: {{ .Values.containerPort }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}5
+          readinessProbe:
+            httpGet:
+              path: /rest/web/system-healthy/healthy-and-http-workflows-running
+              port: {{ .Values.containerPort }}
+              scheme: HTTP
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: scaler-local-storage
+              mountPath: /opt/localStorage
+            - name: scaler-shared-storage
+              mountPath: /opt/scalerSharedFolder
+            - name: scaler-temp
+              mountPath: /opt/Quadient/Inspire-Scaler/temp
+            - name: scaler-icm-cache
+              mountPath: /opt/Quadient/Inspire-Scaler/icm/internal
+        - name: ips
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: {{ include "ips.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: CX_LICENSE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "scaler.configMapName" . }}
+                  key: cx-license
+            - name: CX_LIC_SERVER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "scaler.secretName" . }}
+                  key: cx-lic-server
+            - name: ICM_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "scaler.secretName" . }}
+                  key: icm-user
+            - name: ICM_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "scaler.secretName" . }}
+                  key: icm-password
+            - name: ICM_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "scaler.configMapName" . }}
+                  key: icm-host
+            - name: ICM_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "scaler.configMapName" . }}
+                  key: icm-port
+            - name: THREAD_COUNT
+              value: {{ .Values.ips.threadCount | quote }}
+          ports:
+            - containerPort: {{ .Values.ips.containerPort }}
+              protocol: TCP
+          livenessProbe:
+            tcpSocket:
+              port: {{ .Values.ips.containerPort }}
+            failureThreshold: {{ .Values.ips.livenessProbe.failureThreshold }}
+            initialDelaySeconds: {{ .Values.ips.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.ips.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.ips.livenessProbe.timeoutSeconds }}5
+          readinessProbe:
+            exec:
+              command:
+                - '/opt/Quadient/Designer/InspirePSCLI'
+                - '-api'
+                - 'ping'
+            failureThreshold: {{ .Values.ips.livenessProbe.failureThreshold }}
+            initialDelaySeconds: {{ .Values.ips.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.ips.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.ips.readinessProbe.timeoutSeconds }}
+          resources:
+            {{- toYaml .Values.ips.resources | nindent 12 }}
+          volumeMounts:
+            - name: scaler-local-storage
+              mountPath: /opt/localStorage
+            - name: scaler-shared-storage
+              mountPath: /opt/scalerSharedFolder
+            - name: scaler-temp
+              mountPath: /opt/Quadient/Inspire-Scaler/temp
+            - name: scaler-ips-home
+              mountPath: /home/quadient/.quadient
+            - name: scaler-ips-data
+              mountPath: /opt/Quadient/Inspire-Designer-data/ips
+            - name: scaler-ips-icmcache
+              mountPath: /opt/Quadient/Inspire-Designer-data/ips-icmcache
+      volumes:
+        - name: scaler-local-storage
+          emptyDir: {}
+        - name: scaler-shared-storage
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim | default (include "scaler.fullname" .) }}
+          {{- else }}
+          emptyDir: {}
+          {{ end }}
+        - name: scaler-temp
+          emptyDir: {}
+        - name: scaler-icm-cache
+          emptyDir: {}
+        - name: scaler-ips-data
+          emptyDir: {}
+        - name: scaler-ips-icmcache
+          emptyDir: {}
+        - name: scaler-ips-home
+          emptyDir: {}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      restartPolicy: {{ .Values.restartPolicy }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}

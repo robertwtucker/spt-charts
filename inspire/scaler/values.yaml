@@ -20,43 +20,43 @@ image:
 # -- Licensing mode for Scaler
 inspireLicense: CL
 # -- Inspire license server
-inspireLicenseServer: ""
+inspireLicenseServer: ''
 # -- Scaler database host
-databaseHost: ""
+databaseHost: ''
 # -- Scaler database port
 databasePort: 5432
 # -- Scaler database name
-databaseName: "scaler"
+databaseName: 'scaler'
 # -- Additional Scaler database connection string parameters
-databaseConnStringAdd: ""
+databaseConnStringAdd: ''
 # -- Scaler database user
-databaseUser: ""
+databaseUser: ''
 # -- Scaler database password
-databasePassword: ""
+databasePassword: ''
 # -- Scaler database type
 # Must be one of: `MicrosoftSQL` (default), `SQLAzure`, `MySQL`, `PostgreSQL`, `DB2`, `Oracle`
-databaseType: "PostgreSQL"
+databaseType: 'PostgreSQL'
 # -- ICM host
-icmHost: ""
+icmHost: ''
 # -- ICM port
 icmPort: 30353
 # -- ICM username
-icmUser: ""
+icmUser: ''
 # -- ICM password
-icmPassword: ""
+icmPassword: ''
 # -- Group to use for Scaler API authentication
-icmApiAuthenticationGroup: "RestApiUser"
+icmApiAuthenticationGroup: 'RestApiUser'
 # -- Enable use of SSL/TLS
 useSsl: false
 
 # -- Partially override the name used for chart objects
-nameOverride: ""
+nameOverride: ''
 # -- Fully override the name used for chart objects
-fullnameOverride: ""
+fullnameOverride: ''
 # -- Name of a pre-existing configmap to use (one will be created by default)
-existingConfigMap: ""
+existingConfigMap: ''
 # -- Name of a pre-existing secret to use (one will be created by default)
-existingSecret: ""
+existingSecret: ''
 
 ## Scaler service account parameters
 serviceAccount:
@@ -65,7 +65,7 @@ serviceAccount:
   # -- Annotations to use with the service account
   annotations: {}
   # -- Force the name used for the service account
-  name: ""
+  name: ''
 
 # Scaler container port
 containerPort: 30600
@@ -147,7 +147,7 @@ service:
   # -- Scaler server port
   port: 30600
   # -- Nodeport to expose (`service.type` must be NodePort or LoadBalancer)
-  nodePort: ""
+  nodePort: ''
 
 # Ingress resource parameters for Scaler
 # ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
@@ -157,7 +157,7 @@ ingress:
   # -- Ingress path type
   pathType: ImplementationSpecific
   # -- Force Ingress API version (automatically detected if not set)
-  apiVersion: ""
+  apiVersion: ''
   # -- Default host for the ingress record
   hostname: scaler.local
   # -- Default path for the ingress record
@@ -187,28 +187,28 @@ persistence:
   # If defined, storageClassName: <storageClass>
   # If set to "-", storageClassName: "", which disables dynamic provisioning
   # If undefined (the default) or set to null, no storageClassName spec is set, choosing the default provisioner
-  storageClass: ""
+  storageClass: ''
   # -- [array] Persistent Volume access modes
   accessModes:
     - ReadWriteOnce
   # -- Persistent Volume size
   size: 5Gi
   # -- The name of an existing PVC to use for persistence
-  existingClaim: ""
+  existingClaim: ''
 
 # IPS Configuration Section
 ips:
   # IPS image
   image:
-    # -- Scaler image registry
+    # -- IPS image registry
     registry: registry.sptcloud.com
-    # -- Scaler image repository
+    # -- IPS image repository
     repository: inspire/ips
     # -- Override tag specified by `appVersion` in the chart file
     tag: 15.0.644.0-GA
-    # -- Scaler image pull policy
+    # -- IPS image pull policy
     pullPolicy: IfNotPresent
-    # -- Scaler image pull secrets
+    # -- IPS image pull secrets
     pullSecrets: []
 
   # -- Threads per IPS instance

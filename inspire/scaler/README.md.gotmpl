@@ -1,0 +1,65 @@
+# Inspire Scaler
+
+{{ template "chart.badgesSection" . }}
+
+## TL;DR
+
+```console
+$ helm install test-release ./inspire/scaler
+```
+
+## Introduction
+
+This [Helm](https://helm.sh) chart bootstraps a deployment of [Quadient](https://quadient.com)'s Inspire Scaler, cloud-enabled orchestration application for the Inspire platform.
+
+## Prerequisites
+
+- Kubernetes 1.21+
+- Helm 3.1+
+- A supported database platform
+- Inspire Scaler R15.0-GA
+
+## Installing the Chart
+
+To install the chart with the release name `dev-release`:
+
+```console
+$ cd charts
+$ helm install dev-release ./inspire/scaler
+```
+
+These commands deploy Scaler on the [Kubernetes](https://kubernetes.io) cluster in the default configuration. The [Parameters](#parameters) section lists the parameters that can be configured during installation.
+
+## Uninstalling the Chart
+
+To uninstall/delete the `dev-release` deployment:
+
+```console
+$ helm uninstall dev-release
+```
+
+The command removes all the Kubernetes components associated with the chart and deletes the release.
+
+## Parameters
+
+{{ template "chart.valuesTable" .}}
+
+Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example,
+
+```console
+$ helm install my-release \
+  --set databaseUser=admin,databasePassword=s3cr3t inspire/scaler
+```
+
+The above command sets the Scaler database username and password to `admin` and `s3cr3t`, respectively.
+
+Alternatively, a YAML file that specifies the values for the parameters can be provided while installing the chart. For example,
+
+```console
+$ helm install my-release -f values.yaml inspire/scaler
+```
+
+> **Tip**: You can use the default `values.yaml` file and just delete the unchanged items.
+
+
+{{ template "helm-docs.versionFooter" . }}

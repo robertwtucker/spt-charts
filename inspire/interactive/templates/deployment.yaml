@@ -1,0 +1,256 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "interactive.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "interactive.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "interactive.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "interactive.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "interactive.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: interactive
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: {{ include "interactive.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: CX_LICENSE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "interactive.configMapName" . }}
+                  key: cx-license
+            - name: CX_LIC_SERVER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "interactive.secretName" . }}
+                  key: cx-lic-server
+            - name: ICM_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "interactive.secretName" . }}
+                  key: icm-user
+            - name: ICM_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "interactive.secretName" . }}
+                  key: icm-password
+            - name: GROO_ICM_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "interactive.secretName" . }}
+                  key: icm-user
+            - name: GROO_ICM_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "interactive.secretName" . }}
+                  key: icm-password
+            - name: ICM_ROOT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "interactive.configMapName" . }}
+                  key: icm-root
+            - name: ICM_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "interactive.configMapName" . }}
+                  key: icm-host
+            - name: ICM_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "interactive.configMapName" . }}
+                  key: icm-port
+            - name: IPS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "interactive.configMapName" . }}
+                  key: ips-host
+            - name: IPS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "interactive.configMapName" . }}
+                  key: ips-port
+            - name: DB_TYPE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "interactive.configMapName" . }}
+                  key: db-type
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "interactive.configMapName" . }}
+                  key: db-host
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "interactive.configMapName" . }}
+                  key: db-port
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "interactive.configMapName" . }}
+                  key: db-name
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "interactive.secretName" . }}
+                  key: db-user
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "interactive.secretName" . }}
+                  key: db-password
+            - name: PRODUCTION_ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "interactive.configMapName" . }}
+                  key: production-environment
+            - name: USE_HTTP
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "interactive.configMapName" . }}
+                  key: use-http
+          ports:
+            - containerPort: {{ .Values.containerPort }}
+              protocol: TCP
+          livenessProbe:
+            tcpSocket:
+              port: {{ .Values.containerPort }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}5
+          readinessProbe:
+            httpGet:
+              path: /interactive
+              port: {{ .Values.containerPort }}
+              scheme: HTTP
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: interactive-workdir
+              mountPath: /opt/QuadientInteractive/stores/filestore/workingDirectory
+            - name: interactive-temp
+              mountPath: /opt/QuadientInteractive/temp"
+        - name: ips
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: {{ include "ips.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: CX_LICENSE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "interactive.configMapName" . }}
+                  key: cx-license
+            - name: CX_LIC_SERVER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "interactive.secretName" . }}
+                  key: cx-lic-server
+            - name: ICM_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "interactive.secretName" . }}
+                  key: icm-user
+            - name: ICM_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "interactive.secretName" . }}
+                  key: icm-password
+            - name: ICM_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "interactive.configMapName" . }}
+                  key: icm-host
+            - name: ICM_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "interactive.configMapName" . }}
+                  key: icm-port
+            - name: ADD_PARAMS
+              value: '-waitingtime 30'
+            # - name: THREAD_COUNT
+            #   value: {{ .Values.ips.threadCount | quote }}
+          ports:
+            - containerPort: {{ .Values.ipsPort }}
+              protocol: TCP
+          livenessProbe:
+            tcpSocket:
+              port: {{ .Values.ipsPort }}
+            failureThreshold: {{ .Values.ips.livenessProbe.failureThreshold }}
+            initialDelaySeconds: {{ .Values.ips.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.ips.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.ips.livenessProbe.timeoutSeconds }}5
+          readinessProbe:
+            exec:
+              command:
+                - '/opt/Quadient/Designer/InspirePSCLI'
+                - '-api'
+                - 'ping'
+            failureThreshold: {{ .Values.ips.livenessProbe.failureThreshold }}
+            initialDelaySeconds: {{ .Values.ips.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.ips.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.ips.readinessProbe.timeoutSeconds }}
+          resources:
+            {{- toYaml .Values.ips.resources | nindent 12 }}
+          volumeMounts:
+            - name: interactive-workdir
+              mountPath: /opt/QuadientInteractive/stores/filestore/workingDirectory
+            - name: interactive-temp
+              mountPath: /opt/QuadientInteractive/temp
+            - name: interactive-ips-home
+              mountPath: /home/quadient/.quadient
+            - name: interactive-ips-data
+              mountPath: /opt/Quadient/Inspire-Designer-data/ips
+            - name: interactive-ips-icmcache
+              mountPath: /opt/Quadient/Inspire-Designer-data/ips-icmcache
+      volumes:
+        - name: interactive-workdir
+          emptyDir: {}
+        - name: interactive-temp
+          emptyDir: {}
+        - name: interactive-ips-data
+          emptyDir: {}
+        - name: interactive-ips-icmcache
+          emptyDir: {}
+        - name: interactive-ips-home
+          emptyDir: {}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      restartPolicy: {{ .Values.restartPolicy }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}

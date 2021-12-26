@@ -1,0 +1,22 @@
+{{- if (include "interactive.createConfigMap" .) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ printf "%s-configuration" (include "interactive.fullname" .) }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "interactive.labels" . | nindent 4 }}
+data:
+  cx-license: {{ required "A value for 'inspireLicense' is required." .Values.inspireLicense | quote }}
+  db-host: {{ required "A value for 'databaseHost' is required." .Values.databaseHost | quote }}
+  db-name: {{ required "A value for 'databaseName' is required." .Values.databaseName | quote }}
+  db-port: {{ required "A value for 'databasePort' is required." .Values.databasePort | quote }}
+  db-type: {{ required "A value for 'databaseType' is required." .Values.databaseType | quote }}
+  icm-host: {{ required "A value for 'icmHost' is required." .Values.icmHost | quote }}
+  icm-port: {{ required "A value for 'icmPort' is required." .Values.icmPort | quote }}
+  icm-root: {{ required "A value for 'icmRoot' is required." .Values.icmRoot | quote }}
+  ips-host: {{ required "A value for 'ipsHost' is required." .Values.ipsHost | quote }}
+  ips-port: {{ required "A value for 'ipsPort' is required." .Values.ipsPort | quote }}
+  production-environment: {{ default false .Values.productionEnvironment | quote }}
+  use-http: {{ default true .Values.useSsl | quote }}
+{{- end }}

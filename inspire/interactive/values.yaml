@@ -1,0 +1,238 @@
+# Default values for Interactive.
+
+# -- Number of Interactive containers to deploy
+replicaCount: 1
+
+# Quadient Inspire Interactive image
+image:
+  # -- Interactive image registry
+  registry: registry.sptcloud.com
+  # -- Interactive image repository
+  repository: inspire/interactive
+  # -- Override tag specified by `appVersion` in the chart file
+  tag: 15.0.617.0-HF
+  # -- Interactive image pull policy
+  pullPolicy: IfNotPresent
+  # -- Interactive image pull secrets
+  pullSecrets: []
+
+# Interactive configuration parameters
+# -- Licensing mode for Interactive
+inspireLicense: CL
+# -- Inspire license server
+inspireLicenseServer: ''
+# -- Interactive database host
+databaseHost: ''
+# -- Interactive database port
+databasePort: 5432
+# -- Interactive database name
+databaseName: interactive
+# -- Additional Interactive database connection string parameters
+databaseConnStringAdd: ''
+# -- Interactive database user
+databaseUser: ''
+# -- Interactive database password
+databasePassword: ''
+# -- Interactive database type
+# Must be one of: `MicrosoftSQL` (default), `SQLAzure`, `MySQL`, `PostgreSQL`, `DB2`, `Oracle`
+databaseType: PostgreSQL
+# -- ICM host
+icmHost: ''
+# -- ICM port
+icmPort: 30353
+# -- ICM username
+icmUser: ''
+# -- ICM password
+icmPassword: ''
+# -- ICM root for Interactive
+icmRoot: icm://Interactive
+# -- IPS host
+ipsHost: localhost
+# -- IPS port
+ipsPort: 30354
+# -- Run Interactive in production mode
+productionEnvironment: false
+# -- Disable use of SSL/TLS
+useHttp: true
+
+# -- Partially override the name used for chart objects
+nameOverride: ''
+# -- Fully override the name used for chart objects
+fullnameOverride: ''
+# -- Name of a pre-existing configmap to use (one will be created by default)
+existingConfigMap: ''
+# -- Name of a pre-existing secret to use (one will be created by default)
+existingSecret: ''
+
+## Interactive service account parameters
+serviceAccount:
+  # -- Enable service account creation (will use `default` if false)
+  create: false
+  # -- Annotations to use with the service account
+  annotations: {}
+  # -- Force the name used for the service account
+  name: ''
+
+# Interactive container port
+containerPort: 30701
+
+# Interactive container resource requirements
+# ref: https://kubernetes.io/docs/user-guide/compute-resources/
+resources:
+  # -- Resource limits for the Interactive container
+  limits: {}
+  # -- Requested resources for the Interactive container
+  requests:
+    memory: 2Gi
+    cpu: 100m
+
+# -- Annotations for Interactive pods
+podAnnotations: {}
+# -- Configure Interactive pod security context
+# ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+podSecurityContext: {}
+# -- Configure security context (main Interactive container only)
+# ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+securityContext: {}
+# -- Node labels for pod assignment
+#ref: https://kubernetes.io/docs/user-guide/node-selection/
+nodeSelector: {}
+# -- Tolerations for pod assignment
+# ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+tolerations: []
+# -- Affinity for pod assignment
+# ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+# NOTE: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when set
+affinity: {}
+# Liveness probe settings
+livenessProbe:
+  # -- Number of consecutive negative tests before declaring failure
+  failureThreshold: 10
+  # -- Number of consecutive positive tests before counting it as a success
+  successThreshold: 1
+  # -- Initial delay before probing liveness
+  initialDelaySeconds: 120
+  # -- Period in seconds between liveness checks
+  periodSeconds: 10
+  # -- Timeout in seconds for liveness checks
+  timeoutSeconds: 2
+# Readiness probe settings
+readinessProbe:
+  # -- Number of consecutive negative tests before declaring failure
+  failureThreshold: 10
+  # -- Number of consecutive positive tests before counting it as a success
+  successThreshold: 1
+  # -- Initial delay before probing readiness
+  initialDelaySeconds: 120
+  # -- Period in seconds between readiness checks
+  periodSeconds: 10
+  # -- Timeout in seconds for readiness checks
+  timeoutSeconds: 2
+# Restart policy
+restartPolicy: Always
+# Termination grace period (seconds)
+terminationGracePeriodSeconds: 35
+
+## Autoscaling parameters
+autoscaling:
+  # -- Enable auto-scaling for Interactive
+  enabled: false
+  # -- Minimum number of replicas to deploy
+  minReplicas: 1
+  # -- Maximum number of replicas that can be deployed
+  maxReplicas: 100
+  # -- Target CPU utilization (percent) for each replica
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+# Service resource parameters for Interactive
+# ref: https://kubernetes.io/docs/concepts/services-networking/service/
+service:
+  # -- Type of service to create
+  type: ClusterIP
+  # -- Interactive server port
+  port: 30701
+  # -- Nodeport to expose (`service.type` must be NodePort or LoadBalancer)
+  nodePort: ''
+
+# Ingress resource parameters for Interactive
+# ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
+ingress:
+  # -- Enable ingress record generation for Hello
+  enabled: false
+  # -- Ingress path type
+  pathType: ImplementationSpecific
+  # -- Force Ingress API version (automatically detected if not set)
+  apiVersion: ''
+  # -- Default host for the ingress record
+  hostname: interactive.local
+  # -- Default path for the ingress record
+  # NOTE: You may need to set this to '/*' in order to use this with ALB ingress controllers
+  path: /
+  # -- Additional annotations for the Ingress resource. To enable certificate autogeneration, place cert-manager annotations here.
+  # For a full list of possible ingress annotations, please see
+  # ref: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/nginx-configuration/annotations.md
+  # Use this parameter to set the required annotations for cert-manager, see
+  # ref: https://cert-manager.io/docs/usage/ingress/#supported-annotations
+  #
+  # e.g:
+  # annotations:
+  #   kubernetes.io/ingress.class: nginx
+  #   cert-manager.io/cluster-issuer: cluster-issuer-name
+  annotations: {}
+  # -- Enable TLS configuration for the host defined at `ingress.hostname` parameter
+  # TLS certificates will be retrieved from a TLS secret with name: `{{- printf "%s-tls" .Values.ingress.hostname }}`
+  tls: false
+
+# IPS Configuration Section
+ips:
+  # IPS image
+  image:
+    # -- IPS image registry
+    registry: registry.sptcloud.com
+    # -- IPS image repository
+    repository: inspire/ips
+    # -- Override tag specified by `appVersion` in the chart file
+    tag: 15.0.644.0-GA
+    # -- IPS image pull policy
+    pullPolicy: IfNotPresent
+    # -- IPS image pull secrets
+    pullSecrets: []
+
+  # -- Threads per IPS instance
+  threadCount: 4
+
+  # IPS container resource requirements
+  # ref: https://kubernetes.io/docs/user-guide/compute-resources/
+  resources:
+    # -- Resource limits for the IPS container
+    limits: {}
+    # -- Requested resources for the IPS container
+    requests:
+      memory: 512Mi
+      cpu: 100m
+
+  # IPS container liveness probe settings
+  livenessProbe:
+    # -- Number of consecutive negative tests before declaring failure
+    failureThreshold: 3
+    # -- Number of consecutive positive tests before counting it as a success
+    successThreshold: 1
+    # -- Initial delay before probing liveness
+    initialDelaySeconds: 10
+    # -- Period in seconds between liveness checks
+    periodSeconds: 10
+    # -- Timeout in seconds for liveness checks
+    timeoutSeconds: 2
+  # IPS container readiness probe settings
+  readinessProbe:
+    # -- Number of consecutive negative tests before declaring failure
+    failureThreshold: 3
+    # -- Number of consecutive positive tests before counting it as a success
+    successThreshold: 1
+    # -- Initial delay before probing readiness
+    initialDelaySeconds: 20
+    # -- Period in seconds between readiness checks
+    periodSeconds: 10
+    # -- Timeout in seconds for readiness checks
+    timeoutSeconds: 2

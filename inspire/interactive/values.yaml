@@ -73,7 +73,7 @@ serviceAccount:
   # -- Force the name used for the service account
   name: ''
 
-# Interactive container port
+# -- Interactive container port
 containerPort: 30701
 
 # Interactive container resource requirements
@@ -128,9 +128,9 @@ readinessProbe:
   periodSeconds: 10
   # -- Timeout in seconds for readiness checks
   timeoutSeconds: 2
-# Restart policy
+# -- Restart policy
 restartPolicy: Always
-# Termination grace period (seconds)
+# -- Termination grace period (seconds)
 terminationGracePeriodSeconds: 35
 
 ## Autoscaling parameters

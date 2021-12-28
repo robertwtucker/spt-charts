@@ -1,6 +1,6 @@
 # Inspire Interactive
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 15.0.617.0-HF](https://img.shields.io/badge/AppVersion-15.0.617.0--HF-informational?style=flat-square)
+![Version: 0.1.1](https://img.shields.io/badge/Version-0.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 15.0.620.0-HF](https://img.shields.io/badge/AppVersion-15.0.620.0--HF-informational?style=flat-square)
 
 ## TL;DR
 
@@ -69,7 +69,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | image.pullSecrets | list | `[]` | Interactive image pull secrets |
 | image.registry | string | `"registry.sptcloud.com"` | Interactive image registry |
 | image.repository | string | `"inspire/interactive"` | Interactive image repository |
-| image.tag | string | `"15.0.617.0-HF"` | Override tag specified by `appVersion` in the chart file |
+| image.tag | string | `"15.0.620.0-HF"` | Override tag specified by `appVersion` in the chart file |
 | ingress.annotations | object | `{}` | Additional annotations for the Ingress resource. To enable certificate autogeneration, place cert-manager annotations here. For a full list of possible ingress annotations, please see ref: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/nginx-configuration/annotations.md Use this parameter to set the required annotations for cert-manager, see ref: https://cert-manager.io/docs/usage/ingress/#supported-annotations e.g: annotations:   kubernetes.io/ingress.class: nginx   cert-manager.io/cluster-issuer: cluster-issuer-name |
 | ingress.apiVersion | string | `""` | Force Ingress API version (automatically detected if not set) |
 | ingress.enabled | bool | `false` | Enable ingress record generation for Hello |
@@ -83,7 +83,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | ips.image.pullSecrets | list | `[]` | IPS image pull secrets |
 | ips.image.registry | string | `"registry.sptcloud.com"` | IPS image registry |
 | ips.image.repository | string | `"inspire/ips"` | IPS image repository |
-| ips.image.tag | string | `"15.0.644.0-GA"` | Override tag specified by `appVersion` in the chart file |
+| ips.image.tag | string | `"15.0.652.0-HF"` | Override tag specified by `appVersion` in the chart file |
 | ips.livenessProbe.failureThreshold | int | `3` | Number of consecutive negative tests before declaring failure |
 | ips.livenessProbe.initialDelaySeconds | int | `10` | Initial delay before probing liveness |
 | ips.livenessProbe.periodSeconds | int | `10` | Period in seconds between liveness checks |

@@ -10,7 +10,7 @@ image:
   # -- ICM image repository
   repository: inspire/icm
   # -- Override tag specified by `appVersion` in the chart file
-  tag: 15.0.644.0-GA-postgresql
+  tag: 15.0.652.0-HF-postgresql
   # -- ICM image pull policy
   pullPolicy: IfNotPresent
   # -- ICM image pull secrets

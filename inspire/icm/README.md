@@ -1,6 +1,6 @@
 # Inspire ICM
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 15.0.644.0-GA](https://img.shields.io/badge/AppVersion-15.0.644.0--GA-informational?style=flat-square)
+![Version: 0.1.1](https://img.shields.io/badge/Version-0.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 15.0.652.0-HF](https://img.shields.io/badge/AppVersion-15.0.652.0--HF-informational?style=flat-square)
 
 ## TL;DR
 
@@ -52,19 +52,19 @@ The command removes all the Kubernetes components associated with the chart and 
 | autoscaling.targetCPUUtilizationPercentage | int | `80` | Target CPU utilization (percent) for each replica |
 | containerPorts.http | int | `8080` | External ICM http port |
 | containerPorts.icm | int | `30353` | ICM service port |
+| databaseConnStringAdd | string | `""` | Additional ICM database connection string parameters |
+| databaseHost | string | `"postgresql"` | ICM database host |
+| databaseName | string | `"icm"` | ICM database name |
+| databasePassword | string | `""` | ICM database password |
+| databasePort | string | `"5432"` | ICM database port |
+| databaseType | string | `"PostgreSQL"` | ICM database type Must be one of: `MicrosoftSQL` (default), `SQLAzure`, `MySQL`, `PostgreSQL`, `DB2`, `Oracle` |
+| databaseUser | string | `""` | ICM database user |
 | fullnameOverride | string | `""` | Fully override the name used for chart objects |
-| icmDatabaseConnStringAdd | string | `""` | Additional ICM database connection string parameters |
-| icmDatabaseHost | string | `"postgresql"` | ICM database host |
-| icmDatabaseName | string | `"icm"` | ICM database name |
-| icmDatabasePassword | string | `""` | ICM database password |
-| icmDatabasePort | string | `"5432"` | ICM database port |
-| icmDatabaseType | string | `"PostgreSQL"` | ICM database type Must be one of: `MicrosoftSQL` (default), `SQLAzure`, `MySQL`, `PostgreSQL`, `DB2`, `Oracle` |
-| icmDatabaseUser | string | `""` | ICM database user |
 | image.pullPolicy | string | `"IfNotPresent"` | ICM image pull policy |
 | image.pullSecrets | list | `[]` | ICM image pull secrets |
 | image.registry | string | `"registry.sptcloud.com"` | ICM image registry |
 | image.repository | string | `"inspire/icm"` | ICM image repository |
-| image.tag | string | `"15.0.644.0-GA-postgresql"` | Override tag specified by `appVersion` in the chart file |
+| image.tag | string | `"15.0.652.0-HF-postgresql"` | Override tag specified by `appVersion` in the chart file |
 | ingress.annotations | object | `{}` | Additional annotations for the Ingress resource. To enable certificate autogeneration, place cert-manager annotations here. For a full list of possible ingress annotations, please see ref: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/nginx-configuration/annotations.md Use this parameter to set the required annotations for cert-manager, see ref: https://cert-manager.io/docs/usage/ingress/#supported-annotations e.g: annotations:   kubernetes.io/ingress.class: nginx   cert-manager.io/cluster-issuer: cluster-issuer-name |
 | ingress.apiVersion | string | `""` | Force Ingress API version (automatically detected if not set) |
 | ingress.enabled | bool | `false` | Enable ingress record generation for Hello |

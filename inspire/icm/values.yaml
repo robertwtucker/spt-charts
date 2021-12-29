@@ -1,9 +1,7 @@
-# Default values for ICM.
-
-# -- Number of ICM containers to deploy
-replicaCount: 1
-
-# Quadient Inspire ICM image
+##
+# ICM configuration parameters
+##
+# Inspire ICM image
 image:
   # -- ICM image registry
   registry: registry.sptcloud.com
@@ -14,9 +12,13 @@ image:
   # -- ICM image pull policy
   pullPolicy: IfNotPresent
   # -- ICM image pull secrets
-  pullSecrets: []
-
-# ICM configuration parameters
+# -- List of image repository pull secrets
+# Secrets must be manually created in the namespace.
+# ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+# Example:
+# imagePullSecrets:
+#   - myRegistryKeySecretName
+imagePullSecrets: []
 # -- Licensing mode for ICM
 inspireLicense: 'CL'
 # -- Inspire license server
@@ -38,7 +40,6 @@ databasePassword: ''
 databaseType: 'PostgreSQL'
 # -- Additional parameters for the ICM command
 additionalParams: '-enablehttpconnections'
-
 # -- Partially override the name used for chart objects
 nameOverride: ''
 # -- Fully override the name used for chart objects
@@ -48,7 +49,12 @@ useExistingConfigMap: ''
 # -- Name of a pre-existing secret to use (one will be created by default)
 useExistingSecret: ''
 
-## ICM service account parameters
+##
+# ICM deployment resource paramaters
+##
+# -- Number of ICM containers to deploy
+replicaCount: 1
+# ICM service account parameters
 serviceAccount:
   # -- Enable service account creation (will use `default` if false)
   create: false
@@ -56,7 +62,6 @@ serviceAccount:
   annotations: {}
   # -- Force the name used for the service account
   name: ''
-
 # ICM container resource requirements
 # ref: https://kubernetes.io/docs/user-guide/compute-resources/
 resources:
@@ -66,14 +71,12 @@ resources:
   requests:
     memory: 512Mi
     cpu: 100m
-
 # Container ports
 containerPorts:
   # -- ICM service port
   icm: 30353
   # -- External ICM http port
   http: 8080
-
 # -- Annotations for ICM pods
 podAnnotations: {}
 # -- Configure ICM pod security context
@@ -108,8 +111,7 @@ readinessProbe:
   periodSeconds: 10
   # -- Timeout in seconds for readiness checks
   timeoutSeconds: 2
-
-## Autoscaling parameters
+# Autoscaling parameters
 autoscaling:
   # -- Enable auto-scaling for ICM
   enabled: false
@@ -121,8 +123,10 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
+##
 # Service resource parameters for ICM
 # ref: https://kubernetes.io/docs/concepts/services-networking/service/
+##
 service:
   # -- Type of service to create
   type: ClusterIP
@@ -135,8 +139,10 @@ service:
     icm: ''
     http: ''
 
+##
 # Ingress resource parameters for ICM
 # ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
+##
 ingress:
   # -- Enable ingress record generation for Hello
   enabled: false

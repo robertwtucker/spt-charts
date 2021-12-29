@@ -1,9 +1,7 @@
-# Default values for Scaler.
-
-# -- Number of Scaler containers to deploy
-replicaCount: 1
-
-# Quadient Inspire Scaler image
+##
+# Scaler configuration parameters
+##
+# Inspire Scaler image
 image:
   # -- Scaler image registry
   registry: registry.sptcloud.com
@@ -13,10 +11,13 @@ image:
   tag: 15.0.713.0-HF
   # -- Scaler image pull policy
   pullPolicy: IfNotPresent
-  # -- Scaler image pull secrets
-  pullSecrets: []
-
-# Scaler configuration parameters
+# -- List of image repository pull secrets
+# Secrets must be manually created in the namespace.
+# ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+# Example:
+# imagePullSecrets:
+#   - myRegistryKeySecretName
+imagePullSecrets: []
 # -- Licensing mode for Scaler
 inspireLicense: CL
 # -- Inspire license server
@@ -48,7 +49,6 @@ icmPassword: ''
 icmApiAuthenticationGroup: 'RestApiUser'
 # -- Enable use of SSL/TLS
 useSsl: false
-
 # -- Partially override the name used for chart objects
 nameOverride: ''
 # -- Fully override the name used for chart objects
@@ -58,7 +58,12 @@ existingConfigMap: ''
 # -- Name of a pre-existing secret to use (one will be created by default)
 existingSecret: ''
 
-## Scaler service account parameters
+##
+# Scaler deployment resource paramaters
+##
+# -- Number of Scaler containers to deploy
+replicaCount: 1
+# Scaler service account parameters
 serviceAccount:
   # -- Enable service account creation (will use `default` if false)
   create: false
@@ -66,10 +71,8 @@ serviceAccount:
   annotations: {}
   # -- Force the name used for the service account
   name: ''
-
-# Scaler container port
+# -- Scaler container port
 containerPort: 30600
-
 # Scaler container resource requirements
 # ref: https://kubernetes.io/docs/user-guide/compute-resources/
 resources:
@@ -79,7 +82,6 @@ resources:
   requests:
     memory: 2Gi
     cpu: 100m
-
 # -- Annotations for Scaler pods
 podAnnotations: {}
 # -- Configure Scaler pod security context
@@ -122,12 +124,11 @@ readinessProbe:
   periodSeconds: 10
   # -- Timeout in seconds for readiness checks
   timeoutSeconds: 2
-# Restart policy
+# -- Restart policy
 restartPolicy: Always
-# Termination grace period (seconds)
+# -- Termination grace period (seconds)
 terminationGracePeriodSeconds: 35
-
-## Autoscaling parameters
+# Autoscaling parameters
 autoscaling:
   # -- Enable auto-scaling for Scaler
   enabled: false
@@ -139,8 +140,10 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
-# Service resource parameters for Scaler
+##
+# Service resource parameters
 # ref: https://kubernetes.io/docs/concepts/services-networking/service/
+##
 service:
   # -- Type of service to create
   type: ClusterIP
@@ -149,8 +152,10 @@ service:
   # -- Nodeport to expose (`service.type` must be NodePort or LoadBalancer)
   nodePort: ''
 
-# Ingress resource parameters for Scaler
+##
+# Ingress resource parameters
 # ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
+##
 ingress:
   # -- Enable ingress record generation for Hello
   enabled: false
@@ -178,8 +183,10 @@ ingress:
   # TLS certificates will be retrieved from a TLS secret with name: `{{- printf "%s-tls" .Values.ingress.hostname }}`
   tls: false
 
-# Persistence Parameters
+##
+# Persistence parameters
 # ref: https://kubernetes.io/docs/user-guide/persistent-volumes/
+##
 persistence:
   # --  Enable persistence using Persistent Volume Claims
   enabled: true
@@ -196,7 +203,9 @@ persistence:
   # -- The name of an existing PVC to use for persistence
   existingClaim: ''
 
-# IPS Configuration Section
+##
+# IPS configuration section
+##
 ips:
   # IPS image
   image:
@@ -208,14 +217,10 @@ ips:
     tag: 15.0.652.0-HF
     # -- IPS image pull policy
     pullPolicy: IfNotPresent
-    # -- IPS image pull secrets
-    pullSecrets: []
-
   # -- Threads per IPS instance
   threadCount: 4
   # -- IPS container port
   containerPort: 30354
-
   # IPS container resource requirements
   # ref: https://kubernetes.io/docs/user-guide/compute-resources/
   resources:
@@ -225,7 +230,6 @@ ips:
     requests:
       memory: 512Mi
       cpu: 100m
-
   # IPS container liveness probe settings
   livenessProbe:
     # -- Number of consecutive negative tests before declaring failure

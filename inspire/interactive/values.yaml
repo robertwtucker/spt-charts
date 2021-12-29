@@ -1,9 +1,7 @@
-# Default values for Interactive.
-
-# -- Number of Interactive containers to deploy
-replicaCount: 1
-
-# Quadient Inspire Interactive image
+##
+# Interactive configuration parameters
+##
+# Inspire Interactive image
 image:
   # -- Interactive image registry
   registry: registry.sptcloud.com
@@ -13,9 +11,13 @@ image:
   tag: 15.0.620.0-HF
   # -- Interactive image pull policy
   pullPolicy: IfNotPresent
-  # -- Interactive image pull secrets
-  pullSecrets: []
-
+# -- List of image repository pull secrets
+# Secrets must be manually created in the namespace.
+# ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+# Example:
+# imagePullSecrets:
+#   - myRegistryKeySecretName
+imagePullSecrets: []
 # Interactive configuration parameters
 # -- Licensing mode for Interactive
 inspireLicense: CL
@@ -54,7 +56,6 @@ ipsPort: 30354
 productionEnvironment: false
 # -- Disable use of SSL/TLS
 useHttp: true
-
 # -- Partially override the name used for chart objects
 nameOverride: ''
 # -- Fully override the name used for chart objects
@@ -64,7 +65,12 @@ existingConfigMap: ''
 # -- Name of a pre-existing secret to use (one will be created by default)
 existingSecret: ''
 
-## Interactive service account parameters
+##
+# Scaler deployment resource paramaters
+##
+# -- Number of Interactive containers to deploy
+replicaCount: 1
+# Interactive service account parameters
 serviceAccount:
   # -- Enable service account creation (will use `default` if false)
   create: false
@@ -72,10 +78,8 @@ serviceAccount:
   annotations: {}
   # -- Force the name used for the service account
   name: ''
-
 # -- Interactive container port
 containerPort: 30701
-
 # Interactive container resource requirements
 # ref: https://kubernetes.io/docs/user-guide/compute-resources/
 resources:
@@ -85,7 +89,6 @@ resources:
   requests:
     memory: 2Gi
     cpu: 100m
-
 # -- Annotations for Interactive pods
 podAnnotations: {}
 # -- Configure Interactive pod security context
@@ -132,8 +135,7 @@ readinessProbe:
 restartPolicy: Always
 # -- Termination grace period (seconds)
 terminationGracePeriodSeconds: 35
-
-## Autoscaling parameters
+# Autoscaling parameters
 autoscaling:
   # -- Enable auto-scaling for Interactive
   enabled: false
@@ -145,8 +147,10 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
+##
 # Service resource parameters for Interactive
 # ref: https://kubernetes.io/docs/concepts/services-networking/service/
+##
 service:
   # -- Type of service to create
   type: ClusterIP
@@ -155,8 +159,10 @@ service:
   # -- Nodeport to expose (`service.type` must be NodePort or LoadBalancer)
   nodePort: ''
 
+##
 # Ingress resource parameters for Interactive
 # ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
+##
 ingress:
   # -- Enable ingress record generation for Hello
   enabled: false
@@ -184,7 +190,9 @@ ingress:
   # TLS certificates will be retrieved from a TLS secret with name: `{{- printf "%s-tls" .Values.ingress.hostname }}`
   tls: false
 
+##
 # IPS Configuration Section
+##
 ips:
   # IPS image
   image:
@@ -198,10 +206,8 @@ ips:
     pullPolicy: IfNotPresent
     # -- IPS image pull secrets
     pullSecrets: []
-
   # -- Threads per IPS instance
   threadCount: 4
-
   # IPS container resource requirements
   # ref: https://kubernetes.io/docs/user-guide/compute-resources/
   resources:
@@ -211,7 +217,6 @@ ips:
     requests:
       memory: 512Mi
       cpu: 100m
-
   # IPS container liveness probe settings
   livenessProbe:
     # -- Number of consecutive negative tests before declaring failure

@@ -1,6 +1,6 @@
 # Inspire ICM
 
-![Version: 0.1.1](https://img.shields.io/badge/Version-0.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 15.0.652.0-HF](https://img.shields.io/badge/AppVersion-15.0.652.0--HF-informational?style=flat-square)
+![Version: 0.1.2](https://img.shields.io/badge/Version-0.1.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 15.0.652.0-HF](https://img.shields.io/badge/AppVersion-15.0.652.0--HF-informational?style=flat-square)
 
 ## TL;DR
 
@@ -61,10 +61,10 @@ The command removes all the Kubernetes components associated with the chart and 
 | databaseUser | string | `""` | ICM database user |
 | fullnameOverride | string | `""` | Fully override the name used for chart objects |
 | image.pullPolicy | string | `"IfNotPresent"` | ICM image pull policy |
-| image.pullSecrets | list | `[]` | ICM image pull secrets |
 | image.registry | string | `"registry.sptcloud.com"` | ICM image registry |
 | image.repository | string | `"inspire/icm"` | ICM image repository |
 | image.tag | string | `"15.0.652.0-HF-postgresql"` | Override tag specified by `appVersion` in the chart file |
+| imagePullSecrets | list | `[]` | List of image repository pull secrets Secrets must be manually created in the namespace. ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/ Example: imagePullSecrets:   - myRegistryKeySecretName |
 | ingress.annotations | object | `{}` | Additional annotations for the Ingress resource. To enable certificate autogeneration, place cert-manager annotations here. For a full list of possible ingress annotations, please see ref: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/nginx-configuration/annotations.md Use this parameter to set the required annotations for cert-manager, see ref: https://cert-manager.io/docs/usage/ingress/#supported-annotations e.g: annotations:   kubernetes.io/ingress.class: nginx   cert-manager.io/cluster-issuer: cluster-issuer-name |
 | ingress.apiVersion | string | `""` | Force Ingress API version (automatically detected if not set) |
 | ingress.enabled | bool | `false` | Enable ingress record generation for Hello |
@@ -72,7 +72,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | ingress.path | string | `"/"` | Default path for the ingress record NOTE: You may need to set this to '/*' in order to use this with ALB ingress controllers |
 | ingress.pathType | string | `"ImplementationSpecific"` | Ingress path type |
 | ingress.tls | bool | `false` | Enable TLS configuration for the host defined at `ingress.hostname` parameter TLS certificates will be retrieved from a TLS secret with name: `{{- printf "%s-tls" .Values.ingress.hostname }}` |
-| inspireLicense | string | `"CL"` |  |
+| inspireLicense | string | `"CL"` | Licensing mode for ICM |
 | inspireLicenseServer | string | `""` | Inspire license server |
 | livenessProbe.initialDelaySeconds | int | `5` | Initial delay before probing liveness |
 | livenessProbe.periodSeconds | int | `10` | Period in seconds between liveness checks |
@@ -84,7 +84,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | readinessProbe.initialDelaySeconds | int | `5` | Initial delay before probing readiness |
 | readinessProbe.periodSeconds | int | `10` | Period in seconds between readiness checks |
 | readinessProbe.timeoutSeconds | int | `2` | Timeout in seconds for readiness checks |
-| replicaCount | int | `1` | Number of ICM containers to deploy |
+| replicaCount | int | `1` |  |
 | resources.limits | object | `{}` | Resource limits for the ICM container |
 | resources.requests | object | `{"cpu":"100m","memory":"512Mi"}` | Requested resources for the ICM container |
 | securityContext | object | `{}` | Configure security context (main ICM container only) ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container |

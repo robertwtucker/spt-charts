@@ -1,6 +1,6 @@
 # Inspire ICM
 
-![Version: 0.1.2](https://img.shields.io/badge/Version-0.1.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 15.0.652.0-HF](https://img.shields.io/badge/AppVersion-15.0.652.0--HF-informational?style=flat-square)
+![Version: 0.1.3](https://img.shields.io/badge/Version-0.1.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 15.2.231.0-HF](https://img.shields.io/badge/AppVersion-15.2.231.0--HF-informational?style=flat-square)
 
 ## TL;DR
 
@@ -17,7 +17,7 @@ This [Helm](https://helm.sh) chart bootstraps a deployment of [Quadient](https:/
 - Kubernetes 1.21+
 - Helm 3.1+
 - A supported database platform
-- Inspire Designer (ICM) R15.0-GA
+- Inspire Designer (ICM) R15+
 
 ## Installing the Chart
 
@@ -63,7 +63,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | image.pullPolicy | string | `"IfNotPresent"` | ICM image pull policy |
 | image.registry | string | `"registry.sptcloud.com"` | ICM image registry |
 | image.repository | string | `"inspire/icm"` | ICM image repository |
-| image.tag | string | `"15.0.652.0-HF-postgresql"` | Override tag specified by `appVersion` in the chart file |
+| image.tag | string | `"15.2.231.0-HF-postgresql"` | Override tag specified by `appVersion` in the chart file |
 | imagePullSecrets | list | `[]` | List of image repository pull secrets Secrets must be manually created in the namespace. ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/ Example: imagePullSecrets:   - myRegistryKeySecretName |
 | ingress.annotations | object | `{}` | Additional annotations for the Ingress resource. To enable certificate autogeneration, place cert-manager annotations here. For a full list of possible ingress annotations, please see ref: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/nginx-configuration/annotations.md Use this parameter to set the required annotations for cert-manager, see ref: https://cert-manager.io/docs/usage/ingress/#supported-annotations e.g: annotations:   kubernetes.io/ingress.class: nginx   cert-manager.io/cluster-issuer: cluster-issuer-name |
 | ingress.apiVersion | string | `""` | Force Ingress API version (automatically detected if not set) |

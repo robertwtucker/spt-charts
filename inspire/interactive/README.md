@@ -1,6 +1,6 @@
 # Inspire Interactive
 
-![Version: 0.1.1](https://img.shields.io/badge/Version-0.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 15.0.620.0-HF](https://img.shields.io/badge/AppVersion-15.0.620.0--HF-informational?style=flat-square)
+![Version: 0.1.3](https://img.shields.io/badge/Version-0.1.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 15.0.620.0-HF](https://img.shields.io/badge/AppVersion-15.0.620.0--HF-informational?style=flat-square)
 
 ## TL;DR
 
@@ -57,6 +57,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | databasePort | int | `5432` | Interactive database port |
 | databaseType | string | `"PostgreSQL"` | Interactive database type Must be one of: `MicrosoftSQL` (default), `SQLAzure`, `MySQL`, `PostgreSQL`, `DB2`, `Oracle` |
 | databaseUser | string | `""` | Interactive database user |
+| demoModeFiles | string | `""` | Name of a PVC to mount to the config directory for demo-mode use Note: Will be ignored when productionEnvironment is set to true |
 | existingConfigMap | string | `""` | Name of a pre-existing configmap to use (one will be created by default) |
 | existingSecret | string | `""` | Name of a pre-existing secret to use (one will be created by default) |
 | fullnameOverride | string | `""` | Fully override the name used for chart objects |
@@ -66,10 +67,10 @@ The command removes all the Kubernetes components associated with the chart and 
 | icmRoot | string | `"icm://Interactive"` | ICM root for Interactive |
 | icmUser | string | `""` | ICM username |
 | image.pullPolicy | string | `"IfNotPresent"` | Interactive image pull policy |
-| image.pullSecrets | list | `[]` | Interactive image pull secrets |
 | image.registry | string | `"registry.sptcloud.com"` | Interactive image registry |
 | image.repository | string | `"inspire/interactive"` | Interactive image repository |
 | image.tag | string | `"15.0.620.0-HF"` | Override tag specified by `appVersion` in the chart file |
+| imagePullSecrets | list | `[]` | List of image repository pull secrets Secrets must be manually created in the namespace. ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/ Example: imagePullSecrets:   - myRegistryKeySecretName |
 | ingress.annotations | object | `{}` | Additional annotations for the Ingress resource. To enable certificate autogeneration, place cert-manager annotations here. For a full list of possible ingress annotations, please see ref: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/nginx-configuration/annotations.md Use this parameter to set the required annotations for cert-manager, see ref: https://cert-manager.io/docs/usage/ingress/#supported-annotations e.g: annotations:   kubernetes.io/ingress.class: nginx   cert-manager.io/cluster-issuer: cluster-issuer-name |
 | ingress.apiVersion | string | `""` | Force Ingress API version (automatically detected if not set) |
 | ingress.enabled | bool | `false` | Enable ingress record generation for Hello |
@@ -114,7 +115,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | readinessProbe.periodSeconds | int | `10` | Period in seconds between readiness checks |
 | readinessProbe.successThreshold | int | `1` | Number of consecutive positive tests before counting it as a success |
 | readinessProbe.timeoutSeconds | int | `2` | Timeout in seconds for readiness checks |
-| replicaCount | int | `1` | Number of Interactive containers to deploy |
+| replicaCount | int | `1` |  |
 | resources.limits | object | `{}` | Resource limits for the Interactive container |
 | resources.requests | object | `{"cpu":"100m","memory":"2Gi"}` | Requested resources for the Interactive container |
 | restartPolicy | string | `"Always"` | Restart policy |

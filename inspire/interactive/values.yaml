@@ -64,6 +64,9 @@ fullnameOverride: ''
 existingConfigMap: ''
 # -- Name of a pre-existing secret to use (one will be created by default)
 existingSecret: ''
+# -- Name of a PVC to mount to the config directory for demo-mode use
+# Note: Will be ignored when productionEnvironment is set to true
+demoModeFiles: ''
 
 ##
 # Scaler deployment resource paramaters

@@ -155,7 +155,11 @@ spec:
             - name: interactive-workdir
               mountPath: /opt/QuadientInteractive/stores/filestore/workingDirectory
             - name: interactive-temp
-              mountPath: /opt/QuadientInteractive/temp"
+              mountPath: /opt/QuadientInteractive/temp
+            {{- if and .Values.demoModeFiles (not .Values.productionEnvironment) }}
+            - name: interactive-demo-mode-files
+              mountPath: /opt/QuadientInteractive/config/demo-mode:ro
+            {{- end }}
         - name: ips
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
@@ -194,8 +198,6 @@ spec:
                   key: icm-port
             - name: ADD_PARAMS
               value: '-waitingtime 30'
-            # - name: THREAD_COUNT
-            #   value: {{ .Values.ips.threadCount | quote }}
           ports:
             - containerPort: {{ .Values.ipsPort }}
               protocol: TCP
@@ -240,6 +242,11 @@ spec:
           emptyDir: {}
         - name: interactive-ips-home
           emptyDir: {}
+        {{- if and .Values.demoModeFiles (not .Values.productionEnvironment) }}
+        - name: interactive-demo-mode-files
+          persistentVolumeClaim:
+            claimName: {{ .Values.demoModeFiles }}
+        {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

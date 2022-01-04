@@ -3,4 +3,4 @@ appVersion: '15.0.620.0-HF'
 name: interactive
 description: Chart for Inspire Interactive, a web document editor for managing personalized documents that also enables authoring of document templates and supports the approval process of templates, documents, and other resources.
 type: application
-version: 0.1.1
+version: 0.1.2

@@ -158,7 +158,7 @@ spec:
               mountPath: /opt/QuadientInteractive/temp
             {{- if and .Values.demoModeFiles (not .Values.productionEnvironment) }}
             - name: interactive-demo-mode-files
-              mountPath: /opt/QuadientInteractive/config/demo-mode:ro
+              mountPath: /opt/QuadientInteractive/config/demo-mode
             {{- end }}
         - name: ips
           securityContext:
@@ -246,6 +246,7 @@ spec:
         - name: interactive-demo-mode-files
           persistentVolumeClaim:
             claimName: {{ .Values.demoModeFiles }}
+            readOnly: true
         {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:

@@ -1,6 +1,6 @@
 # The SPT Chart Library for Kubernetes
 
-A library of [Helm](https://helm.sh) charts used to install [Quadient®️ Inspire](https://www.quadient.com/intelligent-communication/customer-communications2) and related applications used by the Global Strategic Projects Team to provide demo support services (via [Kubernetes](https://kubernetes.io)).
+A library of [Helm](https://helm.sh) charts used to install [Quadient® Inspire](https://www.quadient.com/intelligent-communication/customer-communications2) and related applications used by the Global Strategic Projects Team to provide demo support services (via [Kubernetes](https://kubernetes.io)).
 
 ## Getting Started
 
@@ -14,7 +14,7 @@ The previous command creates a local, working copy of the repository in a direct
 > helm upgrade --install test-release hello
 ```
 
-Using the `install` parameter with the `upgrade` command creates a new deployment if one does not already exist. Otherwise, it applies changes (if any) to the existing deployment.
+Using the `--install` parameter with the `upgrade` command creates a new deployment if one does not already exist. Otherwise, it applies changes (if any) to the existing deployment.
 
 For more information about using Helm and commands available, please see the [Helm documentation](https://helm.sh/docs/intro/using_helm/).
 

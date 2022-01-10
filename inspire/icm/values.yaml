@@ -17,27 +17,33 @@ image:
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 # Example:
 # imagePullSecrets:
-#   - myRegistryKeySecretName
+#   - name: myRegistryKeySecretName
 imagePullSecrets: []
-# -- Licensing mode for ICM
-inspireLicense: 'CL'
-# -- Inspire license server
-inspireLicenseServer: ''
-# -- ICM database host
-databaseHost: 'postgresql'
-# -- ICM database port
-databasePort: '5432'
-# -- ICM database name
-databaseName: 'icm'
-# -- Additional ICM database connection string parameters
-databaseConnStringAdd: ''
-# -- ICM database user
-databaseUser: ''
-# -- ICM database password
-databasePassword: ''
-# -- ICM database type
-# Must be one of: `MicrosoftSQL` (default), `SQLAzure`, `MySQL`, `PostgreSQL`, `DB2`, `Oracle`
-databaseType: 'PostgreSQL'
+# Licensing configuration
+license:
+  # -- Licensing mode
+  mode: 'CL'
+  # -- Primary license server
+  server: ''
+  # -- Backup license server
+  server2: ''
+# Database configuration
+db:
+  # -- ICM database host
+  host: 'postgresql'
+  # -- ICM database port
+  port: '5432'
+  # -- ICM database name
+  name: 'icm'
+  # -- ICM database user
+  user: ''
+  # -- ICM database password
+  password: ''
+  # -- ICM database type
+  # Must be one of: `MicrosoftSQL` (default), `SQLAzure`, `MySQL`, `PostgreSQL`, `DB2`, `Oracle`
+  type: 'PostgreSQL'
+  # -- Additional ICM database connection string parameters
+  connStringAdd: ''
 # -- Additional parameters for the ICM command
 additionalParams: '-enablehttpconnections'
 # -- Partially override the name used for chart objects

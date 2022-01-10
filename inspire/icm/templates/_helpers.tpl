@@ -116,3 +116,60 @@ Return the proper ICM image name
 {{- define "icm.image" }}
 {{- printf "%s/%s:%s" .Values.image.registry .Values.image.repository (.Values.image.tag | default .Chart.AppVersion) }}
 {{- end }}
+
+{{/*
+Return the ICM environment settings for licensing
+*/}}
+{{- define "icm.env.license" -}}
+- name: CX_LICENSE
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "icm.configMapName" . }}
+      key: cx-license
+- name: CX_LIC_SERVER
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "icm.secretName" . }}
+      key: cx-lic-server
+{{- end }}
+
+{{/*
+Return the ICM database environment settings
+*/}}
+{{- define "icm.env.database" -}}
+- name: DB_TYPE
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "icm.configMapName" . }}
+      key: db-type
+- name: DB_HOST
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "icm.configMapName" . }}
+      key: db-host
+- name: DB_PORT
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "icm.configMapName" . }}
+      key: db-port
+- name: DB_NAME
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "icm.configMapName" . }}
+      key: db-name
+- name: DB_USER
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "icm.secretName" . }}
+      key: db-user
+- name: DB_PASS
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "icm.secretName" . }}
+      key: db-password
+- name: DB_CONNSTRING_ADD
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "icm.configMapName" . }}
+      key: db-connstring-add
+{{- end }}

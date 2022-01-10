@@ -7,16 +7,16 @@ metadata:
   labels:
     {{- include "icm.labels" . | nindent 4 }}
 data:
-  cx-license: {{ required "A value for 'inspireLicense' is required" .Values.inspireLicense | quote }}
-  db-host: {{ required "A value for 'databaseHost' is required" .Values.databaseHost | quote }}
-  db-port: {{ required "A value for 'databasePort' is required" .Values.databasePort | quote }}
-  db-name: {{ required "A value for 'databaseName' is required" .Values.databaseName | quote }}
-  {{- if .Values.databaseConnStringAdd }}
-  db-connstring-add: {{ .Values.databaseConnStringAdd | quote }}
+  cx-license: {{ required "A value for 'license.mode' is required" .Values.license.mode | quote }}
+  db-type: {{ required "A value for 'db.type' is required" .Values.db.type | quote }}
+  db-host: {{ required "A value for 'db.host' is required" .Values.db.host | quote }}
+  db-port: {{ required "A value for 'db.port' is required" .Values.db.port | quote }}
+  db-name: {{ required "A value for 'db.name' is required" .Values.db.name | quote }}
+  {{- if .Values.db.connStringAdd }}
+  db-connstring-add: {{ .Values.db.connStringAdd | quote }}
   {{- else }}
   db-connstring-add: ""
   {{- end }}
-  db-type: {{ required "A value for 'databaseType' is required" .Values.databaseType | quote }}
   {{- if .Values.additionalParams }}
   add-params: {{ .Values.additionalParams | quote }}
   {{- else }}

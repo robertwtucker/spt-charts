@@ -109,6 +109,10 @@ livenessProbe:
   periodSeconds: 10
   # -- Timeout in seconds for liveness checks
   timeoutSeconds: 2
+  # -- Number of consecutive negative tests before declaring failure
+  failureThreshold: 10
+  # -- Number of consecutive positive tests before counting it as a success
+  successThreshold: 1
 # Readiness probe settings
 readinessProbe:
   # -- Initial delay before probing readiness
@@ -117,6 +121,10 @@ readinessProbe:
   periodSeconds: 10
   # -- Timeout in seconds for readiness checks
   timeoutSeconds: 2
+  # -- Number of consecutive negative tests before declaring failure
+  failureThreshold: 10
+  # -- Number of consecutive positive tests before counting it as a success
+  successThreshold: 1
 # Autoscaling parameters
 autoscaling:
   # -- Enable auto-scaling for ICM

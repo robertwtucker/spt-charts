@@ -75,7 +75,7 @@ resources:
   limits: {}
   # -- Requested resources for the ICM container
   requests:
-    memory: 512Mi
+    memory: 1Gi
     cpu: 100m
 # Container ports
 containerPorts:
@@ -87,10 +87,27 @@ containerPorts:
 podAnnotations: {}
 # -- Configure ICM pod security context
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
-podSecurityContext: {}
+podSecurityContext:
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
+  runAsUser: 11000
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#volumes-and-file-systems.
+  fsGroup: 11000
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
+  runAsNonRoot: true
 # -- Configure security context (main ICM container only)
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
-securityContext: {}
+securityContext:
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privileged.
+  privileged: false
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privilege-escalation.
+  allowPrivilegeEscalation: false
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
+  runAsUser: 11000
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#capabilities.
+  # -- The default (recommended) configuration prohibits all Linux capabilities.
+  capabilities:
+    drop:
+      - all
 # -- Node labels for pod assignment
 #ref: https://kubernetes.io/docs/user-guide/node-selection/
 nodeSelector: {}
@@ -101,6 +118,13 @@ tolerations: []
 # ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
 # NOTE: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when set
 affinity: {}
+# podAntiAffinity:
+#   preferredDuringSchedulingIgnoredDuringExecution:
+#     - weight: 100
+#       podAffinityTerm:
+#         labelSelector:
+#           matchLabels: {}
+#         topologyKey: "kubernetes.io/hostname"
 # Liveness probe settings
 livenessProbe:
   # -- Initial delay before probing liveness
@@ -116,11 +140,11 @@ livenessProbe:
 # Readiness probe settings
 readinessProbe:
   # -- Initial delay before probing readiness
-  initialDelaySeconds: 5
+  initialDelaySeconds: 30
   # -- Period in seconds between readiness checks
   periodSeconds: 10
   # -- Timeout in seconds for readiness checks
-  timeoutSeconds: 2
+  timeoutSeconds: 3
   # -- Number of consecutive negative tests before declaring failure
   failureThreshold: 10
   # -- Number of consecutive positive tests before counting it as a success

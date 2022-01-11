@@ -8,7 +8,7 @@ image:
   # -- Scaler image repository
   repository: inspire/scaler
   # -- Override tag specified by `appVersion` in the chart file
-  tag: 15.0.713.0-HF
+  tag: 15.2.412.0-HF
   # -- Scaler image pull policy
   pullPolicy: IfNotPresent
 # -- List of image repository pull secrets
@@ -214,7 +214,7 @@ ips:
     # -- IPS image repository
     repository: inspire/ips
     # -- Override tag specified by `appVersion` in the chart file
-    tag: 15.0.652.0-HF
+    tag: 15.2.231.0-HF
     # -- IPS image pull policy
     pullPolicy: IfNotPresent
   # -- Threads per IPS instance

@@ -114,3 +114,93 @@ Return the proper IPS image name
 {{- define "ips.image" }}
 {{- printf "%s/%s:%s" .Values.ips.image.registry .Values.ips.image.repository (.Values.ips.image.tag | default .Chart.AppVersion) }}
 {{- end }}
+
+{{/*
+Return the Scaler environment settings for licensing
+*/}}
+{{- define "scaler.env.license" -}}
+- name: CX_LICENSE
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "scaler.configMapName" . }}
+      key: cx-license
+- name: CX_LIC_SERVER
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "scaler.secretName" . }}
+      key: cx-lic-server
+{{- if .Values.license.server2 }}
+- name: CX_LIC_SERVER2
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "scaler.secretName" . }}
+      key: cx-lic-server2
+{{- end }}
+{{- end }}
+
+{{/*
+Return the environment settings for the Scaler database
+*/}}
+{{- define "scaler.env.db" -}}
+- name: DB_TYPE
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "scaler.configMapName" . }}
+      key: db-type
+- name: DB_HOST
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "scaler.configMapName" . }}
+      key: db-host
+- name: DB_PORT
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "scaler.configMapName" . }}
+      key: db-port
+- name: DB_NAME
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "scaler.configMapName" . }}
+      key: db-name
+- name: DB_USER
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "scaler.secretName" . }}
+      key: db-user
+- name: DB_PASS
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "scaler.secretName" . }}
+      key: db-password
+- name: DB_CONNSTRING_ADD
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "scaler.configMapName" . }}
+      key: db-connstring-add
+{{- end }}
+
+{{/*
+Return the Scaler environment settings for ICM
+*/}}
+{{- define "scaler.env.icm" -}}
+- name: ICM_HOST
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "scaler.configMapName" . }}
+      key: icm-host
+- name: ICM_PORT
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "scaler.configMapName" . }}
+      key: icm-port
+- name: ICM_USER
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "scaler.secretName" . }}
+      key: icm-user
+- name: ICM_PASS
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "scaler.secretName" . }}
+      key: icm-password
+{{- end }}

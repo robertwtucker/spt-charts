@@ -18,33 +18,41 @@ image:
 # imagePullSecrets:
 #   - myRegistryKeySecretName
 imagePullSecrets: []
-# -- Licensing mode for Scaler
-inspireLicense: CL
-# -- Inspire license server
-inspireLicenseServer: ''
-# -- Scaler database host
-databaseHost: ''
-# -- Scaler database port
-databasePort: 5432
-# -- Scaler database name
-databaseName: 'scaler'
-# -- Additional Scaler database connection string parameters
-databaseConnStringAdd: ''
-# -- Scaler database user
-databaseUser: ''
-# -- Scaler database password
-databasePassword: ''
-# -- Scaler database type
-# Must be one of: `MicrosoftSQL` (default), `SQLAzure`, `MySQL`, `PostgreSQL`, `DB2`, `Oracle`
-databaseType: 'PostgreSQL'
-# -- ICM host
-icmHost: ''
-# -- ICM port
-icmPort: 30353
-# -- ICM username
-icmUser: ''
-# -- ICM password
-icmPassword: ''
+# Licensing configuration
+license:
+  # -- Licensing mode
+  mode: CL
+  # -- Primary license server
+  server: ''
+  # -- Backup license server
+  server2: ''
+# Database configuration
+db:
+  # -- Scaler database host
+  host: ''
+  # -- Scaler database port
+  port: 5432
+  # -- Scaler database name
+  name: 'scaler'
+  # -- Scaler database user
+  user: ''
+  # -- Scaler database password
+  password: ''
+  # -- Scaler database type
+  # Must be one of: `MicrosoftSQL` (default), `SQLAzure`, `MySQL`, `PostgreSQL`, `DB2`, `Oracle`
+  type: 'PostgreSQL'
+  # -- Additional Scaler database connection string parameters
+  connStringAdd: ''
+# ICM configuration
+icm:
+  # -- ICM host
+  host: ''
+  # -- ICM port
+  port: 30353
+  # -- ICM username
+  user: ''
+  # -- ICM password
+  password: ''
 # -- Group to use for Scaler API authentication
 icmApiAuthenticationGroup: 'RestApiUser'
 # -- Enable use of SSL/TLS

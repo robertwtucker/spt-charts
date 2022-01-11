@@ -7,13 +7,13 @@ metadata:
   labels:
     {{- include "scaler.labels" . | nindent 4 }}
 data:
-  cx-license: {{ required "A value for 'inspireLicense' is required." .Values.inspireLicense | quote }}
+  cx-license: {{ required "A value for 'license.mode' is required." .Values.license.mode | quote }}
   icm-api-authentication-group: {{ required "A value for 'icmApiAuthenticationGroup' is required." .Values.icmApiAuthenticationGroup | quote }}
-  icm-host: {{ required "A value for 'icmHost' is required." .Values.icmHost | quote }}
-  icm-port: {{ required "A value for 'icmPort' is required." .Values.icmPort | quote }}
-  db-host: {{ required "A value for 'databaseHost' is required." .Values.databaseHost | quote }}
-  db-name: {{ required "A value for 'databaseName' is required." .Values.databaseName | quote }}
-  db-port: {{ required "A value for 'databasePort' is required." .Values.databasePort | quote }}
-  db-type: {{ required "A value for 'databaseType' is required." .Values.databaseType | quote }}
+  icm-host: {{ required "A value for 'icm.host' is required." .Values.icm.host | quote }}
+  icm-port: {{ required "A value for 'icm.port' is required." .Values.icm.port | quote }}
+  db-host: {{ required "A value for 'db.host' is required." .Values.db.host | quote }}
+  db-name: {{ required "A value for 'db.name' is required." .Values.db.name | quote }}
+  db-port: {{ required "A value for 'db.port' is required." .Values.db.port | quote }}
+  db-type: {{ required "A value for 'db.type' is required." .Values.db.type | quote }}
   use-ssl: {{ default false .Values.useSsl | quote }}
 {{- end }}

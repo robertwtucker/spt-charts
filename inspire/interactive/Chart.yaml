@@ -1,6 +1,6 @@
 apiVersion: v2
-appVersion: '15.0.620.0-HF'
+appVersion: '15.2'
 name: interactive
 description: Chart for Inspire Interactive, a web document editor for managing personalized documents that also enables authoring of document templates and supports the approval process of templates, documents, and other resources.
 type: application
-version: 0.1.3
+version: 0.1.4

@@ -94,31 +94,33 @@ resources:
 podAnnotations: {}
 # Configure Scaler pod security context
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
-podSecurityContext:
-  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
-  runAsUser: 11000
-  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#volumes-and-file-systems.
-  fsGroup: 11000
-  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
-  runAsNonRoot: true
+podSecurityContext: {}
+# podSecurityContext:
+#   # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
+#   runAsUser: 11000
+#   # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#volumes-and-file-systems.
+#   fsGroup: 11000
+#   # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
+#   runAsNonRoot: true
 # Configure security context
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
-securityContext:
-  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#volumes-and-file-systems.
-  readOnlyRootFilesystem: true
-  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privileged.
-  privileged: false
-  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privilege-escalation.
-  allowPrivilegeEscalation: false
-  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
-  runAsUser: 11000
-  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
-  runAsGroup: 11000
-  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#capabilities.
-  # -- The default (recommended) configuration prohibits all Linux capabilities.
-  capabilities:
-    drop:
-      - all
+securityContext: {}
+# securityContext:
+#   # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#volumes-and-file-systems.
+#   readOnlyRootFilesystem: true
+#   # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privileged.
+#   privileged: false
+#   # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privilege-escalation.
+#   allowPrivilegeEscalation: false
+#   # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
+#   runAsUser: 11000
+#   # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
+#   runAsGroup: 11000
+#   # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#capabilities.
+#   # -- The default (recommended) configuration prohibits all Linux capabilities.
+#   capabilities:
+#     drop:
+#       - all
 # -- Node labels for pod assignment
 #ref: https://kubernetes.io/docs/user-guide/node-selection/
 nodeSelector: {}
@@ -139,7 +141,7 @@ affinity: {}
 # Liveness probe settings
 livenessProbe:
   # -- Initial delay before probing liveness
-  initialDelaySeconds: 60
+  initialDelaySeconds: 90
   # -- Period in seconds between liveness checks
   periodSeconds: 5
   # -- Timeout in seconds for liveness checks

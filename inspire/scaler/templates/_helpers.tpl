@@ -172,11 +172,6 @@ Return the environment settings for the Scaler database
     secretKeyRef:
       name: {{ include "scaler.secretName" . }}
       key: db-password
-- name: DB_CONNSTRING_ADD
-  valueFrom:
-    configMapKeyRef:
-      name: {{ include "scaler.configMapName" . }}
-      key: db-connstring-add
 {{- end }}
 
 {{/*

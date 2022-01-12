@@ -89,15 +89,36 @@ resources:
   # -- Requested resources for the Scaler container
   requests:
     memory: 2Gi
-    cpu: 100m
+    cpu: 500m
 # -- Annotations for Scaler pods
 podAnnotations: {}
-# -- Configure Scaler pod security context
+# Configure Scaler pod security context
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
-podSecurityContext: {}
-# -- Configure security context (main Scaler container only)
+podSecurityContext:
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
+  runAsUser: 11000
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#volumes-and-file-systems.
+  fsGroup: 11000
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
+  runAsNonRoot: true
+# Configure security context
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
-securityContext: {}
+securityContext:
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#volumes-and-file-systems.
+  readOnlyRootFilesystem: true
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privileged.
+  privileged: false
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privilege-escalation.
+  allowPrivilegeEscalation: false
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
+  runAsUser: 11000
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
+  runAsGroup: 11000
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#capabilities.
+  # -- The default (recommended) configuration prohibits all Linux capabilities.
+  capabilities:
+    drop:
+      - all
 # -- Node labels for pod assignment
 #ref: https://kubernetes.io/docs/user-guide/node-selection/
 nodeSelector: {}
@@ -108,30 +129,37 @@ tolerations: []
 # ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
 # NOTE: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when set
 affinity: {}
+# podAntiAffinity:
+#   preferredDuringSchedulingIgnoredDuringExecution:
+#     - weight: 100
+#       podAffinityTerm:
+#         labelSelector:
+#           matchLabels: {}
+#         topologyKey: "kubernetes.io/hostname"
 # Liveness probe settings
 livenessProbe:
+  # -- Initial delay before probing liveness
+  initialDelaySeconds: 60
+  # -- Period in seconds between liveness checks
+  periodSeconds: 5
+  # -- Timeout in seconds for liveness checks
+  timeoutSeconds: 5
   # -- Number of consecutive negative tests before declaring failure
-  failureThreshold: 10
+  failureThreshold: 5
   # -- Number of consecutive positive tests before counting it as a success
   successThreshold: 1
-  # -- Initial delay before probing liveness
-  initialDelaySeconds: 120
-  # -- Period in seconds between liveness checks
-  periodSeconds: 10
-  # -- Timeout in seconds for liveness checks
-  timeoutSeconds: 2
 # Readiness probe settings
 readinessProbe:
-  # -- Number of consecutive negative tests before declaring failure
-  failureThreshold: 10
-  # -- Number of consecutive positive tests before counting it as a success
-  successThreshold: 1
   # -- Initial delay before probing readiness
-  initialDelaySeconds: 120
+  initialDelaySeconds: 30
   # -- Period in seconds between readiness checks
   periodSeconds: 10
   # -- Timeout in seconds for readiness checks
-  timeoutSeconds: 2
+  timeoutSeconds: 5
+  # -- Number of consecutive negative tests before declaring failure
+  failureThreshold: 3
+  # -- Number of consecutive positive tests before counting it as a success
+  successThreshold: 1
 # -- Restart policy
 restartPolicy: Always
 # -- Termination grace period (seconds)
@@ -240,25 +268,25 @@ ips:
       cpu: 100m
   # IPS container liveness probe settings
   livenessProbe:
-    # -- Number of consecutive negative tests before declaring failure
-    failureThreshold: 3
-    # -- Number of consecutive positive tests before counting it as a success
-    successThreshold: 1
     # -- Initial delay before probing liveness
     initialDelaySeconds: 10
     # -- Period in seconds between liveness checks
     periodSeconds: 10
     # -- Timeout in seconds for liveness checks
     timeoutSeconds: 2
-  # IPS container readiness probe settings
-  readinessProbe:
     # -- Number of consecutive negative tests before declaring failure
-    failureThreshold: 3
+    failureThreshold: 10
     # -- Number of consecutive positive tests before counting it as a success
     successThreshold: 1
+  # IPS container readiness probe settings
+  readinessProbe:
     # -- Initial delay before probing readiness
-    initialDelaySeconds: 20
+    initialDelaySeconds: 10
     # -- Period in seconds between readiness checks
     periodSeconds: 10
     # -- Timeout in seconds for readiness checks
     timeoutSeconds: 2
+    # -- Number of consecutive negative tests before declaring failure
+    failureThreshold: 10
+    # -- Number of consecutive positive tests before counting it as a success
+    successThreshold: 1

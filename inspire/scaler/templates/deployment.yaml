@@ -12,6 +12,8 @@ spec:
   selector:
     matchLabels:
       {{- include "scaler.selectorLabels" . | nindent 6 }}
+  strategy:
+    type: Recreate
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -79,19 +81,21 @@ spec:
           livenessProbe:
             tcpSocket:
               port: {{ .Values.containerPort }}
-            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
             initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}5
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+            successThreshold: {{ .Values.livenessProbe.successThreshold }}
           readinessProbe:
             httpGet:
               path: /rest/web/system-healthy/healthy-and-http-workflows-running
               port: {{ .Values.containerPort }}
               scheme: HTTP
-            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
             initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+            successThreshold: {{ .Values.livenessProbe.successThreshold }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
@@ -119,20 +123,22 @@ spec:
           livenessProbe:
             tcpSocket:
               port: {{ .Values.ips.containerPort }}
-            failureThreshold: {{ .Values.ips.livenessProbe.failureThreshold }}
             initialDelaySeconds: {{ .Values.ips.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.ips.livenessProbe.periodSeconds }}
-            timeoutSeconds: {{ .Values.ips.livenessProbe.timeoutSeconds }}5
+            timeoutSeconds: {{ .Values.ips.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.ips.livenessProbe.failureThreshold }}
+            successThreshold: {{ .Values.ips.livenessProbe.successThreshold }}
           readinessProbe:
             exec:
               command:
                 - '/opt/Quadient/Designer/InspirePSCLI'
                 - '-api'
                 - 'ping'
-            failureThreshold: {{ .Values.ips.livenessProbe.failureThreshold }}
             initialDelaySeconds: {{ .Values.ips.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.ips.readinessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.ips.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.ips.livenessProbe.failureThreshold }}
+            successThreshold: {{ .Values.ips.livenessProbe.successThreshold }}
           resources:
             {{- toYaml .Values.ips.resources | nindent 12 }}
           volumeMounts:

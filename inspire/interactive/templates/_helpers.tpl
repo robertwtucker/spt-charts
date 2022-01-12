@@ -200,8 +200,8 @@ Return the Interactive environment settings for ICM
       key: icm-password
 - name: ICM_ROOT
   valueFrom:
-    secretKeyRef:
-      name: {{ include "interactive.secretName" . }}
+    configMapKeyRef:
+      name: {{ include "interactive.configMapName" . }}
       key: icm-root
 {{- end }}
 

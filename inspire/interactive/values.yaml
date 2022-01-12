@@ -93,15 +93,32 @@ resources:
   # -- Requested resources for the Interactive container
   requests:
     memory: 2Gi
-    cpu: 100m
+    cpu: 500m
 # -- Annotations for Interactive pods
 podAnnotations: {}
 # -- Configure Interactive pod security context
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
-podSecurityContext: {}
+# podSecurityContext: {}
+podSecurityContext:
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
+  runAsUser: 11000
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#volumes-and-file-systems.
+  fsGroup: 11000
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
+  runAsNonRoot: true
 # -- Configure security context (main Interactive container only)
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
-securityContext: {}
+# securityContext: {}
+securityContext:
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privileged.
+  privileged: false
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privilege-escalation.
+  allowPrivilegeEscalation: false
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#capabilities.
+  # -- The default (recommended) configuration prohibits all Linux capabilities.
+  capabilities:
+    drop:
+      - all
 # -- Node labels for pod assignment
 #ref: https://kubernetes.io/docs/user-guide/node-selection/
 nodeSelector: {}
@@ -114,28 +131,28 @@ tolerations: []
 affinity: {}
 # Liveness probe settings
 livenessProbe:
+  initialDelaySeconds: 10
+  # -- Period in seconds between liveness checks
+  periodSeconds: 5
+  # -- Timeout in seconds for liveness checks
+  timeoutSeconds: 5
   # -- Number of consecutive negative tests before declaring failure
   failureThreshold: 10
   # -- Number of consecutive positive tests before counting it as a success
   successThreshold: 1
   # -- Initial delay before probing liveness
-  initialDelaySeconds: 120
-  # -- Period in seconds between liveness checks
-  periodSeconds: 10
-  # -- Timeout in seconds for liveness checks
-  timeoutSeconds: 2
 # Readiness probe settings
 readinessProbe:
+  initialDelaySeconds: 90
+  # -- Period in seconds between readiness checks
+  periodSeconds: 10
+  # -- Timeout in seconds for readiness checks
+  timeoutSeconds: 5
   # -- Number of consecutive negative tests before declaring failure
   failureThreshold: 10
   # -- Number of consecutive positive tests before counting it as a success
   successThreshold: 1
   # -- Initial delay before probing readiness
-  initialDelaySeconds: 120
-  # -- Period in seconds between readiness checks
-  periodSeconds: 10
-  # -- Timeout in seconds for readiness checks
-  timeoutSeconds: 2
 # -- Restart policy
 restartPolicy: Always
 # -- Termination grace period (seconds)
@@ -228,25 +245,25 @@ ips:
       cpu: 100m
   # IPS container liveness probe settings
   livenessProbe:
-    # -- Number of consecutive negative tests before declaring failure
-    failureThreshold: 3
-    # -- Number of consecutive positive tests before counting it as a success
-    successThreshold: 1
     # -- Initial delay before probing liveness
     initialDelaySeconds: 10
     # -- Period in seconds between liveness checks
     periodSeconds: 10
     # -- Timeout in seconds for liveness checks
     timeoutSeconds: 2
-  # IPS container readiness probe settings
-  readinessProbe:
     # -- Number of consecutive negative tests before declaring failure
-    failureThreshold: 3
+    failureThreshold: 10
     # -- Number of consecutive positive tests before counting it as a success
     successThreshold: 1
+  # IPS container readiness probe settings
+  readinessProbe:
     # -- Initial delay before probing readiness
     initialDelaySeconds: 20
     # -- Period in seconds between readiness checks
     periodSeconds: 10
     # -- Timeout in seconds for readiness checks
     timeoutSeconds: 2
+    # -- Number of consecutive negative tests before declaring failure
+    failureThreshold: 10
+    # -- Number of consecutive positive tests before counting it as a success
+    successThreshold: 1

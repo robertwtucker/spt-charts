@@ -114,3 +114,109 @@ Return the proper IPS image name
 {{- define "ips.image" }}
 {{- printf "%s/%s:%s" .Values.ips.image.registry .Values.ips.image.repository (.Values.ips.image.tag | default .Chart.AppVersion) }}
 {{- end }}
+
+{{/*
+Return the Interactive environment settings for licensing
+*/}}
+{{- define "interactive.env.license" -}}
+- name: CX_LICENSE
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "interactive.configMapName" . }}
+      key: cx-license
+- name: CX_LIC_SERVER
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "interactive.secretName" . }}
+      key: cx-lic-server
+{{- if .Values.license.server2 }}
+- name: CX_LIC_SERVER2
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "interactive.secretName" . }}
+      key: cx-lic-server2
+{{- end }}
+{{- end }}
+
+{{/*
+Return the environment settings for the Interactive database
+*/}}
+{{- define "interactive.env.db" -}}
+- name: DB_TYPE
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "interactive.configMapName" . }}
+      key: db-type
+- name: DB_HOST
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "interactive.configMapName" . }}
+      key: db-host
+- name: DB_PORT
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "interactive.configMapName" . }}
+      key: db-port
+- name: DB_NAME
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "interactive.configMapName" . }}
+      key: db-name
+- name: DB_USER
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "interactive.secretName" . }}
+      key: db-user
+- name: DB_PASS
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "interactive.secretName" . }}
+      key: db-password
+{{- end }}
+
+{{/*
+Return the Interactive environment settings for ICM
+*/}}
+{{- define "interactive.env.icm" -}}
+- name: ICM_HOST
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "interactive.configMapName" . }}
+      key: icm-host
+- name: ICM_PORT
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "interactive.configMapName" . }}
+      key: icm-port
+- name: ICM_USER
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "interactive.secretName" . }}
+      key: icm-user
+- name: ICM_PASS
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "interactive.secretName" . }}
+      key: icm-password
+- name: ICM_ROOT
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "interactive.secretName" . }}
+      key: icm-root
+{{- end }}
+
+{{/*
+Return the Interactive environment settings for IPS
+*/}}
+{{- define "interactive.env.ips" -}}
+- name: IPS_HOST
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "interactive.configMapName" . }}
+      key: ips-host
+- name: IPS_PORT
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "interactive.configMapName" . }}
+      key: ips-port
+{{- end }}

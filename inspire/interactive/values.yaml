@@ -19,39 +19,41 @@ image:
 #   - myRegistryKeySecretName
 imagePullSecrets: []
 # Interactive configuration parameters
-# -- Licensing mode for Interactive
-inspireLicense: CL
-# -- Inspire license server
-inspireLicenseServer: ''
-# -- Interactive database host
-databaseHost: ''
-# -- Interactive database port
-databasePort: 5432
-# -- Interactive database name
-databaseName: interactive
-# -- Additional Interactive database connection string parameters
-databaseConnStringAdd: ''
-# -- Interactive database user
-databaseUser: ''
-# -- Interactive database password
-databasePassword: ''
-# -- Interactive database type
-# Must be one of: `MicrosoftSQL` (default), `SQLAzure`, `MySQL`, `PostgreSQL`, `DB2`, `Oracle`
-databaseType: PostgreSQL
-# -- ICM host
-icmHost: ''
-# -- ICM port
-icmPort: 30353
-# -- ICM username
-icmUser: ''
-# -- ICM password
-icmPassword: ''
-# -- ICM root for Interactive
-icmRoot: icm://Interactive
-# -- IPS host
-ipsHost: localhost
-# -- IPS port
-ipsPort: 30354
+# Licensing configuration
+license:
+  # -- Licensing mode
+  mode: CL
+  # -- Primary license server
+  server: ''
+  # -- Backup license server
+  server2: ''
+# Database configuration
+db:
+  # -- Interactive database host
+  host: ''
+  # -- Interactive database port
+  port: 5432
+  # -- Interactive database name
+  name: interactive
+  # -- Interactive database user
+  user: ''
+  # -- Interactive database password
+  password: ''
+  # -- Interactive database type
+  # Must be one of: `MicrosoftSQL` (default), `SQLAzure`, `MySQL`, `PostgreSQL`, `DB2`, `Oracle`
+  type: PostgreSQL
+# ICM configuration
+icm:
+  # -- ICM host
+  host: ''
+  # -- ICM port
+  port: 30353
+  # -- ICM username
+  user: ''
+  # -- ICM password
+  password: ''
+  # -- ICM root for Interactive
+  root: icm://Interactive
 # -- Run Interactive in production mode
 productionEnvironment: false
 # -- Disable use of SSL/TLS
@@ -197,6 +199,10 @@ ingress:
 # IPS Configuration Section
 ##
 ips:
+  # -- IPS host
+  host: localhost
+  # -- IPS port
+  port: 30354
   # IPS image
   image:
     # -- IPS image registry

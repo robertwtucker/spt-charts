@@ -7,16 +7,16 @@ metadata:
   labels:
     {{- include "interactive.labels" . | nindent 4 }}
 data:
-  cx-license: {{ required "A value for 'inspireLicense' is required." .Values.inspireLicense | quote }}
-  db-host: {{ required "A value for 'databaseHost' is required." .Values.databaseHost | quote }}
-  db-name: {{ required "A value for 'databaseName' is required." .Values.databaseName | quote }}
-  db-port: {{ required "A value for 'databasePort' is required." .Values.databasePort | quote }}
-  db-type: {{ required "A value for 'databaseType' is required." .Values.databaseType | quote }}
-  icm-host: {{ required "A value for 'icmHost' is required." .Values.icmHost | quote }}
-  icm-port: {{ required "A value for 'icmPort' is required." .Values.icmPort | quote }}
-  icm-root: {{ required "A value for 'icmRoot' is required." .Values.icmRoot | quote }}
-  ips-host: {{ required "A value for 'ipsHost' is required." .Values.ipsHost | quote }}
-  ips-port: {{ required "A value for 'ipsPort' is required." .Values.ipsPort | quote }}
+  cx-license: {{ required "A value for 'license.mode' is required." .Values.license.mode | quote }}
+  db-host: {{ required "A value for 'db.host' is required." .Values.db.host | quote }}
+  db-name: {{ required "A value for 'db.name' is required." .Values.db.name | quote }}
+  db-port: {{ required "A value for 'db.port' is required." .Values.db.port | quote }}
+  db-type: {{ required "A value for 'db.type' is required." .Values.db.type | quote }}
+  icm-host: {{ required "A value for 'icm.host' is required." .Values.icm.host | quote }}
+  icm-port: {{ required "A value for 'icm.port' is required." .Values.icm.port | quote }}
+  icm-root: {{ required "A value for 'icm.root' is required." .Values.icm.root | quote }}
+  ips-host: {{ required "A value for 'ips.host' is required." .Values.ips.host | quote }}
+  ips-port: {{ required "A value for 'ips.port' is required." .Values.ips.port | quote }}
   production-environment: {{ default false .Values.productionEnvironment | quote }}
   use-http: {{ default true .Values.useSsl | quote }}
 {{- end }}

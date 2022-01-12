@@ -35,26 +35,10 @@ spec:
           image: {{ include "interactive.image" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-            - name: CX_LICENSE
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "interactive.configMapName" . }}
-                  key: cx-license
-            - name: CX_LIC_SERVER
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "interactive.secretName" . }}
-                  key: cx-lic-server
-            - name: ICM_USER
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "interactive.secretName" . }}
-                  key: icm-user
-            - name: ICM_PASS
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "interactive.secretName" . }}
-                  key: icm-password
+            {{- include "interactive.env.license" . | nindent 12 }}
+            {{- include "interactive.env.db" . | nindent 12 }}
+            {{- include "interactive.env.icm" . | nindent 12 }}
+            {{- include "interactive.env.ips" . | nindent 12 }}
             - name: GROO_ICM_USER
               valueFrom:
                 secretKeyRef:
@@ -65,61 +49,6 @@ spec:
                 secretKeyRef:
                   name: {{ include "interactive.secretName" . }}
                   key: icm-password
-            - name: ICM_ROOT
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "interactive.configMapName" . }}
-                  key: icm-root
-            - name: ICM_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "interactive.configMapName" . }}
-                  key: icm-host
-            - name: ICM_PORT
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "interactive.configMapName" . }}
-                  key: icm-port
-            - name: IPS_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "interactive.configMapName" . }}
-                  key: ips-host
-            - name: IPS_PORT
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "interactive.configMapName" . }}
-                  key: ips-port
-            - name: DB_TYPE
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "interactive.configMapName" . }}
-                  key: db-type
-            - name: DB_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "interactive.configMapName" . }}
-                  key: db-host
-            - name: DB_PORT
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "interactive.configMapName" . }}
-                  key: db-port
-            - name: DB_NAME
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "interactive.configMapName" . }}
-                  key: db-name
-            - name: DB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "interactive.secretName" . }}
-                  key: db-user
-            - name: DB_PASS
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "interactive.secretName" . }}
-                  key: db-password
             - name: PRODUCTION_ENVIRONMENT
               valueFrom:
                 configMapKeyRef:
@@ -166,44 +95,16 @@ spec:
           image: {{ include "ips.image" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-            - name: CX_LICENSE
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "interactive.configMapName" . }}
-                  key: cx-license
-            - name: CX_LIC_SERVER
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "interactive.secretName" . }}
-                  key: cx-lic-server
-            - name: ICM_USER
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "interactive.secretName" . }}
-                  key: icm-user
-            - name: ICM_PASS
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "interactive.secretName" . }}
-                  key: icm-password
-            - name: ICM_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "interactive.configMapName" . }}
-                  key: icm-host
-            - name: ICM_PORT
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "interactive.configMapName" . }}
-                  key: icm-port
+            {{- include "interactive.env.license" . | nindent 12 }}
+            {{- include "interactive.env.icm" . | nindent 12 }}
             - name: ADD_PARAMS
               value: '-waitingtime 30'
           ports:
-            - containerPort: {{ .Values.ipsPort }}
+            - containerPort: {{ .Values.ips.port }}
               protocol: TCP
           livenessProbe:
             tcpSocket:
-              port: {{ .Values.ipsPort }}
+              port: {{ .Values.ips.port }}
             failureThreshold: {{ .Values.ips.livenessProbe.failureThreshold }}
             initialDelaySeconds: {{ .Values.ips.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.ips.livenessProbe.periodSeconds }}

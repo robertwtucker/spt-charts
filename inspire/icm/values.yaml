@@ -182,7 +182,7 @@ service:
 # ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ##
 ingress:
-  # -- Enable ingress record generation for Hello
+  # -- Enable ingress record generation for ICM
   enabled: false
   # -- Ingress path type
   pathType: ImplementationSpecific

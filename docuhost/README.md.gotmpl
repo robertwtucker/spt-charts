@@ -1,0 +1,63 @@
+# Document Host
+
+{{ template "chart.badgesSection" . }}
+
+## TL;DR
+
+```console
+$ helm install test-release ./docuhost
+```
+
+## Introduction
+
+This [Helm](https://helm.sh) chart installs the Document Host (Docuhost) service used for temporarily hosting demo documents for retrieval using a generated link.
+
+## Prerequisites
+
+- Kubernetes 1.21+
+- Helm 3.1+
+
+## Installing the Chart
+
+To install the chart with the release name `dev-release`:
+
+```console
+$ cd charts
+$ helm install dev-release ./docuhost
+```
+
+These commands deploy Docuhost on the [Kubernetes](https://kubernetes.io) cluster in the default configuration. The [Parameters](#parameters) section lists the parameters that can be configured during installation.
+
+## Uninstalling the Chart
+
+To uninstall/delete the `dev-release` deployment:
+
+```console
+$ helm uninstall dev-release
+```
+
+The command removes all the Kubernetes components associated with the chart and deletes the release.
+
+## Parameters
+
+{{ template "chart.valuesTable" .}}
+
+Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example,
+
+```console
+$ helm install my-release \
+  --set db.user=admin,db.password=s3cr3t docuhost
+```
+
+The above command sets the Docuhost database username and password to `admin` and `s3cr3t`, respectively.
+
+Alternatively, a YAML file that specifies the values for the parameters can be provided while installing the chart. For example,
+
+```console
+$ helm install my-release -f values.yaml docuhost
+```
+
+> **Tip**: You can use the default `values.yaml` file and just delete the unchanged items.
+
+
+{{ template "helm-docs.versionFooter" . }}

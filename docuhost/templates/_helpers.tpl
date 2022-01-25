@@ -124,7 +124,7 @@ Return the DocuHost database environment settings
     secretKeyRef:
       name: {{ include "docuhost.secretName" . }}
       key: db-username
-- name: DB_PASS
+- name: DB_PASSWORD
   valueFrom:
     secretKeyRef:
       name: {{ include "docuhost.secretName" . }}

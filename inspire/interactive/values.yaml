@@ -62,16 +62,22 @@ useHttp: true
 nameOverride: ''
 # -- Fully override the name used for chart objects
 fullnameOverride: ''
-# -- Name of a pre-existing configmap to use (one will be created by default)
+# -- Name of a pre-existing ConfigMap to use (one will be created by default)
 existingConfigMap: ''
 # -- Name of a pre-existing secret to use (one will be created by default)
 existingSecret: ''
 # -- Name of a PVC to mount to the config directory for demo-mode use
 # Note: Will be ignored when productionEnvironment is set to true
 demoModeFiles: ''
+# -- XML content to be mapped over the `configuration.xml` provided with the image
+# Note: Will be ignored when `configurationXmlConfigMap` is set
+configurationXml: ''
+# -- Name of a ConfigMap containing a `configuration.xml` data value to substitute
+# Note: Takes precedence over `configurationXml` value
+configurationXmlConfigMap: ''
 
 ##
-# Scaler deployment resource paramaters
+# Scaler deployment resource parameters
 ##
 # -- Number of Interactive containers to deploy
 replicaCount: 1

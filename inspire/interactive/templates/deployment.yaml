@@ -89,6 +89,10 @@ spec:
             - name: interactive-demo-mode-files
               mountPath: /opt/QuadientInteractive/config/demo-mode
             {{- end }}
+            {{- if or .Values.configurationXmlConfigMap .Values.configurationXml}}
+            - name: interactive-configuration-xml
+              mountPath: /opt/QuadientInteractive/config/configuration.xml
+            {{- end }}
         - name: ips
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
@@ -147,6 +151,16 @@ spec:
         - name: interactive-demo-mode-files
           persistentVolumeClaim:
             claimName: {{ .Values.demoModeFiles }}
+            readOnly: true
+        {{- end }}
+        {{- if or .Values.configurationXmlConfigMap .Values.configurationXml}}
+        - name: interactive-configuration-xml
+          persistentVolumeClaim:
+            {{- if .Values.configurationXmlConfigMap }}
+            claimName: {{ .Values.configurationXmlConfigMap }}
+            {{- else }}
+            claimName: {{ printf "%s-configuration-xml" (include "interactive.fullname" .) }}
+            {{- end }}
             readOnly: true
         {{- end }}
       {{- with .Values.nodeSelector }}

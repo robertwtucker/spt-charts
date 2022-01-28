@@ -1,0 +1,12 @@
+{{- if and (not .Values.configurationXmlConfigMap) .Values.configurationXml }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ printf "%s-configuration-xml" (include "interactive.fullname" .) }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "interactive.labels" . | nindent 4 }}
+data:
+  configuration.xml: |
+{{ .Values.configurationXml | nindent 4 }}
+{{- end }}

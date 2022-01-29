@@ -92,6 +92,7 @@ spec:
             {{- if or .Values.configurationXmlConfigMap .Values.configurationXml}}
             - name: interactive-configuration-xml
               mountPath: /opt/QuadientInteractive/config/configuration.xml
+              subPath: configuration.xml
             {{- end }}
         - name: ips
           securityContext:
@@ -155,13 +156,15 @@ spec:
         {{- end }}
         {{- if or .Values.configurationXmlConfigMap .Values.configurationXml}}
         - name: interactive-configuration-xml
-          persistentVolumeClaim:
+          configMap:
             {{- if .Values.configurationXmlConfigMap }}
-            claimName: {{ .Values.configurationXmlConfigMap }}
+            name: {{ .Values.configurationXmlConfigMap }}
             {{- else }}
-            claimName: {{ printf "%s-configuration-xml" (include "interactive.fullname" .) }}
+            name: {{ printf "%s-configuration-xml" (include "interactive.fullname" .) }}
             {{- end }}
-            readOnly: true
+            items:
+              - key: configuration.xml
+                path: configuration.xml
         {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:

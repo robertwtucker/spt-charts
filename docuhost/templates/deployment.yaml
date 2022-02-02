@@ -65,6 +65,11 @@ spec:
                 configMapKeyRef:
                   name: {{ include "docuhost.configMapName" . }}
                   key: log-debug
+            - name: LOG_FORMAT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "docuhost.configMapName" . }}
+                  key: log-format
           ports:
             - name: http
               containerPort: {{ .Values.containerPort }}

@@ -6,7 +6,7 @@ image:
   # -- DocuHost image repository
   repository: registry.sptcloud.com/spt/docuhost
   # -- Override tag specified by `appVersion` in the chart file
-  tag: 0.2.1-08f5ad1
+  tag: 0.3.0-7b85959
   # -- DocuHost image pull policy
   pullPolicy: IfNotPresent
   # -- DocuHost image pull secrets
@@ -47,6 +47,8 @@ db:
 log:
   # -- Use debug log settings
   debug: false
+  # -- Log output format [text|json]
+  format: text
 # Short Link generation service configuration
 shortlink:
   # -- API Key to use for authorization

@@ -1,6 +1,6 @@
 # Document Host
 
-![Version: 0.1.6](https://img.shields.io/badge/Version-0.1.6-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.2.1](https://img.shields.io/badge/AppVersion-0.2.1-informational?style=flat-square)
+![Version: 0.1.7](https://img.shields.io/badge/Version-0.1.7-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.3.0](https://img.shields.io/badge/AppVersion-0.3.0-informational?style=flat-square)
 
 ## TL;DR
 
@@ -61,7 +61,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | fullnameOverride | string | `""` | Fully override the name used for chart objects |
 | image.pullPolicy | string | `"IfNotPresent"` | DocuHost image pull policy |
 | image.repository | string | `"registry.sptcloud.com/spt/docuhost"` | DocuHost image repository |
-| image.tag | string | `"0.2.1-08f5ad1"` | Override tag specified by `appVersion` in the chart file |
+| image.tag | string | `"0.3.0-7b85959"` | Override tag specified by `appVersion` in the chart file |
 | imagePullSecrets | list | `[]` | List of image repository pull secrets Secrets must be manually created in the namespace. ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/ Example: imagePullSecrets:   - name: myRegistryKeySecretName |
 | ingress.annotations | object | `{}` | Additional annotations for the Ingress resource. To enable certificate autogeneration, place cert-manager annotations here. For a full list of possible ingress annotations, please see ref: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/nginx-configuration/annotations.md Use this parameter to set the required annotations for cert-manager, see ref: https://cert-manager.io/docs/usage/ingress/#supported-annotations e.g: annotations:   kubernetes.io/ingress.class: nginx   cert-manager.io/cluster-issuer: cluster-issuer-name |
 | ingress.apiVersion | string | `""` | Force Ingress API version (automatically detected if not set) |
@@ -76,6 +76,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | livenessProbe.successThreshold | int | `1` | Number of consecutive positive tests before counting it as a success |
 | livenessProbe.timeoutSeconds | int | `1` | Timeout in seconds for liveness checks |
 | log.debug | bool | `false` | Use debug log settings |
+| log.format | string | `"text"` | Log output format [text|json] |
 | nameOverride | string | `""` | Partially override the name used for chart objects |
 | nodeSelector | object | `{}` | Node labels for pod assignment |
 | podAnnotations | object | `{}` | Annotations for DocuHost pods |

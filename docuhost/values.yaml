@@ -6,7 +6,7 @@ image:
   # -- DocuHost image repository
   repository: registry.sptcloud.com/spt/docuhost
   # -- Override tag specified by `appVersion` in the chart file
-  tag: 0.3.1-69cc742
+  tag: 0.3.2-61697a5
   # -- DocuHost image pull policy
   pullPolicy: IfNotPresent
   # -- DocuHost image pull secrets

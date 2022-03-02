@@ -6,10 +6,9 @@ image:
   # -- DocuHost image repository
   repository: registry.sptcloud.com/spt/docuhost
   # -- Override tag specified by `appVersion` in the chart file
-  tag: 0.3.2-61697a5
+  tag: 0.3.3-916bdea
   # -- DocuHost image pull policy
   pullPolicy: IfNotPresent
-  # -- DocuHost image pull secrets
 # -- List of image repository pull secrets
 # Secrets must be manually created in the namespace.
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/

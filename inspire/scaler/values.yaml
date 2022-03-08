@@ -8,7 +8,7 @@ image:
   # -- Scaler image repository
   repository: inspire/scaler
   # -- Override tag specified by `appVersion` in the chart file
-  tag: 15.2.412.0-HF
+  tag: 15.3.411.0-FMAP
   # -- Scaler image pull policy
   pullPolicy: IfNotPresent
 # -- List of image repository pull secrets
@@ -33,7 +33,7 @@ db:
   # -- Scaler database port
   port: 5432
   # -- Scaler database name
-  name: 'scaler'
+  name: scaler
   # -- Scaler database user
   user: ''
   # -- Scaler database password
@@ -96,33 +96,33 @@ podAnnotations: {}
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
 podSecurityContext: {}
 # podSecurityContext:
-#   # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
+#   # ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
 #   runAsUser: 11000
-#   # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#volumes-and-file-systems.
+#   # ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#volumes-and-file-systems.
 #   fsGroup: 11000
-#   # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
+#   # ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
 #   runAsNonRoot: true
 # Configure security context
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
 securityContext: {}
 # securityContext:
-#   # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#volumes-and-file-systems.
+#   # ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#volumes-and-file-systems.
 #   readOnlyRootFilesystem: true
-#   # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privileged.
+#   # ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privileged.
 #   privileged: false
-#   # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privilege-escalation.
+#   # ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privilege-escalation.
 #   allowPrivilegeEscalation: false
-#   # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
+#   # ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
 #   runAsUser: 11000
-#   # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
+#   # ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
 #   runAsGroup: 11000
-#   # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#capabilities.
-#   # -- The default (recommended) configuration prohibits all Linux capabilities.
+#   # ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#capabilities.
+#   The default (recommended) configuration prohibits all Linux capabilities.
 #   capabilities:
 #     drop:
 #       - all
 # -- Node labels for pod assignment
-#ref: https://kubernetes.io/docs/user-guide/node-selection/
+# ref: https://kubernetes.io/docs/user-guide/node-selection/
 nodeSelector: {}
 # -- Tolerations for pod assignment
 # ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
@@ -252,7 +252,7 @@ ips:
     # -- IPS image repository
     repository: inspire/ips
     # -- Override tag specified by `appVersion` in the chart file
-    tag: 15.2.231.0-HF
+    tag: 15.3.413.0-FMAP
     # -- IPS image pull policy
     pullPolicy: IfNotPresent
   # -- Threads per IPS instance

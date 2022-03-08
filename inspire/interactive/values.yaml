@@ -8,7 +8,7 @@ image:
   # -- Interactive image repository
   repository: inspire/interactive
   # -- Override tag specified by `appVersion` in the chart file
-  tag: 15.2.208.0-HF
+  tag: 15.3.406.0-HF
   # -- Interactive image pull policy
   pullPolicy: IfNotPresent
 # -- List of image repository pull secrets
@@ -233,7 +233,7 @@ ips:
     # -- IPS image repository
     repository: inspire/ips
     # -- Override tag specified by `appVersion` in the chart file
-    tag: 15.2.231.0-HF
+    tag: 15.3.413.0-FMAP
     # -- IPS image pull policy
     pullPolicy: IfNotPresent
     # -- IPS image pull secrets

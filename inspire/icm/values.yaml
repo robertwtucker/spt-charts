@@ -8,7 +8,7 @@ image:
   # -- ICM image repository
   repository: inspire/icm
   # -- Override tag specified by `appVersion` in the chart file
-  tag: 15.2.231.0-HF-postgresql
+  tag: 15.3.413.0-FMAP-postgresql
   # -- ICM image pull policy
   pullPolicy: IfNotPresent
   # -- ICM image pull secrets
@@ -22,7 +22,7 @@ imagePullSecrets: []
 # Licensing configuration
 license:
   # -- Licensing mode
-  mode: 'CL'
+  mode: CL
   # -- Primary license server
   server: ''
   # -- Backup license server
@@ -30,18 +30,18 @@ license:
 # Database configuration
 db:
   # -- ICM database host
-  host: 'postgresql'
+  host: postgresql
   # -- ICM database port
-  port: '5432'
+  port: 5432
   # -- ICM database name
-  name: 'icm'
+  name: icm
   # -- ICM database user
   user: ''
   # -- ICM database password
   password: ''
   # -- ICM database type
   # Must be one of: `MicrosoftSQL` (default), `SQLAzure`, `MySQL`, `PostgreSQL`, `DB2`, `Oracle`
-  type: 'PostgreSQL'
+  type: PostgreSQL
   # -- Additional ICM database connection string parameters
   connStringAdd: ''
 # -- Additional parameters for the ICM command

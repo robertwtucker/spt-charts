@@ -1,6 +1,6 @@
 # Inspire ICM
 
-![Version: 0.2.1](https://img.shields.io/badge/Version-0.2.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 15.2](https://img.shields.io/badge/AppVersion-15.2-informational?style=flat-square)
+![Version: 0.2.2](https://img.shields.io/badge/Version-0.2.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 15.3](https://img.shields.io/badge/AppVersion-15.3-informational?style=flat-square)
 
 ## TL;DR
 
@@ -56,18 +56,18 @@ The command removes all the Kubernetes components associated with the chart and 
 | db.host | string | `"postgresql"` | ICM database host |
 | db.name | string | `"icm"` | ICM database name |
 | db.password | string | `""` | ICM database password |
-| db.port | string | `"5432"` | ICM database port |
+| db.port | int | `5432` | ICM database port |
 | db.type | string | `"PostgreSQL"` | ICM database type Must be one of: `MicrosoftSQL` (default), `SQLAzure`, `MySQL`, `PostgreSQL`, `DB2`, `Oracle` |
 | db.user | string | `""` | ICM database user |
 | fullnameOverride | string | `""` | Fully override the name used for chart objects |
 | image.pullPolicy | string | `"IfNotPresent"` | ICM image pull policy |
 | image.registry | string | `"registry.sptcloud.com"` | ICM image registry |
 | image.repository | string | `"inspire/icm"` | ICM image repository |
-| image.tag | string | `"15.2.231.0-HF-postgresql"` | Override tag specified by `appVersion` in the chart file |
+| image.tag | string | `"15.3.413.0-FMAP-postgresql"` | Override tag specified by `appVersion` in the chart file |
 | imagePullSecrets | list | `[]` | List of image repository pull secrets Secrets must be manually created in the namespace. ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/ Example: imagePullSecrets:   - name: myRegistryKeySecretName |
 | ingress.annotations | object | `{}` | Additional annotations for the Ingress resource. To enable certificate autogeneration, place cert-manager annotations here. For a full list of possible ingress annotations, please see ref: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/nginx-configuration/annotations.md Use this parameter to set the required annotations for cert-manager, see ref: https://cert-manager.io/docs/usage/ingress/#supported-annotations e.g: annotations:   kubernetes.io/ingress.class: nginx   cert-manager.io/cluster-issuer: cluster-issuer-name |
 | ingress.apiVersion | string | `""` | Force Ingress API version (automatically detected if not set) |
-| ingress.enabled | bool | `false` | Enable ingress record generation for Hello |
+| ingress.enabled | bool | `false` | Enable ingress record generation for ICM |
 | ingress.hostname | string | `"icm.local"` | Default host for the ingress record |
 | ingress.path | string | `"/"` | Default path for the ingress record NOTE: You may need to set this to '/*' in order to use this with ALB ingress controllers |
 | ingress.pathType | string | `"ImplementationSpecific"` | Ingress path type |
@@ -92,12 +92,12 @@ The command removes all the Kubernetes components associated with the chart and 
 | readinessProbe.periodSeconds | int | `10` | Period in seconds between readiness checks |
 | readinessProbe.successThreshold | int | `1` | Number of consecutive positive tests before counting it as a success |
 | readinessProbe.timeoutSeconds | int | `3` | Timeout in seconds for readiness checks |
-| replicaCount | int | `1` |  |
+| replicaCount | int | `1` | Number of ICM containers to deploy |
 | resources.limits | object | `{}` | Resource limits for the ICM container |
 | resources.requests | object | `{"cpu":"100m","memory":"1Gi"}` | Requested resources for the ICM container |
 | securityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["all"]},"privileged":false,"runAsUser":11000}` | Configure security context (main ICM container only) ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container |
 | securityContext.allowPrivilegeEscalation | bool | `false` | ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privilege-escalation. |
-| securityContext.capabilities | object | `{"drop":["all"]}` | ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#capabilities. -- The default (recommended) configuration prohibits all Linux capabilities. |
+| securityContext.capabilities | object | `{"drop":["all"]}` | The default (recommended) configuration prohibits all Linux capabilities. |
 | securityContext.privileged | bool | `false` | ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privileged. |
 | securityContext.runAsUser | int | `11000` | ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups. |
 | service.http | int | `8080` | HTTP(s) access port for ICM |
@@ -129,4 +129,4 @@ $ helm install my-release -f values.yaml inspire/icm
 > **Tip**: You can use the default `values.yaml` file and just delete the unchanged items.
 
 ----------------------------------------------
-Autogenerated from chart metadata using [helm-docs v1.5.0](https://github.com/norwoodj/helm-docs/releases/v1.5.0)
+Autogenerated from chart metadata using [helm-docs v1.7.0](https://github.com/norwoodj/helm-docs/releases/v1.7.0)

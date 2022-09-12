@@ -1,0 +1,31 @@
+{{- if .Values.ingress.enabled | and .Values.global.interactive.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "inspire.applicationName" . }}-interactive
+  annotations:
+    kubernetes.io/ingress.class: azure/application-gateway
+    appgw.ingress.kubernetes.io/backend-path-prefix: "/interactive/"
+    appgw.ingress.kubernetes.io/cookie-based-affinity: "true"
+    {{- if .Values.ingress.tls.enabled | and .Values.ingress.tls.clusterIssuer }}
+    cert-manager.io/cluster-issuer: {{ .Values.ingress.tls.clusterIssuer }}
+    {{- end }}
+spec:
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+  - hosts:
+    - {{ .Values.ingress.host }}
+    secretName: {{ .Values.ingress.tls.secretName | default (printf "tls-secret-%s" .Values.ingress.host) }}
+  {{- end }}
+  rules:
+  - host: {{ .Values.ingress.host }}
+    http:
+      paths:
+      - path: /interactive/*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: {{ include "inspire.applicationName" . }}-interactive
+            port:
+              number: {{ .Values.global.interactive.portOverride | default 30701 }}
+{{- end }}

@@ -1,0 +1,36 @@
+{{- if (and .Values.ingress .Values.ingress.enabled) -}}
+{{- if not .Values.externalAccess.enabled -}}
+{{- fail "External access `icm.externalAccess.enabled=true` must be configured in order to expose ICM" -}}
+{{- end -}}
+{{- if not .Values.ingress.tls.enabled -}}
+{{- fail "ICM must be exposed via HTTPS" -}}
+{{- end }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "inspire.applicationName" . }}-icm
+  annotations:
+    kubernetes.io/ingress.class: azure/application-gateway
+    appgw.ingress.kubernetes.io/backend-path-prefix: "/"
+    appgw.ingress.kubernetes.io/health-probe-status-codes: "200-399, 400, 404"
+    appgw.ingress.kubernetes.io/health-probe-path: "/health"
+    {{- if (.Values.ingress.tls.enabled) | and .Values.ingress.tls.clusterIssuer }}
+    cert-manager.io/cluster-issuer: {{ .Values.ingress.tls.clusterIssuer | quote }}
+    {{- end }}
+spec:
+  tls:
+  - hosts:
+    - {{ .Values.ingress.host }}
+    secretName: {{ .Values.ingress.tls.secretName | default (printf "tls-secret-%s" .Values.ingress.host) }}
+  rules:
+  - host: {{ .Values.ingress.host }}
+    http:
+      paths:
+      - path: /icm/*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: {{ include "inspire.applicationName" . }}-icm
+            port:
+              number: 8080
+{{- end }}

@@ -1,0 +1,11 @@
+{{ if .Values.configFileContent }}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ include "inspire.applicationName" . }}-icm-config
+  labels:
+        {{- include "inspire.labels" . | nindent 4 }}
+data:
+  InspireICM.config: |
+    {{- .Values.configFileContent | nindent 4 }}
+{{- end }}

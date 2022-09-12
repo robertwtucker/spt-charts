@@ -1,0 +1,22 @@
+{{- if .Values.global.interactive.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "inspire.applicationName" . }}-interactive
+  labels:
+    {{- include "inspire.labels" . | nindent 4 }}
+  annotations:
+    description: Service for Interactive
+{{- with .Values.service.annotations }}
+{{ tpl (toYaml .) $ | indent 4 }}
+{{- end }}
+spec:
+  ports:
+    - name: {{ include "inspire.applicationName" . }}-interactive-port
+      port: {{ .Values.global.interactive.portOverride | default 30701 }}
+      targetPort: 30701
+  selector:
+    app: {{ include "inspire.applicationName" . }}
+    role: interactive
+  type: {{ .Values.service.type }}
+{{- end }}

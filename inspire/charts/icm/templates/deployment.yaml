@@ -1,0 +1,220 @@
+{{- include "inspire.secret.check" (dict "value" .Values.global.icm.adminPassOverride "source" .Values.global.icm.adminPassOverrideSource) }}
+{{- include "inspire.secret.check" (dict "value" .Values.global.license.server "source" .Values.global.license.serverSource) }}
+{{- include "inspire.secret.check" (dict "value" .Values.global.license.server2 "source" .Values.global.license.server2Source) }}
+{{- include "inspire.secret.check" (dict "value" .Values.db.pass "source" .Values.db.passSource) }}
+{{- include "inspire.secret.check" (dict "value" .Values.db.user "source" .Values.db.userSource) }}
+{{- include "inspire.secret.check" (dict "value" .Values.db.connectionString "source" .Values.db.connectionStringSource) }}
+{{- include "inspire.secret.check" (dict "value" .Values.global.sen.passOverride "source" .Values.global.sen.passOverrideSource) }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "inspire.applicationName" . }}-icm
+  labels:
+    {{- include "inspire.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "inspire.labels" . | nindent 6 }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: "50%"
+      maxUnavailable: "50%"
+  template:
+    metadata:
+    {{- with .Values.deployment.annotations }}
+      annotations:
+      {{- range $key, $value := . }}
+        {{ $key }}: {{ $value }}
+      {{- end }}
+    {{- end }}
+      labels:
+        {{- include "inspire.labels" . | nindent 8 }}
+      name: {{ include "inspire.applicationName" . }}-icm-template
+    spec:
+      {{- if or .Values.useInitImport .Values.activateVolumes.enabled }}
+      initContainers:
+      {{- if .Values.activateVolumes.enabled }}
+      - name: {{ include "inspire.applicationName" . }}-icm-volume-activation
+        image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command:
+          - sh
+          - -c
+          - ls -la /mnt/secrets/
+        securityContext:
+        {{- toYaml .Values.securityContext | nindent 10 }}
+        {{- with .Values.activateVolumes.volumes }}
+        volumeMounts:
+          {{- range $index, $value := . }}
+          - name: {{ required "A volume name is required" $value.name }}
+            mountPath: {{ printf "/mnt/secrets/%s" $value.name }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+      {{- if .Values.useInitImport }}
+      - name: {{ include "inspire.applicationName" . }}-icm-import
+        image: "{{ .Values.initImport.image.name }}:{{ .Values.initImport.image.tag }}"
+        imagePullPolicy: {{ .Values.initImport.image.pullPolicy }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+        volumeMounts:
+        - name: icm-import-package
+          mountPath: /opt/import/
+      {{- end }}
+      {{- end }}
+      {{- if .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range .Values.global.imagePullSecrets }}
+      - name: {{ . }}
+      {{- end }}
+      {{- end }}
+{{- if .Values.existingServiceAccount }}
+      serviceAccountName: {{ .Values.existingServiceAccount }}
+{{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    {{- include "inspire.labels" . | nindent 20 }}
+                topologyKey: "kubernetes.io/hostname"
+      containers:
+        - name: {{ include "inspire.applicationName" . }}-icm
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            {{- if .Values.global.scaler.enabled }}
+            {{- $scalerPassDefinition := dict "value" .Values.global.scaler.passOverride "source" .Values.global.scaler.passOverrideSource "secretKey" "pass" "mountPath" "/opt/Quadient/secrets/scaler" "envFileName" "SCALER_PASS_FILE" -}}
+            {{- include "inspire.secret.asFilePointer" $scalerPassDefinition | nindent 12 }}
+            {{- end }}
+            {{- if .Values.global.sen.enabled }}
+            {{- if .Values.global.sen.passOverrideSource.useSecret }}
+            - name: SEN_PASS_FILE
+              value: {{ printf "/opt/Quadient/secrets/sen/%s" (required "SecretKey is mandatory" .Values.global.sen.passOverrideSource.secretKey) }}
+            {{- else }}
+            - name: SEN_PASS_FILE
+              value: "/opt/Quadient/secrets/sen/pass"
+            {{- end }}
+            {{- end }}
+            {{- $adminPassDefinition := dict "value" .Values.global.icm.adminPassOverride "source" .Values.global.icm.adminPassOverrideSource "secretKey" "pass" "mountPath" "/opt/Quadient/secrets/admin" "envFileName" "ADMIN_PASS_FILE" -}}
+            {{- include "inspire.secret.asFilePointer" $adminPassDefinition | nindent 12 }}
+            {{- include "inspire.env.license" . | nindent 12 }}
+            {{- include "icm.env.database" . | nindent 12 }}
+            - name: CX_ICMINITIALDATA
+              value: {{ include "icm.initialdata" . | quote }}
+            {{- if .Values.externalAccess.enabled }}
+            - name: ADD_PARAMS
+              value: "-enablehttpconnections -waitingtime 15 {{ .Values.addParams }}"
+            {{- else }}
+            - name: ADD_PARAMS
+              value: "-waitingtime 15 {{ .Values.addParams }}"
+            {{- end }}
+          ports:
+            - containerPort: 30353
+              protocol: TCP
+            {{- if .Values.externalAccess.enabled }}
+            - containerPort: 8080
+              protocol: TCP
+            {{- end }}
+          livenessProbe:
+            exec:
+              command:
+                - "/bin/ps"
+                - "-p"
+                - "1"
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+            successThreshold: {{ .Values.livenessProbe.successThreshold }}
+          readinessProbe:
+            tcpSocket:
+              port: 30353
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+            successThreshold: {{ .Values.readinessProbe.successThreshold }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            {{- if .Values.useInitImport }}
+            - name: icm-import-package
+              mountPath: /opt/import
+            {{- end }}
+            - name: data
+              mountPath: /opt/Quadient/Inspire-Designer-data/icm
+            - name: tmp
+              mountPath: /tmp
+            - name: chimenix
+              mountPath: /etc/Chimenix
+            - name: home
+              mountPath: /home/quadient/.quadient
+            {{- if .Values.global.scaler.enabled }}
+            {{- include "inspire.secret.asMount" (dict "value" .Values.global.scaler.passOverride "source" .Values.global.scaler.passOverrideSource "secretName" "scaler-icm" "secretKey" "pass" "mountPath" "/opt/Quadient/secrets/scaler" "mountSecret" true ) | nindent 12 }}
+            {{- end }}
+            {{- if .Values.global.sen.enabled }}
+            {{- if .Values.global.sen.passOverrideSource.useSecret }}
+            - name: {{ required "SecretName is mandatory" .Values.global.sen.passOverrideSource.secretName }}
+              mountPath: /opt/Quadient/secrets/sen/{{ required "SecretKey is mandatory" .Values.global.sen.passOverrideSource.secretKey }}
+              subPath: {{ required "SecretKey is mandatory" .Values.global.sen.passOverrideSource.secretKey }}
+            {{- else }}
+            - name: scaler-sen-icm
+              mountPath: /opt/Quadient/secrets/sen
+            {{- end }}
+            {{- end }}
+            {{- include "inspire.secret.asMount" (dict "value" .Values.global.icm.adminPassOverride "source" .Values.global.icm.adminPassOverrideSource "secretName" "admin" "secretKey" "pass" "mountPath" "/opt/Quadient/secrets/admin" "mountSecret" true ) | nindent 12 }}
+            {{ if .Values.configFileContent }}
+            - name: icm-config-volume
+              mountPath: /opt/Quadient/Designer/InspireICM.config
+              subPath: InspireICM.config
+            {{- end }}
+            {{- if .Values.db.connectionString | or (eq (include "inspire.secret.isDelegated" .Values.db.connectionStringSource) "true") }}
+            {{- include "inspire.secret.asMount" (dict "value" .Values.db.connectionString "source" .Values.db.connectionStringSource "secretName" "icm-connectstring" "secretKey" "dbConnectionString" "mountPath" "/opt/Quadient/secret" "mountSecret" true ) | nindent 12 }}
+            {{- end }}
+          terminationMessagePath: /dev/termination-log
+      restartPolicy: Always
+      dnsPolicy: ClusterFirst
+      terminationGracePeriodSeconds: {{ .Values.shutdownTimeout }}
+      volumes:
+{{- $volumeCandidates := list }}
+{{- $applicationName := (include "inspire.applicationName" .) }}
+{{- $volumeCandidates = append $volumeCandidates (dict "value" .Values.global.icm.adminPassOverride "source" .Values.global.icm.adminPassOverrideSource "volumeName" "admin" "secretName" (printf "%s-icm" $applicationName) )}}
+{{- if .Values.db.connectionString | or (eq (include "inspire.secret.isDelegated" .Values.db.connectionStringSource) "true") }}
+{{- $volumeCandidates = append $volumeCandidates (dict "value" .Values.db.connectionString "source" .Values.db.connectionStringSource "volumeName" "icm-connectstring" "secretName" (printf "%s-icm-database" $applicationName) )}}
+{{- end }}
+{{- if .Values.global.scaler.enabled }}
+  {{ $volumeCandidates = append $volumeCandidates (dict "value" .Values.global.scaler.passOverride "source" .Values.global.scaler.passOverrideSource "volumeName" "scaler-icm" "secretName" (printf "%s-scaler-icm" $applicationName) )}}
+{{- end -}}
+{{- if .Values.global.sen.enabled }}
+  {{ $volumeCandidates = append $volumeCandidates (dict "value" .Values.global.sen.passOverride "source" .Values.global.sen.passOverrideSource "volumeName" "scaler-sen-icm" "secretName" (printf "%s-scaler-sen" $applicationName) )}}
+{{- end -}}
+{{- include "inspire.secret.uniqueVolumes" $volumeCandidates | nindent 8 }}
+{{- with .Values.volumes }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
+        {{- if .Values.useInitImport }}
+        - name: icm-import-package
+          emptyDir: {}
+        {{- end }}
+        - name: data
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+        - name: chimenix
+          emptyDir: {}
+        - name: home
+          emptyDir: {}
+        {{ if .Values.configFileContent }}
+        - name: icm-config-volume
+          configMap:
+            name: {{ include "inspire.applicationName" . }}-icm-config
+        {{- end }}

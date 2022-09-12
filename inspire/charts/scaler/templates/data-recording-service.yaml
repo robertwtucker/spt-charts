@@ -1,0 +1,19 @@
+{{- if .Values.global.dataRecording.prepareEnvironment }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "inspire.applicationName" . }}-datarecording
+  labels:
+    app: {{ include "inspire.applicationName" . }}
+    role: datarecording
+spec:
+  ports:
+    - name: {{ include "inspire.applicationName" . }}-datarecording-port
+      port: 30800
+      targetPort: 30800
+  selector:
+    app: {{ include "inspire.applicationName" . }}
+    role: scaler
+  type: ClusterIP
+  sessionAffinity: None
+{{- end }}

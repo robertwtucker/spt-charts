@@ -201,6 +201,10 @@ spec:
           mountPath: "/opt/QuadientInteractive/stores/filestore/workingDirectory"
         - name: interactive-temp
           mountPath: "/opt/QuadientInteractive/temp"
+        {{- if and .Values.demoModeFiles (not .Values.productionEnvironment) }}
+        - name: interactive-demo-mode-files
+          mountPath: /opt/QuadientInteractive/config/demo-mode
+        {{- end }}
       - name: {{ include "inspire.applicationName" . }}-interactive-ips
         image: "{{ .Values.image.ips.name }}:{{ .Values.image.ips.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
@@ -271,6 +275,12 @@ spec:
           emptyDir: {}
         - name: interactive-temp
           emptyDir: {}
+        {{- if and .Values.demoModeFiles (not .Values.productionEnvironment) }}
+        - name: interactive-demo-mode-files
+          persistentVolumeClaim:
+            claimName: {{ .Values.demoModeFiles }}
+            readOnly: true
+        {{- end }}
         - name: ips-config-volume
           configMap:
             name: {{ include "inspire.applicationName" . }}-interactive-ips-config

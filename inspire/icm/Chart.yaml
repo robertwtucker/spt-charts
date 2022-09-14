@@ -1,6 +1,0 @@
-apiVersion: v2
-appVersion: '15.3'
-name: icm
-description: Chart for Inspire Content Manager (ICM), an application that manages workflows, native files and resources by saving their version history to a database.
-type: application
-version: 0.2.2

@@ -169,7 +169,7 @@ spec:
 {{- include "inspire.secret.checkUniqueSource" (dict "secrets" .Values.customEncryption.keys "sourceField" "keySource") }}
 {{- $firstEncryptionKey := (first .Values.customEncryption.keys) }}
          {{- $applicationName := include "inspire.applicationName" . -}}
-         {{- $secretKey := quote (required "The 'id' field must be defined in order to use custom encryption" $firstEncryptionKey.id) }}
+         {{- $secretKey := required "The 'id' field must be defined in order to use custom encryption" $firstEncryptionKey.id }}
          {{- $keyDefinition := dict "value" $firstEncryptionKey.key "source" $firstEncryptionKey.keySource "secretName" (printf "%s-interactive-custom-encryption-keys" $applicationName) "secretKey" $secretKey "envName" "SECRET_KEY_FILE_CONTENT" "envOnly" true -}}
          {{- if $firstEncryptionKey.keySource }}
            {{- include "inspire.secret.check" $keyDefinition }}

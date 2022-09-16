@@ -30,6 +30,9 @@
           },
           "allowImpersonate": {
             "rightStatus": "allow"
+          },
+          "serverExportImport": {
+            "rightStatus": "allow"
           }
         }
       }

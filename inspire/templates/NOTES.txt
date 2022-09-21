@@ -1,0 +1,58 @@
+Thank you for installing {{ .Chart.Name }}.
+Your release is called '{{ .Release.Name }}'.
+
+** Wait for the chart to be deployed. **
+
+Your deployed applications can be accessed on the following DNS names from within your cluster
+  ICM: {{ include "inspire.applicationName" . }}-icm.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.global.icm.portOverride | default 30353 }}
+{{- if .Values.global.interactive.enabled }}
+  Interactive: {{ include "inspire.applicationName" . }}-interactive.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.global.interactive.portOverride | default 30701 }}
+{{- end }}
+{{- if .Values.global.scaler.enabled }}
+  Scaler: {{ include "inspire.applicationName" . }}-scaler.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.global.scaler.portOverride | default 30600 }}
+{{- end }}
+
+** Secrets **
+To get the authentication details, execute the following commands:
+{{- if eq (include "inspire.secret.isDelegated" .Values.global.icm.adminPassOverrideSource) "false" }}
+  export ADMIN_PASSWORD=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "inspire.applicationName" . }}-icm -o jsonpath="{.data.pass}" | base64 --decode)
+{{- else }}
+  The admin password is managed externally.
+{{- end }}
+{{- if .Values.global.interactive.enabled }}
+  export INTERACTIVE_USER={{ .Values.global.interactive.userOverride | default "system" | quote }}
+  {{- if eq (include "inspire.secret.isDelegated" .Values.global.interactive.passOverrideSource) "false" }}
+  export INTERACTIVE_PASSWORD=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "inspire.applicationName" . }}-interactive-icm -o jsonpath="{.data.pass}" | base64 --decode)
+  {{- else }}
+  The Interactive password is managed externally.
+  {{- end }}
+{{- end }}
+{{- if .Values.global.scaler.enabled }}
+  export SCALER_USER={{ .Values.global.scaler.userOverride | default "scaler" | quote }}
+  {{- if eq (include "inspire.secret.isDelegated" .Values.global.interactive.passOverrideSource) "false" }}
+  export SCALER_PASSWORD=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "inspire.applicationName" . }}-scaler-icm -o jsonpath="{.data.pass}" | base64 --decode)
+  {{- else }}
+  Scaler password is managed externally.
+  {{- end }}
+{{- end }}
+
+
+{{- if .Values.global.scaler.enabled | and .Values.global.interactive.enabled | and .Release.IsInstall }}
+** Configuration **
+The job with the name '{{ include "inspire.applicationName" . }}-scaler-import' has been asynchronously launched to import the initial configuration into Scaler.
+Monitor this pod until the import job is completed. You can delete the pod afterwards.
+  $ kubectl logs job/{{ include "inspire.applicationName" . }}-scaler-import
+  $ kubectl wait --for=condition=complete job/{{ include "inspire.applicationName" . }}-scaler-import
+  $ kubectl delete job/{{ include "inspire.applicationName" . }}-scaler-import
+{{- end }}
+
+
+** Port Forwarding **
+To connect to your applications execute the following commands:
+  $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "inspire.applicationName" . }}-icm {{ .Values.global.icm.portOverride | default 30353 }}:{{ .Values.global.icm.portOverride | default 30353 }}
+{{- if .Values.global.interactive.enabled }}
+  $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "inspire.applicationName" . }}-interactive {{ .Values.global.interactive.portOverride | default 30701 }}:{{ .Values.global.interactive.portOverride | default 30701 }}
+{{- end }}
+{{- if .Values.global.scaler.enabled }}
+  $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "inspire.applicationName" . }}-scaler {{ .Values.global.scaler.portOverride | default 30600 }}:{{ .Values.global.scaler.portOverride | default 30600 }}
+{{- end }}

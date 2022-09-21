@@ -1,0 +1,11 @@
+{{- if .Values.global.scaler.enabled }}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ include "inspire.applicationName" . }}-scaler-ips-config
+  labels:
+    {{- include "inspire.labels" . | nindent 4 }}
+data:
+  InspireProductionServer.config: |
+    {{- .Values.ips.configFileContent | nindent 4 }}
+{{- end }}

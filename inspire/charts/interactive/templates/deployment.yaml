@@ -1,0 +1,300 @@
+{{- if .Values.global.interactive.enabled }}
+{{- include "inspire.secret.check" (dict "value" .Values.global.interactive.passOverride "source" .Values.global.interactive.passOverrideSource) }}
+{{- include "inspire.secret.check" (dict "value" .Values.fulltext.username "source" .Values.fulltext.usernameSource) }}
+{{- include "inspire.secret.check" (dict "value" .Values.fulltext.password "source" .Values.fulltext.passwordSource) }}
+{{- include "inspire.secret.check" (dict "value" .Values.db.pass "source" .Values.db.passSource) }}
+{{- include "inspire.secret.check" (dict "value" .Values.db.user "source" .Values.db.userSource) }}
+{{ include "inspire.secret.check" (dict "value" .Values.db.connectionString "source" .Values.db.connectionStringSource) }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "inspire.applicationName" . }}-interactive
+  labels:
+    {{- include "inspire.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "inspire.applicationName" . }}
+      role: {{ .Values.role }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      {{- with .Values.deployment.annotations }}
+      annotations:
+        {{- range $key, $value := . }}
+        {{ $key }}: {{ $value }}
+      {{- end }}
+      {{- end }}
+      labels:
+        {{- include "inspire.labels" . | nindent 8 }}
+      name: {{ include "inspire.applicationName" . }}-interactive-template
+    spec:
+      {{- if .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range .Values.global.imagePullSecrets }}
+      - name: {{ . }}
+      {{- end }}
+      {{- end }}
+{{- if .Values.existingServiceAccount }}
+      serviceAccountName: {{ .Values.existingServiceAccount }}
+{{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                {{- include "inspire.labels" . | nindent 20 }}
+                topologyKey: "kubernetes.io/hostname"
+      initContainers:
+      {{- if .Values.activateVolumes.enabled }}
+      - name: {{ include "inspire.applicationName" . }}-interactive-volume-activation
+        image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command:
+          - sh
+          - -c
+          - ls -la /mnt/secrets/
+        securityContext:
+        {{- toYaml .Values.securityContext | nindent 10 }}
+        {{- with .Values.activateVolumes.volumes }}
+        volumeMounts:
+          {{- range $index, $value := . }}
+          - name: {{ required "A volume name is required" $value.name }}
+            mountPath: {{ printf "/mnt/secrets/%s" $value.name }}
+      {{- end }}
+      {{- end }}
+      {{- end }}
+      {{- if .Values.useInitImport }}
+      - name: {{ include "inspire.applicationName" . }}-interactive-icm-import
+        image: "{{ .Values.initImport.image.name }}:{{ .Values.initImport.image.tag }}"
+        imagePullPolicy: {{ .Values.initImport.image.pullPolicy }}
+        volumeMounts:
+        - name: workdir
+          mountPath: /opt/import/
+      {{- end }}
+      - name: {{ include "inspire.applicationName" . }}-interactive-icm-wait
+        image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
+        command: ["sh", "-c", "if $(wget -O- --spider --retry-connrefused --waitretry=2 --timeout=4 --connect-timeout=4 --tries=150 $URL); then echo 'ICM is available' && exit 0; else echo 'ICM is not available' && exit 1; fi"]
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+        env:
+          {{- include "interactive.env.icm" . | nindent 10 }}
+          - name: URL
+            value: $(ICM_HOST):$(ICM_PORT)
+      - name: {{ include "inspire.applicationName" . }}-interactive-init
+        image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+        env:
+        {{- include "inspire.env.license" . | nindent 8 }}
+        {{- include "interactive.env.icm" . | nindent 8 }}
+        {{- include "interactive.env.database" . | nindent 8 }}
+        {{- if .Values.fulltext.enabled }}
+        {{- include "interactive.env.elasticsearch" . | nindent 8 }}
+        {{- end }}
+        - name: TYPE
+          value: "setup"
+        - name: ICM_HOST_SECOND
+          value: "localhost"
+        - name: ICM_PORT_SECOND
+          value: "0"
+        - name: IPS_PORT
+          value: "30354"
+        - name: IPS_HOST
+          value: "localhost"
+        - name: ICM_ROOT
+          value: {{ .Values.icmRoot | quote }}
+        - name: GROO_ICM_USER
+          value: "admin"
+          {{- $applicationName := include "inspire.applicationName" . -}}
+          {{- $adminPassDefinition := dict "value" .Values.global.icm.adminPassOverride "source" .Values.global.icm.adminPassOverrideSource "secretName" (printf "%s-icm" $applicationName) "secretKey" "pass" "envName" "GROO_ICM_PASS" "allowEmpty" true "envOnly" true -}}
+          {{- include "inspire.secret.asEnv" $adminPassDefinition | nindent 8 }}
+        {{- if .Values.global.scaler.enabled }}
+          {{- $scalerPassDefinition := dict "value" .Values.global.scaler.passOverride "source" .Values.global.scaler.passOverrideSource "secretName" (printf "%s-scaler-icm" $applicationName) "secretKey" "pass" "envName" "SCALER_PASS" "allowEmpty" true "envOnly" true -}}
+          {{- include "inspire.secret.asEnv" $scalerPassDefinition | nindent 8  }}
+        - name: SCALER_USER
+          value: {{ .Values.global.scaler.userOverride | default "scaler" | quote }}
+        {{- end }}
+        - name: JSON_FILE
+          value: {{ include "interactive.env.config" . | quote }}
+        volumeMounts:
+        - name: workdir
+          mountPath: "/opt/QuadientInteractive/stores/filestore/workingDirectory"
+      containers:
+      - name: {{ include "inspire.applicationName" . }}-interactive
+        image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+        env:
+          {{- include "inspire.env.license" . | nindent 10 }}
+          {{- include "interactive.env.icm" . | nindent 10 }}
+          - name: TYPE
+            value: "run"
+          - name: ICM_HOST_SECOND
+            value: "localhost"
+          - name: ICM_PORT_SECOND
+            value: "0"
+          - name: IPS_PORT
+            value: "30354"
+          - name: IPS_HOST
+            value: "localhost"
+          - name: ICM_ROOT
+            value: {{ .Values.icmRoot | quote }}
+          - name: GROO_ICM_USER
+            value: "admin"
+          {{- include "inspire.secret.asEnv" $adminPassDefinition | nindent 10 }}
+          - name: JDK_JAVA_OPTIONS
+            value: {{ .Values.addJvmArguments | quote }}
+          - name: PRODUCTION_ENVIRONMENT
+            value: {{ .Values.productionEnvironment | quote }}
+          - name: COOKIE_HTTP_ONLY_SECURE
+            value: {{ .Values.cookieHttpOnlySecure | quote }}
+          - name: COOKIE_PROCESSOR
+            value: {{ .Values.cookieProcessor | quote }}
+{{- if .Values.customEncryption.enabled }}
+{{- if not .Values.customEncryption.keys }}
+{{- fail "Custom encryption keys are not defined"}}
+{{- end }}
+{{- if not (eq (len .Values.customEncryption.keys) 1) }}
+{{- fail "Exactly one custom encryption key must be defined in order to use custom encryption feature"}}
+{{- end }}
+{{- include "inspire.secret.checkUniqueSource" (dict "secrets" .Values.customEncryption.keys "sourceField" "keySource") }}
+{{- $firstEncryptionKey := (first .Values.customEncryption.keys) }}
+         {{- $applicationName := include "inspire.applicationName" . -}}
+         {{- $secretKey := required "The 'id' field must be defined in order to use custom encryption" $firstEncryptionKey.id }}
+         {{- $keyDefinition := dict "value" $firstEncryptionKey.key "source" $firstEncryptionKey.keySource "secretName" (printf "%s-interactive-custom-encryption-keys" $applicationName) "secretKey" $secretKey "envName" "SECRET_KEY_FILE_CONTENT" "envOnly" true -}}
+         {{- if $firstEncryptionKey.keySource }}
+           {{- include "inspire.secret.check" $keyDefinition }}
+         {{- end }}
+         {{- include "inspire.secret.asEnv" $keyDefinition | nindent 10 }}
+{{- end }}
+        livenessProbe:
+          failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+          tcpSocket:
+            port: 30701
+          initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+          successThreshold: {{ .Values.livenessProbe.successThreshold }}
+          timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+        readinessProbe:
+          failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+          httpGet:
+            path: /interactive/api/system/v1/server/health
+            port: 30701
+            scheme: HTTP
+          initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+          successThreshold: {{ .Values.readinessProbe.successThreshold }}
+          timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+        volumeMounts:
+        - name: workdir
+          mountPath: "/opt/QuadientInteractive/stores/filestore/workingDirectory"
+        - name: interactive-temp
+          mountPath: "/opt/QuadientInteractive/temp"
+        {{- if and .Values.demoModeFiles (not .Values.productionEnvironment) }}
+        - name: interactive-demo-mode-files
+          mountPath: /opt/QuadientInteractive/config/demo-mode
+        {{- end }}
+        {{- if .Values.configurationXml}}
+        - name: interactive-configuration-xml
+          mountPath: /opt/QuadientInteractive/config/configuration.xml
+          subPath: configuration.xml
+        {{- end }}
+      - name: {{ include "inspire.applicationName" . }}-interactive-ips
+        image: "{{ .Values.image.ips.name }}:{{ .Values.image.ips.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+          {{- include "inspire.env.license" . | nindent 8 }}
+          {{- include "inspire.secret.asFilePointer" (dict "value" .Values.global.interactive.passOverride "source" .Values.global.interactive.passOverrideSource "envName" "INTERACTIVE_PASS" "envFileName" "INTERACTIVE_PASS_FILE" "mountPath" "/opt/Quadient/secrets/interactive" "secretKey" "pass") | nindent 8 }}
+        - name: CX_PARAMS
+          value: {{ printf "-icmaddress %s -icmuser %s -icmpasswordpath %s" (include "inspire.env.icm.host" .) (include "inspire.interactive.env.icm.user" .) "$(INTERACTIVE_PASS_FILE)" }}
+        - name: THREAD_COUNT
+          value: {{ .Values.ips.threadCount | quote}}
+        - name: ADD_PARAMS
+          value: "-waitingtime 15 {{ .Values.ips.addParams }}"
+        ports:
+        - containerPort: 30354
+          protocol: TCP
+        livenessProbe:
+          tcpSocket:
+            port: 30354
+          initialDelaySeconds: {{ .Values.ips.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.ips.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.ips.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.ips.livenessProbe.failureThreshold }}
+          successThreshold: {{ .Values.ips.livenessProbe.successThreshold }}
+        readinessProbe:
+          exec:
+            command:
+            - "/opt/Quadient/Designer/InspirePSCLI"
+            - "-api"
+            - "ping"
+          initialDelaySeconds: {{ .Values.ips.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.ips.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.ips.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.ips.readinessProbe.failureThreshold }}
+          successThreshold: {{ .Values.ips.readinessProbe.successThreshold }}
+        resources:
+          {{- toYaml .Values.ips.resources | nindent 10 }}
+        volumeMounts:
+        - name: workdir
+          mountPath: "/opt/QuadientInteractive/stores/filestore/workingDirectory"
+        - name: interactive-temp
+          mountPath: "/opt/QuadientInteractive/temp"
+        - name: ips-icm-cache
+          mountPath: "/opt/Quadient/Inspire-Designer-data/ips-icmcache"
+        - name: ips-config-volume
+          mountPath: /opt/Quadient/Designer/InspireProductionServer.config
+          subPath: InspireProductionServer.config
+        {{- include "inspire.secret.asMount" (dict "value" .Values.global.interactive.passOverride "source" .Values.global.interactive.passOverrideSource "secretName" "icm-interactive-password" "secretKey" "pass" "mountPath" "/opt/Quadient/secrets/interactive" "mountSecret" true ) | nindent 8 }}
+        terminationMessagePath: /dev/termination-log
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+        lifecycle:
+          preStop:
+            exec:
+              command: [ "/bin/sh", "-c", "while curl --insecure localhost:30701/interactive > /dev/null 2>&1 ; do sleep 3; done" ]
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      terminationGracePeriodSeconds: {{ .Values.shutdownTimeout }}
+      volumes:
+{{- $volumeCandidates := list }}
+{{- $volumeCandidates = append $volumeCandidates (dict "value" .Values.global.interactive.passOverride "source" .Values.global.interactive.passOverrideSource "volumeName" "icm-interactive-password" "secretName" (printf "%s-interactive-icm" $applicationName) )}}
+{{- include "inspire.secret.uniqueVolumes" $volumeCandidates | nindent 8 }}
+{{- with .Values.volumes }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
+        - name: workdir
+          emptyDir: {}
+        - name: ips-icm-cache
+          emptyDir: {}
+        - name: interactive-temp
+          emptyDir: {}
+        {{- if and .Values.demoModeFiles (not .Values.productionEnvironment) }}
+        - name: interactive-demo-mode-files
+          persistentVolumeClaim:
+            claimName: {{ .Values.demoModeFiles }}
+            readOnly: true
+        {{- end }}
+        {{- if .Values.configurationXml }}
+        - name: interactive-configuration-xml
+          configMap:
+            name: {{ include "inspire.applicationName" . }}-interactive-configuration-xml
+            items:
+              - key: configuration.xml
+                path: configuration.xml
+        {{- end }}
+        - name: ips-config-volume
+          configMap:
+            name: {{ include "inspire.applicationName" . }}-interactive-ips-config
+{{- end }}

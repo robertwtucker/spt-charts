@@ -1,0 +1,15 @@
+{{- if .Values.global.scaler.enabled | and (.Values.sharedStorage.existingClaim | not) | and (eq "cluster" (.Values.installationType | trim | lower )) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "inspire.applicationName" . }}-scaler-shared-storage
+spec:
+{{- if not .Values.sharedStorage.disableStorageClass }}
+  storageClassName: {{ .Values.sharedStorage.storageClass }}
+{{- end }}
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: {{ .Values.sharedStorage.size }}
+{{- end }}

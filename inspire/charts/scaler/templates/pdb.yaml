@@ -1,0 +1,11 @@
+{{- if .Values.global.scaler.enabled | and (eq "cluster" (.Values.installationType | trim | lower )) }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "inspire.applicationName" . }}-scaler
+spec:
+  minAvailable: 50%
+  selector:
+    matchLabels:
+      {{- include "inspire.labels" . | nindent 6 }}
+{{- end }}

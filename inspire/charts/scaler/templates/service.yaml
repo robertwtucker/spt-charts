@@ -1,0 +1,23 @@
+{{- if .Values.global.scaler.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "inspire.applicationName" . }}-scaler
+  labels:
+    {{- include "inspire.labels" . | nindent 4 }}
+  annotations:
+    description: Service for Scaler
+{{- with .Values.service.annotations }}
+{{ tpl (toYaml .) $ | indent 4 }}
+{{- end }}
+spec:
+  ports:
+    - name: {{ include "inspire.applicationName" . }}-scaler-port
+      port: {{ .Values.global.scaler.portOverride | default 30600 }}
+      targetPort: 30600
+  selector:
+    app: {{ include "inspire.applicationName" . }}
+    role: scaler
+  type: {{ .Values.service.type }}
+  sessionAffinity: None
+{{- end }}

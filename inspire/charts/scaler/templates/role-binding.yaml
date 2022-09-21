@@ -1,0 +1,17 @@
+{{- if eq "cluster" (.Values.installationType | trim | lower ) }}
+{{- if .Values.autoscaling.enabled | or .Values.statefulScaling.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "inspire.applicationName" . }}-scaler-deployment-reader
+  namespace: {{ .Release.Namespace }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ .Values.existingServiceAccount | default (printf "%s-scaler" (include "inspire.applicationName" .)) }}
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: Role
+  name: {{ include "inspire.applicationName" . }}-scaler-deployment-reader
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}
+{{- end }}

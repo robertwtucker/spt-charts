@@ -1,0 +1,55 @@
+{{- if .Values.global.scaler.enabled | and .Values.global.interactive.enabled | and .Release.IsInstall }}
+{{- $applicationName := include "inspire.applicationName" . -}}
+{{- $interactivePassDefinition := dict "value" .Values.global.interactive.passOverride "source" .Values.global.interactive.passOverrideSource "secretName" (printf "%s-interactive-icm" $applicationName) "secretKey" "pass" "envName" "INTERACTIVE_PASS" "envOnly" true "allowEmpty" true -}}
+{{- $scalerPassDefinition := dict "value" .Values.global.scaler.passOverride "source" .Values.global.scaler.passOverrideSource "secretName" (printf "%s-scaler-icm" $applicationName) "secretKey" "pass" "envName" "SCALER_PASS" "envOnly" true "allowEmpty" true -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "inspire.applicationName" . }}-scaler-import
+  labels:
+    app: {{ include "inspire.applicationName" . }}
+    role: {{ .Values.role }}-import
+  annotations:
+    "helm.sh/resource-policy": keep
+spec:
+  template:
+    metadata:
+      name: {{ include "inspire.applicationName" . }}-scaler-import
+      labels:
+        app: {{ include "inspire.applicationName" . }}
+        role: {{ .Values.role }}-import
+    spec:
+      restartPolicy: OnFailure
+      {{- if .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range .Values.global.imagePullSecrets }}
+      - name: {{ . }}
+      {{- end }}
+      {{- end }}
+      containers:
+      - name: {{ include "inspire.applicationName" . }}-scaler-import
+        image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+        command: ['sh', '-c', 'echo Scaler url is $SCALER_URL; for i in {1..200}; do sleep 2; if $(curl --output /dev/null --silent --max-time 2 --head --fail $SCALER_URL/rest/web/system-healthy/non-restrictive); then curl -X POST -H "Authorization: Basic $(echo -n $SCALER_USER:$SCALER_PASS | base64)" $SCALER_URL/api/integration/v2/configurations --data "$IMPORT_REQUEST" && exit 0 || exit 1; else echo Scaler is not available yet ${i}/200; fi; done; echo Scaler Service timed-out && exit 1']
+        env:
+        - name: INTERACTIVE_PORT
+          value: {{ .Values.global.interactive.portOverride | default 30701 | quote }}
+        - name: INTERACTIVE_HOST
+          value: {{ include "inspire.applicationName" . }}-interactive.{{ .Release.Namespace }}.svc.cluster.local
+        - name: INTERACTIVE_USER
+          value: {{ .Values.global.interactive.userOverride | default "system" | quote }}
+          {{- include "inspire.secret.asEnv" ($interactivePassDefinition) | nindent 8 }}
+        - name: SCALER_HOST
+          value: {{ include "inspire.applicationName" . }}-scaler
+        - name: SCALER_PORT
+          value: {{ .Values.global.scaler.portOverride | default 30600 | quote }}
+        - name: SCALER_URL
+          value: http://$(SCALER_HOST):$(SCALER_PORT)
+        - name: SCALER_USER
+          value: {{ .Values.global.scaler.userOverride | default "scaler" | quote }}
+        {{- include "inspire.secret.asEnv" ($scalerPassDefinition) | nindent 8 }}
+        - name: IMPORT_REQUEST
+          value: {{ include "scaler.config" . | quote }}
+{{- end }}

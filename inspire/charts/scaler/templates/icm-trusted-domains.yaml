@@ -1,0 +1,13 @@
+{{- if .Values.global.scaler.enabled }}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ include "inspire.applicationName" . }}-scaler-icm-trusted-domains
+  labels:
+  {{- include "inspire.labels" . | nindent 4 }}
+data:
+  icmTrustedDomains: |
+    {
+      "icmTrustedDomains": {{ if .Values.icmTrustedDomains }}{{ toJson .Values.icmTrustedDomains }}{{ else }}[]{{ end }}
+    }
+  {{- end }}

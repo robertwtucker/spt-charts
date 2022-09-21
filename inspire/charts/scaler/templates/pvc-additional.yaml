@@ -1,0 +1,13 @@
+{{- if .Values.global.scaler.enabled | and (.Values.additionalStorage.enabled ) | and (.Values.additionalStorage.existingClaim | not) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "inspire.applicationName" . }}-scaler-additional-storage
+spec:
+  storageClassName: {{ .Values.additionalStorage.storageClass }}
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: {{ .Values.additionalStorage.size }}
+{{- end }}

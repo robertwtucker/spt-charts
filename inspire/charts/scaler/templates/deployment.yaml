@@ -102,9 +102,22 @@ spec:
         securityContext:
           {{- toYaml .Values.securityContext | nindent 10 }}
         volumeMounts:
-        - name: lib-ext-sidecar
-          mountPath: /opt/Quadient/Inspire-Scaler/lib-ext
+          - name: lib-ext-sidecar
+            mountPath: /opt/Quadient/Inspire-Scaler/lib-ext
       {{- end }}
+{{- if .Values.global.spt.loadBaseContent }}
+      - name: {{ include "inspire.applicationName" . }}-spt-content-sidecar
+        image: "{{ .Values.global.spt.image.name }}:{{ .Values.global.spt.image.tag }}"
+        imagePullPolicy: {{ .Values.global.spt.image.pullPolicy }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+        command: ['/app', 'demo', 'stage', '-r', '{{ include "inspire.applicationName" . }}', '-n', '{{ .Release.Namespace }}', '-d']
+        volumeMounts:
+  {{- if .Values.additionalStorage.enabled }}
+        - name: additional-storage
+          mountPath: {{ .Values.additionalStorage.mountPath }}
+  {{- end }}
+{{- end }}
       - name: {{ include "inspire.applicationName" . }}-scaler-init
         image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}

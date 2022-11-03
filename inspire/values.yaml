@@ -99,3 +99,18 @@ global:
       useSecret: false
       secretName: ""
       secretKey: ""
+  # -- SPT modifications
+  spt:
+    # -- Toggles load of the base demo content.
+    # -- NB: Assumes that:
+    #  - Scaler value 'additionalStorage.enabled' == true.
+    #  - Scaler value 'additionalStorage.mountPath' == "/opt/scalerAdditionalStorage".
+    loadBaseContent: false
+    image:
+      # -- Defines the URL address of the SPT content image stored in a Docker repository.
+      name: ""
+      # -- Defines a specific version of the SPT content image to be deployed.
+      tag: ""
+      # -- Defines the SPT content image pull policy. [IfNotPresent/Always]
+      pullPolicy: IfNotPresent
+

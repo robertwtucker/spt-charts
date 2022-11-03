@@ -1,0 +1,57 @@
+{{- if .Values.global.scaler.enabled | and .Values.global.spt.loadBaseContent | and .Release.IsInstall }}
+{{- $applicationName := include "inspire.applicationName" . -}}
+{{- $scalerPassDefinition := dict "value" .Values.global.scaler.passOverride "source" .Values.global.scaler.passOverrideSource "secretName" (printf "%s-scaler-icm" $applicationName) "secretKey" "pass" "envName" "SCALER_PASS" "envOnly" true "allowEmpty" true -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "inspire.applicationName" . }}-spt-content-import
+  labels:
+    app: {{ include "inspire.applicationName" . }}
+    role: spt-content-import
+  annotations:
+    "helm.sh/resource-policy": keep
+spec:
+  template:
+    metadata:
+      name: {{ include "inspire.applicationName" . }}-spt-content-import
+      labels:
+        app: {{ include "inspire.applicationName" . }}
+        role: spt-content-import
+    spec:
+      restartPolicy: OnFailure
+{{- if .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+  {{- range .Values.global.imagePullSecrets }}
+      - name: {{ . }}
+  {{- end }}
+{{- end }}
+      initContainers:
+      - name: {{ include "inspire.applicationName" . }}-spt-scaler-wait
+        image: "{{ .Values.global.spt.image.name }}:{{ .Values.global.spt.image.tag }}"
+        imagePullPolicy: {{ .Values.global.spt.image.pullPolicy }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+        env:
+        - name: SCALER_HOST
+          value: {{ include "inspire.applicationName" . }}-scaler
+        - name: SCALER_PORT
+          value: {{ .Values.global.scaler.portOverride | default 30600 | quote }}
+        command: ['sh', '-c', 'for i in {1..200}; do if $(timeout 4 bash -c "cat < /dev/null > /dev/tcp/$SCALER_HOST/$SCALER_PORT"); then echo OK && exit 0; else echo Scaler not available yet; fi; done; echo Scaler service availability timed-out && exit 1']
+      containers:
+      - name: {{ include "inspire.applicationName" . }}-spt-content-import
+        image: "{{ .Values.global.spt.image.name }}:{{ .Values.global.spt.image.tag }}"
+        imagePullPolicy: {{ .Values.global.spt.image.pullPolicy }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+        command: ['/app', 'demo', 'init', '-r', '{{ include "inspire.applicationName" . }}', '-n', '{{ .Release.Namespace }}', '-d']
+        env:
+        - name: SCALER_USER
+          value: {{ .Values.global.scaler.userOverride | default "scaler" | quote }}
+        {{- include "inspire.secret.asEnv" ($scalerPassDefinition) | nindent 8 }}
+        - name: SCALER_HOST
+          value: {{ include "inspire.applicationName" . }}-scaler
+        - name: SCALER_PORT
+          value: {{ .Values.global.scaler.portOverride | default 30600 | quote }}
+        - name: SCALER_URL
+          value: http://$(SCALER_HOST):$(SCALER_PORT)
+{{- end }}

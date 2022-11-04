@@ -96,7 +96,7 @@ c) If envOnly evaluates to true, validation fails.
 {{- define "inspire.secret.asEnv" }}
 {{- if or (empty .source) (eq (include "inspire.secret.isDelegated" .source) "false") }}
     {{- if or (.allowEmpty) (not (empty .value)) }}
-{{/* Allow empty is useful for e.g. icmAdminPassword, which is automatically generated.
+{{- /* Allow empty is useful for e.g. icmAdminPassword, which is automatically generated.
     So, such password is empty and not delegated, but we want to create an env pointing to a secret, where it will be created.
 */}}
 - name: {{ .envName }}
@@ -106,15 +106,16 @@ c) If envOnly evaluates to true, validation fails.
       key: {{ .secretKey | quote }}
     {{- end }}
 {{- else if .source.useSecret }}
-  {{/*Secret is delegated as a secret, mounting it from existing secret */}}
+{{- /*Secret is delegated as a secret, mounting it from existing secret */}}
 - name: {{ .envName }}
   valueFrom:
     secretKeyRef:
       name: {{ required "field 'secretName' of a secret must be filled." .source.secretName }}
       key: {{ (required "field 'secretKey' of a secret must be filled." .source.secretKey) | quote }}
-{{- else if not .envOnly }}
+{{- if not .envOnly }}
 {{- /*Variable can be mounted as an env or as a file. useSecret had its own if condition */}}
 {{- include "inspire.secret.asFilePointer" (dict "envFileName" .envFileName "source" .source "mountPath" .mountPath "secretKey" .secretKey) }}
+{{- end }}
 {{- else }}
 {{- /* Variable is delegated and its value is not empty. Invalid state. */}}
 {{- end }}
@@ -122,15 +123,15 @@ c) If envOnly evaluates to true, validation fails.
 
 {{- define "inspire.secret.asFilePointer" }}
 {{- if or (empty .source) (eq (include "inspire.secret.isDelegated" .source) "false") }}
-  {{/* Variable is empty or is not delegated, but, variable should be mounted as a file, so we need to create a env pointer to this file */}}
+  {{- /* Variable is empty or is not delegated, but, variable should be mounted as a file, so we need to create a env pointer to this file */}}
 - name: {{ .envFileName }}
   value: {{ printf "%s/%s" .mountPath .secretKey }}
 {{- else if and .mountAll }}
-  {{/* Variable is delegated and whole secret should be mounted without pointing to secret keys. So point to a directory */}}
+  {{- /* Variable is delegated and whole secret should be mounted without pointing to secret keys. So point to a directory */}}
 - name: {{ .envFileName }}
   value: {{ printf "%s/%s" .mountPath .secretKey }}
 {{- else }}
-  {{/* Variable is mounted as a file and we need to point to this variable */}}
+  {{- /* Variable is mounted as a file and we need to point to this variable */}}
 - name: {{ .envFileName }}
   value: {{ printf "%s/%s" .mountPath .source.secretKey }}
 {{- end }}
@@ -150,7 +151,7 @@ b) nothing otherwise.
 {{- if or (empty .source) ( eq (include "inspire.secret.isDelegated" .source) "false") -}}
 {{- /* if not .mountSecret: Variable is empty or is not delegated, so there is nothing to mount, because variable is passed via env variable from secret */}}
 {{- if .mountSecret }}
-  {{/* Variable is empty or is not delegated, and variable must be mounted as a file, pointing to our secret created by helm chart */}}
+  {{- /* Variable is empty or is not delegated, and variable must be mounted as a file, pointing to our secret created by helm chart */}}
 - name: {{ .secretName }}
   {{- if not .withoutSubpath }}
   mountPath: {{ .mountPath }}/{{ .secretKey }}
@@ -160,8 +161,8 @@ b) nothing otherwise.
   {{- end }}
   readOnly: true
 {{- end }}
-{{- else if .mountSecret | and .source.useSecret -}}
-{{/* Variable is delegated to use a secret, and simultaneously, variable is required to be mounted as a file */}}
+{{- else if .mountSecret | and .source.useSecret }}
+{{- /* Variable is delegated to use a secret, and simultaneously, variable is required to be mounted as a file */}}
 - name: {{ required "'secretName' is required" .source.secretName }}
   {{- if not .withoutSubpath }}
   subPath: {{ required "'secretKey' is requried" .source.secretKey }}

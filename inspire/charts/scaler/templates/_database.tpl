@@ -20,9 +20,9 @@ Definition of environment variables of database
 {{- define "scaler.env.database" -}}
 {{- $applicationName := include "inspire.applicationName" . -}}
 {{- $secretMountPath := "/mnt/secret" -}}
-{{- $dbPassDefinition := dict "value" .Values.db.pass "source" .Values.db.passSource "mountPath" $secretMountPath "secretName" (printf "%s-scaler-database" $applicationName) "secretKey" "dbPass" "envName" "DB_PASS" "envFileName" "DB_PASS_FILE" -}}
-{{- $dbUserDefinition := dict "value" .Values.db.user "source" .Values.db.userSource "mountPath" $secretMountPath "secretName" (printf "%s-scaler-database" $applicationName) "secretKey" "dbUser" "envName" "DB_USER" "envFileName" "DB_USER_FILE" -}}
-{{- $dbConnectStringDefinition := dict "value" .Values.db.connectionString "source" .Values.db.connectionStringSource "mountPath" $secretMountPath "secretName" (printf "%s-scaler-database" $applicationName) "secretKey" "dbConnectionString" "envName" "DB_CUSTOM_CONNECTION_STRING" "envFileName" "DB_CUSTOM_CONNECTION_STRING_FILE" -}}
+{{- $dbPassDefinition := dict "value" .Values.db.pass "source" .Values.db.passSource "mountPath" $secretMountPath "secretName" (printf "%s-scaler-database" $applicationName) "secretKey" "dbPass" "envName" "DB_PASS" "envOnly" true -}}
+{{- $dbUserDefinition := dict "value" .Values.db.user "source" .Values.db.userSource "mountPath" $secretMountPath "secretName" (printf "%s-scaler-database" $applicationName) "secretKey" "dbUser" "envName" "DB_USER" "envOnly" true -}}
+{{- $dbConnectStringDefinition := dict "value" .Values.db.connectionString "source" .Values.db.connectionStringSource "mountPath" $secretMountPath "secretName" (printf "%s-scaler-database" $applicationName) "secretKey" "dbConnectionString" "envName" "DB_CUSTOM_CONNECTION_STRING" "envOnly" true -}}
 {{- $dbDelegated := eq (include "inspire.secret.isDelegated" .Values.db.connectionStringSource) "true" }}
 {{- if .Values.db.connectionString | or $dbDelegated }}
 {{- include "inspire.secret.asEnv" ($dbConnectStringDefinition) }}

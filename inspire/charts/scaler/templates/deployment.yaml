@@ -102,8 +102,8 @@ spec:
         securityContext:
           {{- toYaml .Values.securityContext | nindent 10 }}
         volumeMounts:
-          - name: lib-ext-sidecar
-            mountPath: /opt/Quadient/Inspire-Scaler/lib-ext
+        - name: lib-ext-sidecar
+          mountPath: /opt/Quadient/Inspire-Scaler/lib-ext
       {{- end }}
 {{- if .Values.global.spt.loadBaseContent }}
       - name: {{ include "inspire.applicationName" . }}-spt-content-sidecar
@@ -237,6 +237,7 @@ spec:
         {{- end }}
         - name: ICM_TRUSTED_DOMAINS_FILE
           value: /opt/Quadient/trustedDomains/icmTrustedDomains
+        {{- include "scaler.env.saml" . | nindent 8 }}
         livenessProbe:
           tcpSocket:
             port: 30600
@@ -287,6 +288,10 @@ spec:
           {{- end }}
           - name: icm-trusted-domains
             mountPath: /opt/Quadient/trustedDomains
+          {{- if .Values.authentication.saml2.enabled }}
+          {{- $samlKeystorePointer := dict "value" $.Values.authentication.saml2.keystore "source" $.Values.authentication.saml2.keystoreSource "secretName" "saml-keystore-file" "secretKey" "keystore" "mountPath" "/opt/Quadient/secrets/saml" "mountSecret" true "withoutSubpath" false }}
+          {{- include "inspire.secret.asMount" $samlKeystorePointer | nindent 10 }}
+          {{- end }}
 {{- if .Values.additionalStorage.enabled }}
           - name: additional-storage
             mountPath: {{ .Values.additionalStorage.mountPath }}
@@ -504,6 +509,9 @@ spec:
   {{- include "inspire.secret.checkUniqueSource" (dict "secrets" .Values.customEncryption.keys "sourceField" "keySource") }}
 {{- end }}
 {{- $volumeCandidates = append $volumeCandidates (dict "value" .Values.global.scaler.passOverride "source" .Values.global.scaler.passOverrideSource "volumeName" "icm-scaler-password" "secretName" (printf "%s-scaler-icm" $applicationName) )}}
+{{- if .Values.authentication.saml2.enabled }}
+{{- $volumeCandidates = append $volumeCandidates (dict "value" .Values.authentication.saml2.keystore "source" .Values.authentication.saml2.keystoreSource "volumeName" "saml-keystore-file" "secretName" (printf "%s-scaler-saml" $applicationName) )}}
+{{- end }}
 {{- include "inspire.secret.uniqueVolumes" $volumeCandidates | nindent 6 }}
 {{- with .Values.volumes }}
 {{ tpl (toYaml .) $ | indent 6 }}

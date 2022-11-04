@@ -1,6 +1,6 @@
 # scaler
 
-![Version: 1.5.1](https://img.shields.io/badge/Version-1.5.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 15.4](https://img.shields.io/badge/AppVersion-15.4-informational?style=flat-square)
+![Version: 1.6.0](https://img.shields.io/badge/Version-1.6.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 15.5](https://img.shields.io/badge/AppVersion-15.5-informational?style=flat-square)
 
 Inspire Scaler
 
@@ -32,6 +32,26 @@ Inspire Scaler
 | db.oracleConnectionType | string | `"SID"` | Defines the Oracle database connection type. [SID/ServiceName] |
 | db.mssqlConnectionType | string | `"PORT"` | Defines the MSSQL database connection type. -- Depending on the used type, configure the related settings: db.port or db.mssqlInstanceName. [PORT/INSTANCE_NAME] |
 | db.mssqlInstanceName | string | `""` | Defines the instance name of the server that runs the MSSQL database. |
+| authentication.saml2 | object | `{"attributeMappingGroup":"","attributeMappingMail":"","attributeMappingName":"","attributeMappingUser":"","certificateAlias":"","enabled":false,"entityId":"","keystore":"","keystorePassword":"","keystorePasswordSource":{"secretKey":"","secretName":"","useSecret":false},"keystoreSource":{"secretKey":"","secretName":"","useSecret":false},"keystoreType":"jks","missingGroupStrategy":"","registrationAlias":"","serviceProviderKeypairAlias":"","serviceProviderKeypairPassword":"","serviceProviderKeypairPasswordSource":{"secretKey":"","secretName":"","useSecret":false},"singleSignOnUrl":"","updateStrategy":""}` | Available since the 15.5 version of Scaler These settings configure the Single Sign-On (SSO) functionality. |
+| authentication.saml2.enabled | bool | `false` | Defines whether or not to configure the SAML configuration for Scaler. |
+| authentication.saml2.registrationAlias | string | `""` | Defines a custom alias for the configured identity provider. |
+| authentication.saml2.keystore | string | `""` | Defines the content of the KeyStore encoded in base64 format which must contain the identity provider's public certificate and Scaler's key pair. Mainly for testing purposes. Use the 'keystoreSource' variable and pass the value via a Secret instead. |
+| authentication.saml2.keystoreSource | object | `{"secretKey":"","secretName":"","useSecret":false}` | Defines the content of the KeyStore via a Secret. |
+| authentication.saml2.keystorePassword | string | `""` | Defines the password to the provided KeyStore as plain text. Use the 'keystorePasswordSource' variable instead if you wish to define the KeyStore password via a Secret. |
+| authentication.saml2.keystorePasswordSource | object | `{"secretKey":"","secretName":"","useSecret":false}` | Defines the password to the provided KeyStore via a Secret. |
+| authentication.saml2.keystoreType | string | `"jks"` | Defines the type of the provided KeyStore. Defaults to 'jks'. For other available values, see the Security Standard Names documentation for JDK at https://docs.oracle.com/javase/8/docs/technotes/guides/security/StandardNames.html#KeyStore. |
+| authentication.saml2.serviceProviderKeypairAlias | string | `""` | Defines the alias to Scaler's key pair. |
+| authentication.saml2.serviceProviderKeypairPassword | string | `""` | Defines the password to Scaler's key pair as plain text. Use the 'serviceProviderKeypairPasswordSource' variable instead if you wish to define the key pair password via a Secret. |
+| authentication.saml2.serviceProviderKeypairPasswordSource | object | `{"secretKey":"","secretName":"","useSecret":false}` | Defines the password to Scaler's key pair via a Secret. |
+| authentication.saml2.certificateAlias | string | `""` | Defines the alias of the identity provider's public certificate. |
+| authentication.saml2.entityId | string | `""` | Defines the entity ID of the identity provider. |
+| authentication.saml2.singleSignOnUrl | string | `""` | Defines the URL address (issued by the identity provider) which Scaler users are redirected to when signing in. |
+| authentication.saml2.updateStrategy | string | `""` | Optionally, defines how Scaler manages users who sign in to Scaler via SSO but do not exist in ICM. If you omit this setting, the users who sign in to Scaler via SSO must exist in ICM. |
+| authentication.saml2.missingGroupStrategy | string | `""` | Optionally, defines how Scaler manages users who sign in to Scaler via SSO but whose groups (provided by the identity provider) do not exist in ICM. This setting is only applied if the updateStrategy setting is configured. |
+| authentication.saml2.attributeMappingUser | string | `""` | Defines the name of an assertion attribute that the identity provider uses to pass the username to Scaler. |
+| authentication.saml2.attributeMappingMail | string | `""` | Optionally, defines the name of an assertion attribute that the identity provider uses to pass the user's email address to Scaler. Scaler uses this setting to fill out or update the Email field of the user's details in ICM |
+| authentication.saml2.attributeMappingName | string | `""` | Optionally, defines the name of an assertion attribute that the identity provider uses to pass the user's full name to Scaler. Scaler uses this setting to fill out or update the Full name field of the user's details in ICM. |
+| authentication.saml2.attributeMappingGroup | string | `""` | Optionally, defines the name of an assertion attribute that the identity provider uses to pass the user's groups to Scaler. Scaler uses this setting to place the user into the desired ICM user groups. If you omit this setting, or if no groups are passed, Scaler automatically adds the user to the Everyone group. If that group has access to Scaler, the user can sign in. |
 | replicaCount | int | `1` | Defines the number of Scaler images (i.e. nodes) to be deployed at launch. |
 | shutdownTimeout | int | `30` | Defines how long (in seconds) Scaler should wait before shutting down after stopping the system service. -- The allocated time allows Scaler to finish any unfinished jobs while not accepting new ones. |
 | statefulScaling | object | `{"enabled":true}` | Since the 15.0 version, the following feature enables you to scale the Scaler cluster up and down just from the Kubernetes deployment. -- Enabling this features creates the following Kubernetes entities in order to authorize Scaler requests to Kubernetes: Role (with minimal required rights), RoleBinding and ServiceAccount. -- Note that RBAC must be enabled in your Kubernetes cluster. |

@@ -1,0 +1,59 @@
+# Global values for QAR
+
+global:
+  # -- Defines a unique name of an application within a Kubernetes namespace.
+  applicationName: "qar"
+  # -- List of image repository pull secrets
+  # Secrets must be manually created in the namespace.
+  # ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  # Example:
+  # imagePullSecrets:
+  #   - name: myRegistryKeySecretName
+  imagePullSecrets: []
+  oracledb:
+    # -- Defines the password of the SYS user.
+    # If left undefined, the database's deployment will provide you with a random alphanumeric password.
+    # Use the 'adminPassOverrideSource' variable instead if you wish to define the password using a Secret.
+    sysPassOverride: ~
+    # -- Uses a Secret to define the password of the CMOD archive user.
+    sysPassOverrideSource:
+      useSecret: false
+      secretName: ""
+      secretKey: ""
+    # -- Defines the port to run the TNS listener on.
+    # If left undefined, the default port 1521 is used.
+    portOverride:
+  ondemand:
+    # -- Defines the password of the CMOD archive user.
+    # If left undefined, the library's deployment will provide you with a random alphanumeric password.
+    # Use the 'adminPassOverrideSource' variable instead if you wish to define the password using a Secret.
+    archivePassOverride: ~
+    # -- Uses a Secret to define the password of the CMOD archive user.
+    archivePassOverrideSource:
+      useSecret: false
+      secretName: ""
+      secretKey: ""
+    # -- Defines the port to run the ARS listener on.
+    # If left undefined, the default port 1445 is used.
+    portOverride:
+  restapi:
+    # -- Defines whether to deploy a REST API server.
+    enabled: false
+    # -- Defines the port to run the HTTP listener on.
+    # If left undefined, the default port 9080 is used.
+    portOverride:
+  navigator:
+    # -- Defines whether to deploy a Content Navigator server.
+    enabled: false
+    # -- Defines the port to run the HTTP listener on.
+    # If left undefined, the default port 9081 is used.
+    portOverride:
+  arsload:
+    # -- Defines whether to deploy an ARSLOAD server.
+    enabled: false
+  zookeeper:
+    # -- Defines whether to deploy a Zookeeper instance.
+    enabled: false
+    # -- Defines the port to run the Zookeeper listener on.
+    # If left undefined, the default port 1445 is used.
+    portOverride:

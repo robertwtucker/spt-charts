@@ -1,0 +1,38 @@
+Thank you for installing {{ .Chart.Name }}.
+Your release is called '{{ .Release.Name }}'.
+
+** Wait for the chart to be deployed. **
+
+Your deployed applications can be accessed on the following DNS names from within your cluster
+  Oracle: {{ include "qar.applicationName" . }}-oracledb.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.global.oracledb.portOverride | default 1521 }}
+  QAR: {{ include "qar.applicationName" . }}-ondemand.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.global.ondemand.portOverride | default 1445 }}
+{{- if .Values.global.restapi.enabled }}
+  restapi: {{ include "qar.applicationName" . }}-restapi.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.global.restapi.portOverride | default 9080 }}
+{{- end }}
+{{- if .Values.global.navigator.enabled }}
+  navigator: {{ include "qar.applicationName" . }}-navigator.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.global.navigator.portOverride | default 9080 }}
+{{- end }}
+
+** Secrets **
+To get the authentication details, execute the following commands:
+{{- if eq (include "qar.secret.isDelegated" .Values.global.oracledb.sysPassOverrideSource) "false" }}
+  export SYS_PASSWORD=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "qar.applicationName" . }}-oracledb -o jsonpath="{.data.pass}" | base64 --decode)
+{{- else }}
+  The SYS password is managed externally.
+{{- end }}
+{{- if eq (include "qar.secret.isDelegated" .Values.global.ondemand.archivePassOverrideSource) "false" }}
+  export ARCHIVE_PASSWORD=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "qar.applicationName" . }}-ondemand -o jsonpath="{.data.pass}" | base64 --decode)
+{{- else }}
+  The ARCHIVE password is managed externally.
+{{- end }}
+
+** Port Forwarding **
+To connect to your applications execute the following commands:
+  $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "qar.applicationName" . }}-oracledb {{ .Values.global.oracledb.portOverride | default 1521 }}:{{ .Values.global.oracledb.portOverride | default 1521 }}
+  $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "qar.applicationName" . }}-ondemand {{ .Values.global.ondemand.portOverride | default 1445 }}:{{ .Values.global.ondemand.portOverride | default 1445 }}
+{{- if .Values.global.restapi.enabled }}
+  $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "qar.applicationName" . }}-restapi {{ .Values.global.restapi.portOverride | default 9080 }}:{{ .Values.global.restapi.portOverride | default 9080 }}
+{{- end }}
+{{- if .Values.global.navigator.enabled }}
+  $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "qar.applicationName" . }}-navigator {{ .Values.global.navigator.portOverrid | default 9080 }}:{{ .Values.global.navigator.portOverride | default 9080 }}
+{{- end }}

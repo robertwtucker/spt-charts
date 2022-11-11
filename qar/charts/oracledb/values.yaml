@@ -1,0 +1,118 @@
+# Oracle chart values
+image:
+  repository: container-registry.oracle.com/database/express
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+imagePullSecrets: []
+#nameOverride: ""
+#fullnameOverride: ""
+
+credentials:
+  # provide either the secretName of a secret containing 'username' and 'password'
+  # or provide the 'username' and 'password' values directly
+  # if secretName is provided it takes precedence over the plain text entries
+  secretName: ""
+  # username is always SYS unless on Autonomous Database where it is ADMIN
+  username: SYS
+  # password. Must comply with password requirements. Alway prefer passing the password as a parameter rather than setting it here
+  password: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  fsGroup: 54321
+
+securityContext:
+#  capabilities:
+#    drop:
+#      - ALL
+#  readOnlyRootFilesystem: true
+#  runAsNonRoot: true
+  runAsUser: 54321
+
+replicaCount: 1
+
+service:
+  type: ClusterIP
+  port: 1521
+  protocol: tns
+
+ingress:
+  enabled: false
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+      - path: /
+        backend:
+          serviceName: chart-example.local
+          servicePort: 1521
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 2
+  #   memory: 6Gi
+  #   ephemeral-storage: 8Gi
+  # requests:
+  #   cpu: 500m
+  #   ephemeral-storage: 6Gi
+
+# sid: cdb
+# pdb: pdb
+# domain: k8s
+# bundle: basic
+
+persistence:
+  # Enable Oracle data persistence using PVC
+  enabled: true
+  # Name of an existing PVC to use
+  existingClaim: ""
+  # The path the volume will be mounted at
+  mountPath: /opt/oracle/oradata
+  # If defined, storageClassName: <storageClass>
+  # If set to "-", storageClassName: "", which disables dynamic provisioning
+  # If undefined (the default) or set to null, no storageClassName spec is
+  #   set, choosing the default provisioner.  (gp2 on AWS, standard on
+  #   GKE, AWS & OpenStack)
+  storageClass: ""
+  # PVC Access Mode for Oracle data volume
+  accessModes:
+    - ReadWriteOnce
+  # PVC Storage Request for Oracle data volume
+  size: 8Gi
+  # Annotations for the PVC
+  annotations: {}
+  # Labels for the PVC
+  labels: {}
+
+# Start Oracle pod(s) without limitations on shm memory.
+# By default docker and containerd (and possibly other container runtimes) limit `/dev/shm` to `64M`
+shmVolume:
+  # Enable emptyDir volume for /dev/shm for Oracle pod(s)
+  enabled: false
+  # shmVolume.sizeLimit Set this to enable a size limit on the shm tmpfs
+  # Note: the size of the tmpfs counts against container's memory limit
+  # e.g:
+  # sizeLimit: 1Gi
+  sizeLimit: ""

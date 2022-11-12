@@ -6,40 +6,21 @@ Apply the global app name in lieu of the chart.
 {{- end }}
 
 {{/*
-Create chart name and version as used by the chart label.
-*/}}
-{{- define "qar.chart" -}}
-{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
-{{- end }}
-
-{{/*
 Common labels
 */}}
 {{- define "qar.labels" -}}
-helm.sh/chart: {{ include "qar.chart" . }}
-{{ include "qar.selectorLabels" . }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- end }}
-
-{{/*
-Selector labels
-*/}}
-{{- define "qar.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "qar.applicationName" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
+app: {{ include "qar.applicationName" . }}
+role: {{ .Values.role }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
 {{- define "qar.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "qar.applicationName" .) .Values.serviceAccount.name }}
+{{- if .Values.existingServiceAccount }}
+{{- printf "%s-%s" (include "qar.applicationName" .) .Values.role }}
 {{- else }}
-{{- default "default" .Values.serviceAccount.name }}
+{{- .Values.existingServiceAccount }}
 {{- end }}
 {{- end }}
 

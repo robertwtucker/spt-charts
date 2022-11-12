@@ -1,11 +1,14 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: setup-{{ include "oracledb.fullname" . }}
+  name: {{ include "qar.applicationName" . }}-oracledb-setup
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{ include "qar.labels" . | nindent 4 }}
 data:
   01-create-archive-pdb.sql: |
     CREATE PLUGGABLE DATABASE archive
-    ADMIN USER archive IDENTIFIED BY {{ .Values.credentials.password }}
+    ADMIN USER archive IDENTIFIED BY {{ .Values.password }}
     FILE_NAME_CONVERT=('/opt/oracle/oradata/ORCLCDB/pdbseed','/opt/oracle/oradata/ORCLCDB/archive');
   02-open-archive-pdb.sql: |
     ALTER PLUGGABLE DATABASE archive OPEN READ WRITE;
@@ -13,7 +16,7 @@ data:
     ALTER PLUGGABLE DATABASE archive SAVE STATE;
   04-create-navigator-pdb.sql: |
     CREATE PLUGGABLE DATABASE navigator
-    ADMIN USER archive IDENTIFIED BY {{ .Values.credentials.password }}
+    ADMIN USER archive IDENTIFIED BY {{ .Values.password }}
     FILE_NAME_CONVERT=('/opt/oracle/oradata/ORCLCDB/pdbseed','/opt/oracle/oradata/ORCLCDB/navigator');
   05-open-navigator-pdb.sql: |
     ALTER PLUGGABLE DATABASE navigator OPEN READ WRITE;

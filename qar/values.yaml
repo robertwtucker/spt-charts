@@ -11,28 +11,15 @@ global:
   #   - name: myRegistryKeySecretName
   imagePullSecrets: []
   oracledb:
-    # -- Defines the password of the SYS user.
-    # If left undefined, the database's deployment will provide you with a random alphanumeric password.
-    # Use the 'adminPassOverrideSource' variable instead if you wish to define the password using a Secret.
-    sysPassOverride: ~
-    # -- Uses a Secret to define the password of the CMOD archive user.
-    sysPassOverrideSource:
-      useSecret: false
-      secretName: ""
-      secretKey: ""
-    # -- Defines the port to run the TNS listener on.
-    # If left undefined, the default port 1521 is used.
-    portOverride:
+    tnsListener:
+      # -- Defines the port to run the TNS listener on.
+      # If left undefined, the default port 1521 is used.
+      portOverride:
+    emExpress:
+      # -- Defines the port to run the EM Express app on.
+      # If left undefined, the default port 5500 is used.
+      portOverride:
   ondemand:
-    # -- Defines the password of the CMOD archive user.
-    # If left undefined, the library's deployment will provide you with a random alphanumeric password.
-    # Use the 'adminPassOverrideSource' variable instead if you wish to define the password using a Secret.
-    archivePassOverride: ~
-    # -- Uses a Secret to define the password of the CMOD archive user.
-    archivePassOverrideSource:
-      useSecret: false
-      secretName: ""
-      secretKey: ""
     # -- Defines the port to run the ARS listener on.
     # If left undefined, the default port 1445 is used.
     portOverride:

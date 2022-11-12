@@ -2,7 +2,14 @@
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: data-{{ include "oracledb.fullname" . }}
+  name: {{ include "qar.applicationName" . }}-oracledb-data
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "qar.labels" . | nindent 4 }}
+  {{- with .Values.persistence.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   storageClassName: {{ .Values.persistence.storageClass }}
   accessModes:
@@ -11,5 +18,5 @@ spec:
   {{- end }}
   resources:
     requests:
-      storage: {{ .Values.persistence.size | quote }}
+      storage: {{ .Values.persistence.size }}
 {{- end}}

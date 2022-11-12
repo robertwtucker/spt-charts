@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ondemand.fullname" . }}
+  labels:
+    {{- include "ondemand.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "ondemand.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "ondemand.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "ondemand.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}-library
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.name }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: ["start", "library"]
+          env:
+            - name: ARS_NUM_DB_SRVR
+              value: {{ .Values.config.db.numSubServers | quote }}
+            - name: ENABLE_TRACE
+              value: {{ printf "%t" .Values.config.trace.enabled | quote }}
+            - name: ARS_STORAGE_MANAGER
+              value: {{ .Values.config.storageManager }}
+            - name: OD_INSTANCE_NAME
+              value: {{ .Values.config.odInstanceName }}
+            - name: ARS_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: ARS_PORT
+              value: {{ .Values.service.port | quote }}
+            - name: ARS_SRVR_INSTANCE
+              value: {{ .Values.config.serverInstanceName }}
+            - name: ORACLE_HOST
+              value: {{ .Values.oracle.host }}
+            - name: ORACLE_PORT
+              value: {{ .Values.oracle.port | quote }}
+            - name: ORACLE_SERVICE_NAME
+              value: {{ .Values.oracle.serviceName }}
+            - name: ORACLE_USER
+              value: {{ .Values.oracle.username}}
+            - name: ORACLE_PASSWORD
+              value: {{ .Values.oracle.password }}
+#            - name: ZOOKEEPER_SERVER_LIST
+#              value: {{ .Values.config.Z}}
+          ports:
+            - name: ars
+              containerPort: 1445
+              protocol: TCP
+          livenessProbe:
+            exec:
+              command: ["ps", "-p", "1"]
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+            successThreshold: {{ .Values.livenessProbe.successThreshold }}
+          readinessProbe:
+            tcpSocket:
+              port: {{ .Values.service.port }}
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+            successThreshold: {{ .Values.readinessProbe.successThreshold }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: work
+              mountPath: /work
+      volumes:
+        - name: data
+          emptyDir: {}
+        - name: work
+          emptyDir: {}

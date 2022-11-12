@@ -1,0 +1,140 @@
+# QAR CMOD chart values
+image:
+  # -- Defines the URL address of the QAR server image stored in a container repository.
+  name: registry.sptcloud.com/qar/ondemand
+  # -- Overrides tag specified by the `appVersion` in the chart file.
+  tag: ""
+  # -- QAR image pull policy [Always|IfNotPresent].
+  pullPolicy: IfNotPresent
+
+config:
+  db:
+    # -- Specifies the DBMS used by the Library Server [DB2|ORACLE]
+    engine: ORACLE
+    # -- Determines the number of processes that CMOD starts on the library server to
+    # handle connections to the database. Specify a value that supports the peak number
+    # of concurrent database connections library server needs to handle.
+    numSubServers: 10
+  # -- Used in the header line of the `ars.ini` file to identify the name of the CMOD instance.
+  odInstanceName: ARCHIVE
+  # -- Identifies the name of the CMOD database.
+  serverInstanceName: ARCHIVE
+  # -- Determines whether the server program is linked to a cache-only storage manager or an
+  # archive storage manager. Required on library servers. [TSM|NO_TSM|CACHE_ONLY]
+  storageManager: NO_TSM
+  trace:
+    # -- Enables the system trace facility
+    enabled: false
+
+oracle:
+  # -- Oracle host machine
+  host: ""
+  # -- Oracle service port
+  port: 1521
+  # -- Oracle TNS service name
+  serviceName: ""
+  # -- Database username
+  username: ""
+  # -- Database password
+  password: ""
+
+# -- Defines the number of replicas to be created after deployment.
+replicaCount: 1
+
+# -- Defines how long (in seconds) Kubernetes should wait before shutting down the pod.
+shutdownTimeout: 15
+
+# Service account settings
+serviceAccount:
+  # -- Specifies whether a service account should be created
+  create: true
+  # -- Annotations to add to the service account
+  annotations: {}
+  # -- The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# -- Annotations for QAR pods
+podAnnotations: {}
+
+# ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+podSecurityContext:
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
+  runAsUser: 1001
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#volumes-and-file-systems.
+  fsGroup: 1001
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
+  runAsNonRoot: true
+
+# ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+securityContext:
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privileged.
+  privileged: false
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privilege-escalation.
+  allowPrivilegeEscalation: false
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
+  runAsUser: 1001
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#capabilities.
+  # -- The default (recommended) configuration prohibits all Linux capabilities.
+  capabilities:
+    drop:
+      - all
+
+# Liveness probe settings
+livenessProbe:
+  # -- Initial delay before probing liveness
+  initialDelaySeconds: 2
+  # -- Period in seconds between liveness checks
+  periodSeconds: 30
+  # -- Timeout in seconds for liveness checks
+  timeoutSeconds: 1
+  # -- Number of consecutive negative tests before declaring failure
+  failureThreshold: 3
+  # -- Number of consecutive positive tests before counting it as a success
+  successThreshold: 1
+# Readiness probe settings
+readinessProbe:
+  # -- Initial delay before probing readiness
+  initialDelaySeconds: 2
+  # -- Period in seconds between readiness checks
+  periodSeconds: 30
+  # -- Timeout in seconds for readiness checks
+  timeoutSeconds: 1
+  # -- Number of consecutive negative tests before declaring failure
+  failureThreshold: 3
+  # -- Number of consecutive positive tests before counting it as a success
+  successThreshold: 1
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+service:
+  type: ClusterIP
+  port: 1445
+  protocol: tcp
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+

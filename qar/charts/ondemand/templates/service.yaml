@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ondemand.fullname" . }}
+  labels:
+    {{- include "ondemand.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: ars
+      protocol: TCP
+      name: ars
+  selector:
+    {{- include "ondemand.selectorLabels" . | nindent 4 }}

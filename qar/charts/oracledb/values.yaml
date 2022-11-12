@@ -66,6 +66,14 @@ service:
   annotations: {}
   # -- Defines the value for the Kubernetes service object [ClusterIP|LoadBalancer].
   type: ClusterIP
+  # Node ports to expose
+  # NOTE: choose port between <30000-32767>
+  # ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
+  nodePorts:
+    # -- Node port for the Oracle database
+    oracledb: ""
+    # -- Node port for EM Express
+    emexpress: ""
 
 # Learn about liveness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
 # Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.

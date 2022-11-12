@@ -10,15 +10,17 @@ image:
 db:
   # -- Specifies the DBMS used by the Library Server [DB2|ORACLE].
   engine: ORACLE
-  # -- Oracle TNS service name for the CMOD database.
-  tnsServiceName: archive
+  # -- Defines the Oracle TNS service name for the CMOD database. If left undefined, the
+  # lower-cased `serverInstanceName` value is used.
+  tnsServiceName: ""
   # -- Determines the number of processes that CMOD starts on the library server to
   # handle connections to the database. Specify a value that supports the peak number
   # of concurrent database connections library server needs to handle.
   numSubServers: 10
 # -- Used in the header line of the `ars.ini` file to identify the name of the CMOD instance.
 odInstanceName: ARCHIVE
-# -- Identifies the name of the CMOD database.
+# -- Identifies the name of the CMOD database (will be lower-cased for database creation).
+# If not provided, the name `archive` will be used.
 serverInstanceName: ARCHIVE
 # -- Determines whether the server program is linked to a cache-only storage manager or an
 # archive storage manager. Required on library servers. [TSM|NO_TSM|CACHE_ONLY]

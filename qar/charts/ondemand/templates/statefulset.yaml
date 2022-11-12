@@ -64,7 +64,7 @@ spec:
         - name: ARS_PORT
           value: {{ .Values.service.nodePorts.ondemand | quote }}
         - name: ARS_SRVR_INSTANCE
-          value: {{ .Values.serverInstanceName }}
+          value: {{ include "ondemand.serverInstanceName" . }}
         {{ include "ondemand.env.database" . | nindent 8 }}
         ports:
         - name: ars-listener

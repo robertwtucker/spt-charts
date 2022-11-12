@@ -8,9 +8,7 @@ Defines environment variables for the Oracle database service.
 - name: ORACLE_PORT
   value: {{ .Values.global.oracledb.tnsListener.portOverride | default 1521 | quote }}
 - name: ORACLE_SERVICE_NAME
-  value: {{ .Values.db.tnsServiceName }}
-- name: ORACLE_USER
-  value: {{ .Values.global.ondemand.userOverride | default "archive" | quote }}
+  value: {{ include "ondemand.tnsServiceName" . }}
 {{- if .Values.global.ondemand.userOverrideSource.useSecret }}
 - name: ORACLE_USER
   valueFrom:
@@ -38,4 +36,18 @@ Defines environment variables for the Oracle database service.
       key: password
 {{- end }}
 {{- end }}
+{{- end }}
+
+{{/*
+Ensures the default database name is specified.
+*/}}
+{{- define "ondemand.serverInstanceName" -}}
+{{- .Values.serverInstanceName | default "archive" | lower }}
+{{- end }}
+
+{{/*
+Generates the Oracle TNS service name from the database name, if not provided directly.
+*/}}
+{{- define "ondemand.tnsServiceName" -}}
+{{- .Values.tnsServiceName | default .Values.serverInstanceName | default "archive" | lower }}
 {{- end }}

@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "oracledb.svc.headless" . }}
+  name: {{ include "ondemand.svc.headless" . }}
   namespace: {{ .Release.Namespace | quote }}
   labels:
     {{ include "qar.labels" . | nindent 4 }}
@@ -9,18 +9,15 @@ metadata:
     {{- with .Values.service.annotations }}
     {{ tpl (toYaml .) $ | indent 4 }}
     {{- end }}
-    description: Headless service for the Oracle Database
+    description: Headless service for CMOD
     service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
 spec:
   type: ClusterIP
   clusterIP: None
   publishNotReadyAddresses: true
   ports:
-    - name: tns-listener
-      port: {{ .Values.global.oracledb.tnsListener.portOverride | default 1521 }}
-      targetPort: tns-listener
-    - name: tcp-emexpress
-      port: {{ .Values.global.oracledb.emExpress.portOverride | default 5500 }}
-      targetPort: tcp-emexpress
+    - name: ars-listener
+      port: {{ .Values.global.ondemand.portOverride | default 1445 }}
+      targetPort: ars-listener
   selector:
     {{ include "qar.labels" . | nindent 4 }}

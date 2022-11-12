@@ -1,0 +1,125 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "qar.applicationName" . }}-ondemand
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "qar.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ include "ondemand.svc.headless" . }}
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "qar.labels" . | nindent 6 }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+      {{- range $key, $value := . }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
+    {{- end }}
+      labels:
+        {{- include "qar.labels" . | nindent 8 }}
+      name: {{ include "qar.applicationName" . }}-ondemand-template
+    spec:
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      serviceAccountName: {{ include "qar.serviceAccountName" . }}
+  {{- if .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+    {{- range .Values.global.imagePullSecrets }}
+      - name: {{ . }}
+    {{- end }}
+  {{- end }}
+      initContainers:
+      - name: {{ include "qar.applicationName" . }}-ondemand-wait-db
+        image: "{{ .Values.k8sWaitFor.image.name }}:{{ .Values.k8sWaitFor.image.tag }}"
+        imagePullPolicy: IfNotPresent
+        args:
+          - "pod"
+          - "-lrole=oracledb"
+      containers:
+      - name: {{ include "qar.applicationName" . }}-ondemand-library
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+        image: "{{ .Values.image.name }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        args: ["start", "library"]
+        env:
+        - name: ARS_NUM_DB_SRVR
+          value: {{ .Values.db.numSubServers | quote }}
+        - name: ENABLE_TRACE
+          value: {{ printf "%t" .Values.trace.enabled | quote }}
+        - name: ARS_STORAGE_MANAGER
+          value: {{ .Values.storageManager }}
+        - name: OD_INSTANCE_NAME
+          value: {{ .Values.odInstanceName }}
+        - name: ARS_HOST
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: ARS_PORT
+          value: {{ .Values.service.nodePorts.ondemand | quote }}
+        - name: ARS_SRVR_INSTANCE
+          value: {{ .Values.serverInstanceName }}
+        {{ include "ondemand.env.database" . | nindent 8 }}
+        ports:
+        - name: ars-listener
+          containerPort: 1445
+        livenessProbe:
+          exec:
+            command: ["ps", "-p", "1"]
+          initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+          successThreshold: {{ .Values.livenessProbe.successThreshold }}
+        readinessProbe:
+          tcpSocket:
+            port: {{ .Values.service.nodePorts.ondemand }}
+          initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+          successThreshold: {{ .Values.readinessProbe.successThreshold }}
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+        volumeMounts:
+        - name: work
+          mountPath: /work
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: work
+        emptyDir: {}
+  {{- if and .Values.persistence.enabled .Values.persistence.existingClaim }}
+      - name: data
+        persistentVolumeClaim:
+          claimName: {{ tpl .Values.persistence.existingClaim $ }}
+  {{- else if not .Values.persistence.enabled  }}
+      - name: data
+        emptyDir: {}
+  {{- else }}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+      labels:
+        {{ include "qar.labels" . | nindent 8 }}
+      {{- with .Values.persistence.annotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      accessModes:
+      {{- range .Values.persistence.accessModes }}
+      - {{ . | quote }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ .Values.persistence.size }}
+      selector:
+        {{ include "qar.labels" . | nindent 8 }}
+  {{- end }}

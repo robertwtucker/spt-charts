@@ -3,8 +3,7 @@
 global:
   # -- Defines a unique name of an application within a Kubernetes namespace.
   applicationName: "qar"
-  # -- List of image repository pull secrets
-  # Secrets must be manually created in the namespace.
+  # -- List of image repository pull secrets. Secrets must be manually created in the namespace.
   # ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
   # Example:
   # imagePullSecrets:
@@ -12,16 +11,25 @@ global:
   imagePullSecrets: []
   oracledb:
     tnsListener:
-      # -- Defines the port to run the TNS listener on.
-      # If left undefined, the default port 1521 is used.
+      # -- Defines the port to run the TNS listener on. If left undefined, the default port 1521 is used.
       portOverride:
     emExpress:
-      # -- Defines the port to run the EM Express app on.
-      # If left undefined, the default port 5500 is used.
+      # -- Defines the port to run the EM Express app on. If left undefined, the default port 5500 is used.
       portOverride:
   ondemand:
-    # -- Defines the port to run the ARS listener on.
-    # If left undefined, the default port 1445 is used.
+    # -- Defines (in plain text) the username of the CMOD user to be created in the Oracle database(s).
+    # If left undefined, the default user `archive` is created. The username value is not treated as a Secret.
+    userOverride: ""
+    # -- Defines (in plain text) the password of the CMOD user to be created in the Oracle database(s).
+    # If left undefined, CMOD's deployment will generate a random alphanumeric password. Use the
+    # 'passOverrideSource' variable to define the password using a Secret.
+    passwordOverride: ""
+    # -- Uses a Secret to define the password of the CMOD user to be created in the Oracle database(s).
+    passwordOverrideSource:
+      useSecret: false
+      secretName: ""
+      secretKey: ""
+    # -- Defines the port to run the ARS listener on. If left undefined, the default port 1445 is used.
     portOverride:
   restapi:
     # -- Defines whether to deploy a REST API server.

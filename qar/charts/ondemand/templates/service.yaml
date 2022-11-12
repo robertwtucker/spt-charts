@@ -1,15 +1,25 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "ondemand.fullname" . }}
+  name: {{ include "qar.applicationName" . }}-ondemand
+  namespace: {{ .Release.Namespace | quote }}
   labels:
-    {{- include "ondemand.labels" . | nindent 4 }}
+    {{ include "qar.labels" . | nindent 4 }}
+  annotations:
+    {{- with .Values.service.annotations }}
+    {{ tpl (toYaml .) $ | indent 4 }}
+    {{- end }}
+    description: Service for the Oracle Database
 spec:
-  type: {{ .Values.service.type }}
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: ars
-      protocol: TCP
-      name: ars
+  - name: ars-listener
+    port: {{ .Values.global.ondemand.portOverride | default 1445 }}
+    targetPort: ars-listener
+    {{- if and (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) (not (empty .Values.service.nodePorts.ondemand)) }}
+    nodePort: {{ .Values.service.nodePorts.ondemand }}
+    {{- else if eq .Values.service.type "ClusterIP" }}
+    nodePort: null
+    {{- end }}
   selector:
-    {{- include "ondemand.selectorLabels" . | nindent 4 }}
+    {{ include "qar.labels" . | nindent 4 }}
+  type: {{ .Values.service.type }}

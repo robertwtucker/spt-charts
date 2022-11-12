@@ -18,11 +18,17 @@ global:
       portOverride:
   ondemand:
     # -- Defines (in plain text) the username of the CMOD user to be created in the Oracle database(s).
-    # If left undefined, the default user `archive` is created. The username value is not treated as a Secret.
+    # If left undefined, the default user `archive` is created. Use the `userOverrideSource' variable
+    # to define the password using a Secret.
     userOverride: ""
+    # -- Uses a Secret to define the CMOD user to be created in the Oracle database(s).
+    userOverrideSource:
+      useSecret: false
+      secretName: ""
+      secretKey: ""
     # -- Defines (in plain text) the password of the CMOD user to be created in the Oracle database(s).
-    # If left undefined, CMOD's deployment will generate a random alphanumeric password. Use the
-    # 'passOverrideSource' variable to define the password using a Secret.
+    # If left undefined, the deployment will generate a random alphanumeric password. Use the
+    # 'passwordOverrideSource' variable to define the password using a Secret.
     passwordOverride: ""
     # -- Uses a Secret to define the password of the CMOD user to be created in the Oracle database(s).
     passwordOverrideSource:

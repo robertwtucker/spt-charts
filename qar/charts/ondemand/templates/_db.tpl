@@ -11,12 +11,25 @@ Defines environment variables for the Oracle database service.
   value: {{ .Values.db.tnsServiceName }}
 - name: ORACLE_USER
   value: {{ .Values.global.ondemand.userOverride | default "archive" | quote }}
+{{- if .Values.global.ondemand.userOverrideSource.useSecret }}
+- name: ORACLE_USER
+  valueFrom:
+    secretKeyRef:
+      name: {{ required "secretName is mandatory" .Values.global.ondemand.passOverrideSource.secretName }}
+      key: {{ required "secretKey is mandatory" .Values.global.ondemand.passOverrideSource.secretKey }}
+{{- else }}
+- name: ORACLE_USER
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "qar.applicationName" . }}-ondemand-database
+      key: username
+{{- end }}
 {{- if .Values.global.ondemand.passwordOverrideSource.useSecret }}
 - name: ORACLE_PASSWORD
   valueFrom:
     secretKeyRef:
-      name: {{ required "secretName is mandatory" .Values.global.scaler.passOverrideSource.secretName }}
-      key: {{ required "secretKey is mandatory" .Values.global.scaler.passOverrideSource.secretKey }}
+      name: {{ required "secretName is mandatory" .Values.global.ondemand.passOverrideSource.secretName }}
+      key: {{ required "secretKey is mandatory" .Values.global.ondemand.passOverrideSource.secretKey }}
 {{- else }}
 - name: ORACLE_PASSWORD
   valueFrom:

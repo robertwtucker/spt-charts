@@ -13,26 +13,26 @@ Defines environment variables for the Oracle database service.
 - name: ORACLE_USER
   valueFrom:
     secretKeyRef:
-      name: {{ required "secretName is mandatory" .Values.global.ondemand.passOverrideSource.secretName }}
-      key: {{ required "secretKey is mandatory" .Values.global.ondemand.passOverrideSource.secretKey }}
+      name: {{ required "secretName is mandatory" .Values.global.ondemand.userOverrideSource.secretName }}
+      key: {{ required "secretKey is mandatory" .Values.global.ondemand.userOverrideSource.secretKey }}
 {{- else }}
 - name: ORACLE_USER
   valueFrom:
     secretKeyRef:
-      name: {{ include "qar.applicationName" . }}-ondemand-database
+      name: {{ include "qar.applicationName" . }}-ondemand
       key: username
 {{- end }}
 {{- if .Values.global.ondemand.passwordOverrideSource.useSecret }}
 - name: ORACLE_PASSWORD
   valueFrom:
     secretKeyRef:
-      name: {{ required "secretName is mandatory" .Values.global.ondemand.passOverrideSource.secretName }}
-      key: {{ required "secretKey is mandatory" .Values.global.ondemand.passOverrideSource.secretKey }}
+      name: {{ required "secretName is mandatory" .Values.global.ondemand.passwordOverrideSource.secretName }}
+      key: {{ required "secretKey is mandatory" .Values.global.ondemand.passwordOverrideSource.secretKey }}
 {{- else }}
 - name: ORACLE_PASSWORD
   valueFrom:
     secretKeyRef:
-      name: {{ include "qar.applicationName" . }}-ondemand-database
+      name: {{ include "qar.applicationName" . }}-ondemand
       key: password
 {{- end }}
 {{- end }}

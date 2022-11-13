@@ -15,15 +15,20 @@ Your deployed applications can be accessed on the following DNS names from withi
 
 ** Secrets **
 To get the authentication details, execute the following commands:
-{{- if eq (include "qar.secret.isDelegated" .Values.global.oracledb.sysPassOverrideSource) "false" }}
-  export SYS_PASSWORD=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "qar.applicationName" . }}-oracledb -o jsonpath="{.data.pass}" | base64 --decode)
+{{- if eq (include "qar.secret.isDelegated" .Values.global.oracledb.passwordOverrideSource) "false" }}
+  export ORCL_PASSWORD=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "qar.applicationName" . }}-oracledb -o jsonpath="{.data.password}" | base64 --decode)
 {{- else }}
-  The SYS password is managed externally.
+  The Oracle database SYS user's password is managed externally.
 {{- end }}
-{{- if eq (include "qar.secret.isDelegated" .Values.global.ondemand.archivePassOverrideSource) "false" }}
-  export ARCHIVE_PASSWORD=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "qar.applicationName" . }}-ondemand -o jsonpath="{.data.pass}" | base64 --decode)
+{{- if eq (include "qar.secret.isDelegated" .Values.global.ondemand.userOverrideSource) "false" }}
+  export QAR_DB_USER=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "qar.applicationName" . }}-ondemand -o jsonpath="{.data.username}" | base64 --decode)
 {{- else }}
-  The ARCHIVE password is managed externally.
+  The QAR database user name is managed externally.
+{{- end }}
+{{- if eq (include "qar.secret.isDelegated" .Values.global.ondemand.passwordOverrideSource) "false" }}
+  export QAR_DB_PASSWORD=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "qar.applicationName" . }}-ondemand -o jsonpath="{.data.password}" | base64 --decode)
+{{- else }}
+  The QAR database user's password is managed externally.
 {{- end }}
 
 ** Port Forwarding **

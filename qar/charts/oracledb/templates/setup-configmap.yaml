@@ -1,3 +1,7 @@
+{{- $passwordDelegated := eq (include "qar.secret.isDelegated" .Values.global.ondemand.passwordOverrideSource) "true" }}
+{{- $userDelegated := eq (include "qar.secret.isDelegated" .Values.global.ondemand.userOverrideSource) "true" }}
+{{- $onDemandDatabaseSecretName :=  printf "%s-%s-database" (include "qar.applicationName" . ) "ondemand" -}}
+{{- $secret := (lookup "v1" "Secret" .Release.Namespace $onDemandDatabaseSecretName) -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -7,23 +11,23 @@ metadata:
     {{ include "qar.labels" . | nindent 4 }}
 data:
   01-create-archive-pdb.sql: |
-    CREATE PLUGGABLE DATABASE archive
-    ADMIN USER archive IDENTIFIED BY {{ .Values.password }}
+    CREATE PLUGGABLE DATABASE {{ $secret.pdbArchiveName }}
+    ADMIN USER {{ $secret.username }} IDENTIFIED BY {{ $secret.password }}
     FILE_NAME_CONVERT=('/opt/oracle/oradata/ORCLCDB/pdbseed','/opt/oracle/oradata/ORCLCDB/archive');
   02-open-archive-pdb.sql: |
-    ALTER PLUGGABLE DATABASE archive OPEN READ WRITE;
+    ALTER PLUGGABLE DATABASE {{ $secret.pdbArchiveName }} OPEN READ WRITE;
   03-save-archive-pdb.sql: |
-    ALTER PLUGGABLE DATABASE archive SAVE STATE;
+    ALTER PLUGGABLE DATABASE {{ $secret.pdbArchiveName }} SAVE STATE;
   04-create-navigator-pdb.sql: |
     CREATE PLUGGABLE DATABASE navigator
-    ADMIN USER archive IDENTIFIED BY {{ .Values.password }}
+    ADMIN USER {{ $secret.username }} IDENTIFIED BY {{ .Values.password }}
     FILE_NAME_CONVERT=('/opt/oracle/oradata/ORCLCDB/pdbseed','/opt/oracle/oradata/ORCLCDB/navigator');
   05-open-navigator-pdb.sql: |
     ALTER PLUGGABLE DATABASE navigator OPEN READ WRITE;
   06-save-navigator-pdb.sql: |
     ALTER PLUGGABLE DATABASE navigator SAVE STATE;
   07-archive-grant-perms.sql: |
-    ALTER SESSION SET CONTAINER = archive;
+    ALTER SESSION SET CONTAINER = {{ $secret.pdbArchiveName }};
 
     --
     -- Create Content Manager OnDemand role : ONDEMAND

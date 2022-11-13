@@ -10,6 +10,15 @@ global:
   #   - name: myRegistryKeySecretName
   imagePullSecrets: []
   oracledb:
+    # -- Defines (in plain text) the password to be created for the Oracle database's SYS user.
+    # If left undefined, the deployment will generate a random alphanumeric password. Use the
+    # 'passwordOverrideSource' variable to define the password using a Secret.
+    passwordOverride: ""
+    # -- Uses a Secret to define the password of the CMOD user to be created in the Oracle database(s).
+    passwordOverrideSource:
+      useSecret: false
+      secretName: ""
+      secretKey: ""
     tnsListener:
       # -- Defines the port to run the TNS listener on. If left undefined, the default port 1521 is used.
       portOverride:

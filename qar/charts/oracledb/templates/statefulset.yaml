@@ -1,6 +1,3 @@
-{{- $applicationName := include "qar.applicationName" . -}}
-{{- $secretMountPath := "/mnt/secret" -}}
-{{- $passDefinition := dict "value" .Values.password "source" .Values.passwordSource "mountPath" $secretMountPath "secretName" (printf "%s-oracledb" $applicationName) "secretKey" "password" "envName" "ORACLE_PWD" "envOnly" true -}}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -45,19 +42,7 @@ spec:
         image: "{{ .Values.image.name }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         env:
-        {{ include "qar.secret.asEnv" ($passDefinition) | nindent 8 }}
-        {{- if not (empty .Values.sid) }}
-        - name: ORACLE_SID
-          value: {{ .Values.sid }}
-        {{- end }}
-        {{- if not (empty .Values.pdb) }}
-        - name: ORACLE_PDB
-          value: {{ .Values.pdb }}
-        {{- end }}
-        {{- if not (empty .Values.characterSet) }}
-        - name: ORACLE_CHARACTERSET
-          value: {{ .Values.characterSet }}
-        {{- end }}
+        {{ include "oracledb.env.database" . | nindent 8 }}
         ports:
         - name: tns-listener
           containerPort: 1521

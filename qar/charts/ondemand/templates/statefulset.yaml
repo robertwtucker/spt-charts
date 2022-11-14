@@ -89,9 +89,9 @@ spec:
           {{- toYaml .Values.resources | nindent 10 }}
         volumeMounts:
         - name: work
-          mountPath: /work
+          mountPath: /opt/qar/tmp
         - name: data
-          mountPath: /data
+          mountPath: /opt/qar/data
       volumes:
       - name: work
         emptyDir: {}

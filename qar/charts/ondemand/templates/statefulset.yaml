@@ -80,8 +80,8 @@ spec:
           failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
           successThreshold: {{ .Values.livenessProbe.successThreshold }}
         readinessProbe:
-          tcpSocket:
-            port: {{ .Values.service.nodePorts.ondemand }}
+          exec:
+            command: ["sh", "-c", "${OD_HOME}/bin/arssockd -h ${OD_INSTANCE_NAME} -P | grep -q Okay"]
           initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
           timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}

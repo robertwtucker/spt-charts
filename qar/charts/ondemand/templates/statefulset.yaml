@@ -37,6 +37,16 @@ spec:
     {{- end }}
   {{- end }}
       initContainers:
+      - name: {{ include "qar.applicationName" . }}-ondemand-stash-init
+        image: "{{ .Values.image.name }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: IfNotPresent
+        args:
+          - "sh"
+          - "-c"
+          - "${QAR_HOME}/scripts/init-stash-file.sh"
+        volumeMounts:
+        - name: work
+          mountPath: /opt/qar/tmp
       - name: {{ include "qar.applicationName" . }}-ondemand-wait-db
         image: "{{ .Values.k8sWaitFor.image.name }}:{{ .Values.k8sWaitFor.image.tag }}"
         imagePullPolicy: IfNotPresent
@@ -51,7 +61,7 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         args: ["start", "library"]
         env:
-        - name: ARS_NUM_DB_SRVR
+        - name: ARS_NUM_DBSRVR
           value: {{ .Values.db.numSubServers | quote }}
         - name: ENABLE_TRACE
           value: {{ printf "%t" .Values.trace.enabled | quote }}

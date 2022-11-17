@@ -8,7 +8,7 @@ metadata:
 data:
   01-create-archive-pdb.sql: |
     CREATE PLUGGABLE DATABASE archive
-    ADMIN USER archive IDENTIFIED BY Password1
+    ADMIN USER archive IDENTIFIED BY "Password12345*"
     FILE_NAME_CONVERT=('/opt/oracle/oradata/ORCLCDB/pdbseed','/opt/oracle/oradata/ORCLCDB/archive');
   02-open-archive-pdb.sql: |
     ALTER PLUGGABLE DATABASE archive OPEN READ WRITE;
@@ -16,7 +16,7 @@ data:
     ALTER PLUGGABLE DATABASE archive SAVE STATE;
   04-create-navigator-pdb.sql: |
     CREATE PLUGGABLE DATABASE navigator
-    ADMIN USER archive IDENTIFIED BY Password1
+    ADMIN USER archive IDENTIFIED BY "Password12345*"
     FILE_NAME_CONVERT=('/opt/oracle/oradata/ORCLCDB/pdbseed','/opt/oracle/oradata/ORCLCDB/navigator');
   05-open-navigator-pdb.sql: |
     ALTER PLUGGABLE DATABASE navigator OPEN READ WRITE;

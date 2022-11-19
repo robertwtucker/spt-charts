@@ -28,7 +28,7 @@ Defines environment variables for the Oracle database service.
   valueFrom:
     secretKeyRef:
       name: {{ include "qar.applicationName" . }}-ondemand
-      key: username
+      key: dbUsername
 {{- end }}
 {{- if .Values.global.ondemand.passwordOverrideSource.useSecret }}
 - name: ORACLE_PASSWORD
@@ -41,7 +41,7 @@ Defines environment variables for the Oracle database service.
   valueFrom:
     secretKeyRef:
       name: {{ include "qar.applicationName" . }}-ondemand
-      key: password
+      key: dbPassword
 {{- end }}
 {{- end }}
 {{- end }}
@@ -58,4 +58,42 @@ Generates the Oracle TNS service name from the database name, if not provided di
 */}}
 {{- define "ondemand.tnsServiceName" -}}
 {{- .Values.tnsServiceName | default .Values.serverInstanceName | default "archive" | lower }}
+{{- end }}
+
+{{/*
+Defines environment variables for the REST API service.
+*/}}
+{{- define "ondemand.env.default" -}}
+- name: OD_INSTANCE_NAME
+  value: {{ upper .Values.odInstanceName }}
+- name: OD_HOST
+  value: {{ include "qar.applicationName" . }}-ondemand-hl.{{ .Release.Namespace }}.svc.cluster.local
+- name: OD_PORT
+  value: {{ .Values.global.ondemand.portOverride | default 1445 | quote }}
+{{- if .Values.global.ondemand.userOverrideSource.useSecret }}
+- name: OD_USER
+  valueFrom:
+    secretKeyRef:
+      name: {{ required "secretName is mandatory" .Values.global.restapi.userOverrideSource.secretName }}
+      key: {{ required "secretKey is mandatory" .Values.global.restapi.userOverrideSource.secretKey }}
+{{- else }}
+- name: OD_USER
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "qar.applicationName" . }}-ondemand
+      key: odUsername
+{{- end }}
+{{- if .Values.global.ondemand.passwordOverrideSource.useSecret }}
+- name: OD_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ required "secretName is mandatory" .Values.global.ondemand.passwordOverrideSource.secretName }}
+      key: {{ required "secretKey is mandatory" .Values.global.ondemand.passwordOverrideSource.secretKey }}
+{{- else }}
+- name: OD_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "qar.applicationName" . }}-ondemand
+      key: odPassword
+{{- end }}
 {{- end }}

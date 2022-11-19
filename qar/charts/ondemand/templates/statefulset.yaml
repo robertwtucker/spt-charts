@@ -41,12 +41,30 @@ spec:
         image: "{{ .Values.image.name }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: IfNotPresent
         args:
-          - "sh"
-          - "-c"
-          - "${QAR_HOME}/scripts/init-stash-file.sh"
+        - "sh"
+        - "-c"
+        - "${QAR_HOME}/scripts/init-stash-file.sh"
+        env:
+        {{ include "ondemand.env.default" . | nindent 8 }}
         volumeMounts:
         - name: work
           mountPath: /opt/qar/tmp
+      {{- if .Values.global.restapi.enabled }}
+      - name: {{ include "qar.applicationName" . }}-ondemand-restapi-init
+        image: "{{ .Values.restapi.image.name }}:{{ .Values.restapi.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.restapi.imagePullPolicy }}
+        args:
+        - "sh"
+        - "-c"
+        - "${QAR_HOME}/scripts/generate-rest-config.sh"
+        env:
+        {{ include "ondemand.env.default" . | nindent 8 }}
+        volumeMounts:
+        - name: odpool
+          mountPath: /opt/qar/config/rest/odpool
+        - name: restcfg
+          mountPath: /opt/qar/tmp/restcfg
+      {{- end }}
       - name: {{ include "qar.applicationName" . }}-ondemand-wait-db
         image: "{{ .Values.k8sWaitFor.image.name }}:{{ .Values.k8sWaitFor.image.tag }}"
         imagePullPolicy: IfNotPresent
@@ -104,17 +122,65 @@ spec:
           mountPath: /opt/qar/tmp
         - name: data
           mountPath: /opt/qar/data
+      {{- if .Values.global.restapi.enabled }}
+      - name: {{ include "qar.applicationName" . }}-ondemand-restapi
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+        image: "{{ .Values.restapi.image.name }}:{{ .Values.restapi.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.restapi.imagePullPolicy }}
+        ports:
+        - name: http
+          containerPort: 9080
+        livenessProbe:
+          tcpSocket:
+            port: 9080
+          initialDelaySeconds: {{ .Values.restapi.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.restapi.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.restapi.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.restapi.livenessProbe.failureThreshold }}
+          successThreshold: {{ .Values.restapi.livenessProbe.successThreshold }}
+        readinessProbe:
+          httpGet:
+            path: /qar/v1/documentation
+            port: 9080
+            scheme: HTTP
+          initialDelaySeconds: {{ .Values.restapi.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.restapi.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.restapi.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.restapi.readinessProbe.failureThreshold }}
+          successThreshold: {{ .Values.restapi.readinessProbe.successThreshold }}
+        volumeMounts:
+        - name: odpool
+          mountPath: /opt/qar/config/rest/odpool
+        - name: restcfg
+          mountPath: /opt/qar/tmp/restcfg
+      {{- end}}
       volumes:
       - name: work
         emptyDir: {}
-  {{- if and .Values.persistence.enabled .Values.persistence.existingClaim }}
+  {{- if and .Values.global.restapi.enabled }}
+      - name: restcfg
+        emptyDir: {}
+  {{- end }}
+  {{- if or .Values.persistence.enabled .Values.ondemand.restapi.persistence.enabled }}
+    {{- if .Values.global.restapi.enabled }}
+      {{- if and .Values.restapi.persistence.enabled .Values.restapi.persistence.existingClaim }}
+      - name: odpool
+        persistentVolumeClaim:
+          claimName: {{ tpl .Values.restapi.persistence.existingClaim $ }}
+      {{- else if not .Values.restapi.persistence.enabled }}
+      - name: odpool
+        emptyDir: {}
+      {{- end }}
+    {{- end }}
+    {{- if and .Values.persistence.enabled .Values.persistence.existingClaim }}
       - name: data
         persistentVolumeClaim:
           claimName: {{ tpl .Values.persistence.existingClaim $ }}
-  {{- else if not .Values.persistence.enabled  }}
+    {{- else if not .Values.persistence.enabled  }}
       - name: data
         emptyDir: {}
-  {{- else }}
+    {{- else }}
   volumeClaimTemplates:
   - metadata:
       name: data
@@ -134,4 +200,25 @@ spec:
           storage: {{ .Values.persistence.size }}
       selector:
         {{ include "qar.labels" . | nindent 8 }}
+      {{ if and .Values.global.restapi.enabled .Values.restapi.persistence.enabled }}
+  - metadata:
+      name: odpool
+      labels:
+        {{ include "qar.labels" . | nindent 8 }}
+      {{- with .Values.restapi.persistence.annotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      accessModes:
+      {{- range .Values.restapi.persistence.accessModes }}
+      - {{ . | quote }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ .Values.restapi.persistence.size }}
+      selector:
+        {{ include "qar.labels" . | nindent 8 }}
+      {{- end }}
+    {{- end }}
   {{- end }}

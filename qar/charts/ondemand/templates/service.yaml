@@ -9,7 +9,7 @@ metadata:
     {{- with .Values.service.annotations }}
     {{ tpl (toYaml .) $ | indent 4 }}
     {{- end }}
-    description: Service for the Oracle Database
+    description: Service for QAR OnDemand
 spec:
   ports:
   - name: ars-listener

@@ -6,8 +6,6 @@ metadata:
   labels:
     app: {{ include "qar.applicationName" . }}
     role: {{ .Values.role }}-import
-#  annotations:
-#    "helm.sh/resource-policy": keep
 spec:
   template:
     metadata:
@@ -41,5 +39,6 @@ spec:
         - "${QAR_HOME}/scripts/import-settings.sh"
         env:
           {{ include "ondemand.env.default" . | nindent 8 }}
-  backoffLimit: 0
+  backoffLimit: 5
+  ttlSecondsAfterFinished: 600
 {{- end }}

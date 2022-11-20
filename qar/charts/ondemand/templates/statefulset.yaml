@@ -45,7 +45,7 @@ spec:
         - "-c"
         - "${QAR_HOME}/scripts/init-stash-file.sh"
         env:
-        {{ include "ondemand.env.default" . | nindent 8 }}
+          {{ include "ondemand.env.default" . | nindent 8 }}
         volumeMounts:
         - name: work
           mountPath: /opt/qar/tmp
@@ -58,7 +58,9 @@ spec:
         - "-c"
         - "${QAR_HOME}/scripts/generate-rest-config.sh"
         env:
-        {{ include "ondemand.env.default" . | nindent 8 }}
+          {{ include "ondemand.env.default" . | nindent 8 }}
+        securityContext:
+          runAsUser: 0
         volumeMounts:
         - name: odpool
           mountPath: /opt/qar/config/rest/odpool

@@ -89,7 +89,7 @@ restapi:
     #   memory: 128Mi
     # requests:
     #   cpu: 100m
-    #   memory: 128Mi
+  #   memory: 128Mi
 
   ingress:
     # -- Enables Ingress, a Kubernetes API object that provides external access and load balancing.
@@ -129,6 +129,70 @@ restapi:
 
 # End REST API block
 
+# Full Text Search server configuration
+fts:
+  image:
+    # -- Defines the URL address of the FTS server image stored in a container repository.
+    name: registry.sptcloud.com/qar/ondemand-fts
+    # -- Overrides tag specified by the `appVersion` in the chart file.
+    tag: ""
+    # -- FTS image pull policy [Always|IfNotPresent].
+    pullPolicy: IfNotPresent
+
+  service:
+    # -- Provide any additional annotations which may be required.
+    annotations: {}
+    # -- Defines the value for the Kubernetes service object [ClusterIP|LoadBalancer].
+    type: ClusterIP
+    # Node ports to expose
+    # NOTE: choose port between <30000-32767>
+    # ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
+    nodePorts:
+      # -- Node port for WAS
+      http: 9181
+
+  # Learn about liveness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
+  # Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
+  livenessProbe:
+    # -- Initial delay before probing liveness
+    initialDelaySeconds: 5
+    # -- Period in seconds between liveness checks
+    periodSeconds: 30
+    # -- Timeout in seconds for liveness checks
+    timeoutSeconds: 1
+    # -- Number of consecutive negative tests before declaring failure
+    failureThreshold: 5
+    # -- Number of consecutive positive tests before counting it as a success
+    successThreshold: 1
+
+  # Learn about readiness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
+  # Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
+  readinessProbe:
+    # -- Initial delay before probing readiness
+    initialDelaySeconds: 10
+    # -- Period in seconds between readiness checks
+    periodSeconds: 30
+    # -- Timeout in seconds for readiness checks
+    timeoutSeconds: 1
+    # -- Number of consecutive negative tests before declaring failure
+    failureThreshold: 5
+    # -- Number of consecutive positive tests before counting it as a success
+    successThreshold: 1
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+# End REST API block
+
 # -- QAR component designation.
 role: ondemand
 
@@ -143,9 +207,9 @@ podSecurityContext:
   # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
   runAsUser: 1001
   # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#volumes-and-file-systems.
-  #  fsGroup: 1001
+  fsGroup: 1001
   # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
-  runAsNonRoot: true
+  #  runAsNonRoot: true
 
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
 securityContext:
@@ -156,7 +220,7 @@ securityContext:
   # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
   runAsUser: 1001
   # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#capabilities.
-  #  runAsGroup: 1001
+  runAsGroup: 1001
   # -- The default (recommended) configuration prohibits all Linux capabilities.
   capabilities:
     drop:

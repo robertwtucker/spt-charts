@@ -65,6 +65,15 @@ spec:
         - name: restcfg
           mountPath: /opt/qar/tmp/restcfg
       {{- end }}
+      {{- if .Values.global.fts.enabled }}
+      - name: {{ include "qar.applicationName" . }}-ondemand-fts-init
+        image: "{{ .Values.fts.image.name }}:{{ .Values.fts.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.restapi.imagePullPolicy }}
+        args: ["init"]
+        volumeMounts:
+          - name: work
+            mountPath: /opt/qar/tmp
+      {{- end }}
       - name: {{ include "qar.applicationName" . }}-ondemand-wait-db
         image: "{{ .Values.k8sWaitFor.image.name }}:{{ .Values.k8sWaitFor.image.tag }}"
         imagePullPolicy: IfNotPresent
@@ -155,6 +164,35 @@ spec:
         - name: restcfg
           mountPath: /opt/qar/tmp/restcfg
       {{- end}}
+      {{- if .Values.global.fts.enabled }}
+      - name: {{ include "qar.applicationName" . }}-ondemand-fts
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+        image: "{{ .Values.fts.image.name }}:{{ .Values.fts.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.fts.imagePullPolicy }}
+        ports:
+          - name: http
+            containerPort: 8191
+        livenessProbe:
+          exec:
+            command: ["ps", "-p", "1"]
+          initialDelaySeconds: {{ .Values.restapi.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.restapi.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.restapi.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.restapi.livenessProbe.failureThreshold }}
+          successThreshold: {{ .Values.restapi.livenessProbe.successThreshold }}
+        readinessProbe:
+          tcpSocket:
+            port: 8191
+          initialDelaySeconds: {{ .Values.restapi.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.restapi.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.restapi.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.restapi.readinessProbe.failureThreshold }}
+          successThreshold: {{ .Values.restapi.readinessProbe.successThreshold }}
+        volumeMounts:
+          - name: work
+            mountPath: /opt/qar/tmp
+      {{- end }}
       volumes:
       - name: work
         emptyDir: {}

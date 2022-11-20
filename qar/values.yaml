@@ -88,6 +88,11 @@ global:
       secretKey: ""
     # -- Defines the port to run the HTTP listener on. If left undefined, the default port 9080 is used.
     portOverride:
+  fts:
+    # -- Defines whether to enable Full-Text Search.
+    enabled: false
+    # -- Defines the port to run the FTS serverr on. If left undefined, the default port 8191 is used.
+    portOverride:
   navigator:
     # -- Defines whether to deploy a Content Navigator server.
     enabled: false

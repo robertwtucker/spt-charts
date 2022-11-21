@@ -2,17 +2,17 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ include "qar.applicationName" . }}-ondemand-import
+  name: {{ include "qar.applicationName" . }}-ondemand-initial-setup
   labels:
     app: {{ include "qar.applicationName" . }}
-    role: {{ .Values.role }}-import
+    role: {{ .Values.role }}-initial-setup
 spec:
   template:
     metadata:
-      name: {{ include "qar.applicationName" . }}-ondemand-import
+      name: {{ include "qar.applicationName" . }}-ondemand-initial-setup
       labels:
         app: {{ include "qar.applicationName" . }}
-        role: {{ .Values.role }}-import
+        role: {{ .Values.role }}-initial-setup
     spec:
       restartPolicy: OnFailure
       {{- if .Values.global.imagePullSecrets }}
@@ -29,14 +29,14 @@ spec:
         - "pod"
         - "-lrole=ondemand"
       containers:
-      - name: {{ include "qar.applicationName" . }}-ondemand-import
+      - name: {{ include "qar.applicationName" . }}-ondemand-initial-setup
         image: "{{ .Values.image.name }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         securityContext:
           {{- toYaml .Values.securityContext | nindent 10 }}
         args:
         - "sh"
         - "-c"
-        - "${QAR_HOME}/scripts/import-settings.sh"
+        - "${QAR_HOME}/scripts/initial-setup.sh"
         env:
           {{ include "ondemand.env.default" . | nindent 8 }}
   backoffLimit: 5

@@ -336,3 +336,5 @@ k8sWaitFor:
     name: groundnuty/k8s-wait-for
     # -- Specifies the version tag to use.
     tag: no-root-v1.7
+
+performInitialSetup: false

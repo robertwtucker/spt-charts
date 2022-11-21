@@ -42,6 +42,7 @@ To get the authentication details, execute the following commands:
 {{- end }}
 
 {{- if .Values.global.restapi.enabled }}
+
 ** REST API Credentials **
 To get the pool credentials for accessing the REST API, execute the following command:
   kubectl cp {{ include "qar.applicationName" . }}-ondemand-0:/opt/qar/config/rest/odpool/{{ .Values.global.ondemand.userOverride | default "admin" }}.rest.credentials ./{{ .Values.global.ondemand.userOverride | default "admin" }}.rest.credentials -c {{ include "qar.applicationName" . }}-ondemand-restapi

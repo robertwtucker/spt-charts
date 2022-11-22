@@ -1,0 +1,119 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "qar.applicationName" . }}-oracledb
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "qar.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ include "oracledb.svc.headless" . }}
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "qar.labels" . | nindent 6 }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        {{- with .Values.podAnnotations }}
+        {{- range $key, $value := . }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+        {{- end }}
+      labels:
+        {{- include "qar.labels" . | nindent 8 }}
+      name: {{ include "qar.applicationName" . }}-oracledb-template
+    spec:
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      serviceAccountName: {{ include "qar.serviceAccountName" . }}
+{{- if .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+{{- range .Values.global.imagePullSecrets }}
+      - name: {{ . }}
+{{- end }}
+{{- end }}
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: {{ include "qar.applicationName" . }}-oracledb
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+        image: "{{ .Values.image.name }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+        {{ include "oracledb.env.database" . | nindent 8 }}
+        ports:
+        - name: tns-listener
+          containerPort: 1521
+        - name: tcp-emexpress
+          containerPort: 5500
+        livenessProbe:
+          tcpSocket:
+            port: 1521
+          initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+          successThreshold: {{ .Values.livenessProbe.successThreshold }}
+        readinessProbe:
+          exec:
+            command: [ "/bin/sh", "-c", "if [ -f $ORACLE_BASE/checkDBLockStatus.sh ]; then $ORACLE_BASE/checkDBLockStatus.sh; else $ORACLE_BASE/checkDBStatus.sh; fi"]
+          initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+          successThreshold: {{ .Values.readinessProbe.successThreshold }}
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+        volumeMounts:
+        - name: setup
+          mountPath: "/opt/oracle/scripts/setup"
+      {{- if .Values.shmVolume.enabled }}
+        - name: dshm
+          mountPath: "/dev/shm"
+      {{- end }}
+      {{- if .Values.persistence.enabled }}
+        - name: data
+          mountPath: {{ .Values.persistence.mountPath | quote }}
+      {{- end }}
+      volumes:
+      - name: setup
+        configMap:
+          name: {{ include "qar.applicationName" . }}-oracledb-setup
+    {{- if .Values.shmVolume.enabled }}
+      - name: dshm
+        emptyDir:
+          medium: Memory
+      {{- if .Values.shmVolume.sizeLimit }}
+          sizeLimit: {{ .Values.shmVolume.sizeLimit }}
+      {{- end}}
+    {{- end}}
+  {{- if and .Values.persistence.enabled .Values.persistence.existingClaim }}
+      - name: data
+        persistentVolumeClaim:
+          claimName: {{ tpl .Values.persistence.existingClaim $ }}
+  {{- else if not .Values.persistence.enabled }}
+      - name: data
+        emptyDir: {}
+  {{- else }}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+      labels:
+        {{ include "qar.labels" . | nindent 8 }}
+      {{- with .Values.persistence.annotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      accessModes:
+      {{- range .Values.persistence.accessModes }}
+      - {{ . | quote }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ .Values.persistence.size }}
+      selector:
+        {{ include "qar.labels" . | nindent 8 }}
+  {{- end }}

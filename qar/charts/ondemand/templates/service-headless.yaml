@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ondemand.svc.headless" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{ include "qar.labels" . | nindent 4 }}
+  annotations:
+    {{- with .Values.service.annotations }}
+    {{ tpl (toYaml .) $ | indent 4 }}
+    {{- end }}
+    description: Headless service for CMOD
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+spec:
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    - name: ars-listener
+      port: {{ .Values.global.ondemand.portOverride | default 1445 }}
+      targetPort: ars-listener
+  selector:
+    {{ include "qar.labels" . | nindent 4 }}

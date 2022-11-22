@@ -1,0 +1,27 @@
+{{- if .Values.global.restapi.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "qar.applicationName" . }}-ondemand-restapi
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{ include "qar.labels" . | nindent 4 }}
+  annotations:
+    {{- with .Values.restapi.service.annotations }}
+    {{ tpl (toYaml .) $ | indent 4 }}
+    {{- end }}
+    description: Service for the QAR OnDemand REST API
+spec:
+  ports:
+  - name: http
+    port: {{ .Values.global.restapi.portOverride | default 9080 }}
+    targetPort: http
+    {{- if and (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) (not (empty .Values.restapi.service.nodePorts.http)) }}
+    nodePort: {{ .Values.restapi.service.nodePorts.http }}
+    {{- else if eq .Values.restapi.service.type "ClusterIP" }}
+    nodePort: null
+    {{- end }}
+  selector:
+    {{ include "qar.labels" . | nindent 4 }}
+  type: {{ .Values.restapi.service.type }}
+{{- end }}

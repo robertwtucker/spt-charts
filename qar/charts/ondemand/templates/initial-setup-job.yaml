@@ -1,0 +1,44 @@
+{{- if and .Values.performInitialSetup .Release.IsInstall }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "qar.applicationName" . }}-ondemand-initial-setup
+  labels:
+    app: {{ include "qar.applicationName" . }}
+    role: {{ .Values.role }}-initial-setup
+spec:
+  template:
+    metadata:
+      name: {{ include "qar.applicationName" . }}-ondemand-initial-setup
+      labels:
+        app: {{ include "qar.applicationName" . }}
+        role: {{ .Values.role }}-initial-setup
+    spec:
+      restartPolicy: OnFailure
+      {{- if .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+      {{- range .Values.global.imagePullSecrets }}
+      - name: {{ . }}
+      {{- end }}
+      {{- end }}
+      initContainers:
+      - name: {{ include "qar.applicationName" . }}-ondemand-wait-active
+        image: "{{ .Values.k8sWaitFor.image.name }}:{{ .Values.k8sWaitFor.image.tag }}"
+        imagePullPolicy: IfNotPresent
+        args:
+        - "pod"
+        - "-lrole=ondemand"
+      containers:
+      - name: {{ include "qar.applicationName" . }}-ondemand-initial-setup
+        image: "{{ .Values.image.name }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+        args:
+        - "sh"
+        - "-c"
+        - "${QAR_HOME}/scripts/initial-setup.sh"
+        env:
+          {{ include "ondemand.env.default" . | nindent 8 }}
+  backoffLimit: 5
+  ttlSecondsAfterFinished: 600
+{{- end }}

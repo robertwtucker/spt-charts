@@ -119,14 +119,14 @@ resources: {}
 ingress:
   # -- Enables Ingress, a Kubernetes API object that provides external access and load balancing.
   enabled: false
-  # -- Defines the Ingress host.
-  host: ""
   # -- Provide any additional annotations which may be required.
   annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
+  # -- Defines the host(s) for this Ingress.
   hosts:
     - host: ""
+  # -- Defines the TLS-enabled host(s) and options.
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:

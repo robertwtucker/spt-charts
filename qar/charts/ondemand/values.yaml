@@ -89,17 +89,17 @@ restapi:
     #   memory: 128Mi
     # requests:
     #   cpu: 100m
-  #   memory: 128Mi
+    #   memory: 128Mi
 
   ingress:
     # -- Enables Ingress, a Kubernetes API object that provides external access and load balancing.
     enabled: false
-    # -- Defines the Ingress host.
-    host: ""
     # -- Provide any additional annotations which may be required.
     annotations: {}
     hosts:
+      # -- Defines the host(s) for this Ingress.
       - host: ""
+    # -- Defines the TLS-enabled host(s) and options.
     tls: []
     #  - secretName: chart-example-tls
     #    hosts:
@@ -284,12 +284,12 @@ resources: {}
 ingress:
   # -- Enables Ingress, a Kubernetes API object that provides external access and load balancing.
   enabled: false
-  # -- Defines the Ingress host.
-  host: ""
   # -- Provide any additional annotations which may be required.
   annotations: {}
   hosts:
+    # -- Defines the host(s) for this Ingress.
     - host: ""
+  # -- Defines the TLS-enabled host(s) and options.
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -337,4 +337,5 @@ k8sWaitFor:
     # -- Specifies the version tag to use.
     tag: no-root-v1.7
 
+# -- Defines whether to create a batch job to perform initial setup processing.
 performInitialSetup: false

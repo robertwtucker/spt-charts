@@ -53,7 +53,7 @@ To connect to your applications execute the following commands:
   $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "qar.applicationName" . }}-oracledb {{ .Values.global.oracledb.portOverride | default 1521 }}:{{ .Values.global.oracledb.portOverride | default 1521 }}
   $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "qar.applicationName" . }}-ondemand {{ .Values.global.ondemand.portOverride | default 1445 }}:{{ .Values.global.ondemand.portOverride | default 1445 }}
 {{- if .Values.global.restapi.enabled }}
-  $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "qar.applicationName" . }}-restapi {{ .Values.global.restapi.portOverride | default 9080 }}:{{ .Values.global.restapi.portOverride | default 9080 }}
+  $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "qar.applicationName" . }}-ondemand-restapi {{ .Values.global.restapi.portOverride | default 9080 }}:{{ .Values.global.restapi.portOverride | default 9080 }}
 {{- end }}
 {{- if .Values.global.navigator.enabled }}
   $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "qar.applicationName" . }}-navigator {{ .Values.global.navigator.portOverrid | default 9080 }}:{{ .Values.global.navigator.portOverride | default 9080 }}

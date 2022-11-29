@@ -94,12 +94,12 @@ global:
     # -- Defines the port to run the FTS serverr on. If left undefined, the default port 8191 is used.
     portOverride:
   navigator:
-    # -- Defines whether to deploy a Content Navigator server.
+    # -- Defines whether to deploy a Content Navigator server. [Not Implemented Yet]
     enabled: false
-    # -- Defines the port to run the HTTP listener on. If left undefined, the default port 9080 is used.
+    # -- Defines the port to run the HTTP listener on. If left undefined, the default port 9080 is used. [Not Implemented Yet]
     portOverride:
   arsload:
-    # -- Defines whether to deploy an ARSLOAD server.
+    # -- Defines whether to deploy an ARSLOAD server. [Not Implemented Yet]
     enabled: false
   zookeeper:
     # -- Defines whether to deploy a Zookeeper instance.

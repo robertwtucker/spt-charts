@@ -9,6 +9,9 @@ Your deployed applications can be accessed on the following DNS names from withi
 {{- if .Values.global.restapi.enabled }}
   QAR REST API: {{ include "qar.applicationName" . }}-ondemand-restapi.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.global.restapi.portOverride | default 9080 }}
 {{- end }}
+{{- if .Values.global.arsload.enabled }}
+  ARSLOAD: N/A (access via batch load folder only)
+{{- end }}
 {{- if .Values.global.navigator.enabled }}
   navigator: {{ include "qar.applicationName" . }}-navigator.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.global.navigator.portOverride | default 9080 }}
 {{- end }}
@@ -35,17 +38,37 @@ To get the authentication details, execute the following commands:
 {{- else }}
   The QAR administrative user's name is managed externally.
 {{- end }}
-{{- if eq (include "qar.secret.isDelegated" .Values.global.restapi.passwordOverrideSource) "false" }}
-  export QAR_OD_PASSWORD=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "qar.applicationName" . }}-ondemand-restapi -o jsonpath="{.data.odPassword}" | base64 --decode)
+{{- if eq (include "qar.secret.isDelegated" .Values.global.ondemand.passwordOverrideSource) "false" }}
+  export QAR_OD_PASSWORD=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "qar.applicationName" . }}-ondemand -o jsonpath="{.data.odPassword}" | base64 --decode)
 {{- else }}
   The QAR administrative user's password is managed externally.
+{{- end }}
+{{- if eq (include "qar.secret.isDelegated" .Values.global.restapi.userOverrideSource) "false" }}
+  export QAR_REST_USER=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "qar.applicationName" . }}-ondemand -o jsonpath="{.data.restUsername}" | base64 --decode)
+{{- else }}
+  The QAR REST API user's name is managed externally.
+{{- end }}
+{{- if eq (include "qar.secret.isDelegated" .Values.global.restapi.passwordOverrideSource) "false" }}
+  export QAR_REST_PASSWORD=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "qar.applicationName" . }}-ondemand -o jsonpath="{.data.restPassword}" | base64 --decode)
+{{- else }}
+  The QAR REST API user's password is managed externally.
+{{- end }}
+{{- if eq (include "qar.secret.isDelegated" .Values.global.arsload.userOverrideSource) "false" }}
+  export QAR_ARLOAD_USER=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "qar.applicationName" . }}-ondemand -o jsonpath="{.data.loadUsername}" | base64 --decode)
+{{- else }}
+  The QAR ARSLOAD user's name is managed externally.
+{{- end }}
+{{- if eq (include "qar.secret.isDelegated" .Values.global.arsload.passwordOverrideSource) "false" }}
+  export QAR_ARSLOAD_PASSWORD=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "qar.applicationName" . }}-ondemand -o jsonpath="{.data.loadPassword}" | base64 --decode)
+{{- else }}
+  The QAR ARSLOAD user's password is managed externally.
 {{- end }}
 
 {{- if .Values.global.restapi.enabled }}
 
 ** REST API Credentials **
 To get the pool credentials for accessing the REST API, execute the following command:
-  kubectl cp {{ include "qar.applicationName" . }}-ondemand-0:/opt/qar/config/rest/odpool/{{ .Values.global.ondemand.userOverride | default "admin" }}.rest.credentials ./{{ .Values.global.ondemand.userOverride | default "admin" }}.rest.credentials -c {{ include "qar.applicationName" . }}-ondemand-restapi
+  kubectl cp {{ include "qar.applicationName" . }}-ondemand-0:/opt/qar/config/rest/odpool/{{ .Values.global.restapi.userOverride | default "admin" }}.rest.credentials ./{{ .Values.global.restapi.userOverride | default "admin" }}.rest.credentials -c {{ include "qar.applicationName" . }}-ondemand-restapi
 {{- end }}
 
 ** Port Forwarding **

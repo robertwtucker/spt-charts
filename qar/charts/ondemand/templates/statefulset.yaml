@@ -13,8 +13,8 @@ spec:
   selector:
     matchLabels:
       {{- include "qar.labels" . | nindent 6 }}
-  strategy:
-    type: Recreate
+  updateStrategy:
+    type: RollingUpdate
   template:
     metadata:
     {{- with .Values.podAnnotations }}
@@ -45,7 +45,7 @@ spec:
         - "-c"
         - "${QAR_HOME}/scripts/init-stash-file.sh"
         env:
-          {{ include "ondemand.env.default" . | nindent 8 }}
+          {{ include "ondemand.env.init" . | nindent 8 }}
         volumeMounts:
         - name: work
           mountPath: /opt/qar/tmp
@@ -58,7 +58,7 @@ spec:
         - "-c"
         - "${QAR_HOME}/scripts/generate-rest-config.sh"
         env:
-          {{ include "ondemand.env.default" . | nindent 8 }}
+          {{ include "ondemand.env.restapi" . | nindent 8 }}
         securityContext:
           runAsUser: 0
         volumeMounts:
@@ -88,24 +88,24 @@ spec:
           {{- toYaml .Values.securityContext | nindent 10 }}
         image: "{{ .Values.image.name }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        args: ["start", "library"]
+        args: [start, library]
         env:
-        - name: ARS_NUM_DBSRVR
-          value: {{ .Values.db.numSubServers | quote }}
-        - name: ENABLE_TRACE
-          value: {{ printf "%t" .Values.trace.enabled | quote }}
-        - name: ARS_STORAGE_MANAGER
-          value: {{ .Values.storageManager }}
-        - name: OD_INSTANCE_NAME
-          value: {{ .Values.odInstanceName }}
         - name: ARS_HOST
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+        - name: ARS_NUM_DBSRVR
+          value: {{ .Values.db.numSubServers | quote }}
         - name: ARS_PORT
           value: {{ .Values.service.nodePorts.ondemand | quote }}
         - name: ARS_SRVR_INSTANCE
           value: {{ include "ondemand.serverInstanceName" . }}
+        - name: ARS_STORAGE_MANAGER
+          value: {{ .Values.storageManager }}
+        - name: ENABLE_TRACE
+          value: {{ printf "%t" .Values.trace.enabled | quote }}
+        - name: OD_INSTANCE_NAME
+          value: {{ .Values.odInstanceName }}
         {{ include "ondemand.env.database" . | nindent 8 }}
         ports:
         - name: ars-listener
@@ -140,8 +140,8 @@ spec:
         image: "{{ .Values.restapi.image.name }}:{{ .Values.restapi.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.restapi.imagePullPolicy }}
         ports:
-        - name: http
-          containerPort: 9080
+          - name: http
+            containerPort: 9080
         livenessProbe:
           tcpSocket:
             port: 9080
@@ -161,10 +161,43 @@ spec:
           failureThreshold: {{ .Values.restapi.readinessProbe.failureThreshold }}
           successThreshold: {{ .Values.restapi.readinessProbe.successThreshold }}
         volumeMounts:
-        - name: odpool
-          mountPath: /opt/qar/config/rest/odpool
-        - name: restcfg
-          mountPath: /opt/qar/tmp/restcfg
+          - name: odpool
+            mountPath: /opt/qar/config/rest/odpool
+          - name: restcfg
+            mountPath: /opt/qar/tmp/restcfg
+      {{- end}}
+      {{- if .Values.global.arsload.enabled }}
+      - name: {{ include "qar.applicationName" . }}-ondemand-arsload
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+        image: "{{ .Values.image.name }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        args: [start, arsload]
+        env:
+          {{ include "ondemand.env.arsload" . | nindent 8 }}
+        livenessProbe:
+          exec:
+            command: ["ps", "-p", "1"]
+          initialDelaySeconds: {{ .Values.arsload.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.arsload.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.arsload.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.arsload.livenessProbe.failureThreshold }}
+          successThreshold: {{ .Values.arsload.livenessProbe.successThreshold }}
+        readinessProbe:
+          exec:
+            command: ["/bin/bash", "-c", "ps -p $(cat /tmp/qar/run/od.pid)"]
+          initialDelaySeconds: {{ .Values.arsload.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.arsload.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.arsload.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.arsload.readinessProbe.failureThreshold }}
+          successThreshold: {{ .Values.arsload.readinessProbe.successThreshold }}
+        volumeMounts:
+        - name: work
+          mountPath: /opt/qar/tmp
+        {{- if .Values.arsload.persistence.enabled }}
+        - name: load
+          mountPath: {{ .Values.arsload.persistence.mountPath }}
+        {{- end }}
       {{- end}}
       {{- if .Values.global.fts.enabled }}
       - name: {{ include "qar.applicationName" . }}-ondemand-fts
@@ -178,19 +211,19 @@ spec:
         livenessProbe:
           exec:
             command: ["ps", "-p", "1"]
-          initialDelaySeconds: {{ .Values.restapi.livenessProbe.initialDelaySeconds }}
-          periodSeconds: {{ .Values.restapi.livenessProbe.periodSeconds }}
-          timeoutSeconds: {{ .Values.restapi.livenessProbe.timeoutSeconds }}
-          failureThreshold: {{ .Values.restapi.livenessProbe.failureThreshold }}
-          successThreshold: {{ .Values.restapi.livenessProbe.successThreshold }}
+          initialDelaySeconds: {{ .Values.fts.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.fts.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.fts.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.fts.livenessProbe.failureThreshold }}
+          successThreshold: {{ .Values.fts.livenessProbe.successThreshold }}
         readinessProbe:
           tcpSocket:
             port: 8191
-          initialDelaySeconds: {{ .Values.restapi.readinessProbe.initialDelaySeconds }}
-          periodSeconds: {{ .Values.restapi.readinessProbe.periodSeconds }}
-          timeoutSeconds: {{ .Values.restapi.readinessProbe.timeoutSeconds }}
-          failureThreshold: {{ .Values.restapi.readinessProbe.failureThreshold }}
-          successThreshold: {{ .Values.restapi.readinessProbe.successThreshold }}
+          initialDelaySeconds: {{ .Values.fts.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.fts.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.fts.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.fts.readinessProbe.failureThreshold }}
+          successThreshold: {{ .Values.fts.readinessProbe.successThreshold }}
         volumeMounts:
           - name: work
             mountPath: /opt/qar/tmp
@@ -198,10 +231,17 @@ spec:
       volumes:
       - name: work
         emptyDir: {}
-  {{- if and .Values.global.restapi.enabled }}
+  {{- if .Values.global.restapi.enabled }}
       - name: restcfg
         emptyDir: {}
   {{- end }}
+  {{- if and .Values.global.arsload.enabled .Values.arsload.persistence.enabled }}
+    {{- if .Values.arsload.persistence.existingClaim }}
+      - name: load
+        persistentVolumeClaim:
+          claimName: {{ tpl .Values.arsload.persistence.existingClaim $ }}
+    {{- end}}
+  {{- end}}
   {{- if or .Values.persistence.enabled .Values.ondemand.restapi.persistence.enabled }}
     {{- if .Values.global.restapi.enabled }}
       {{- if and .Values.restapi.persistence.enabled .Values.restapi.persistence.existingClaim }}
@@ -239,7 +279,8 @@ spec:
         requests:
           storage: {{ .Values.persistence.size }}
       selector:
-        {{ include "qar.labels" . | nindent 8 }}
+        matchLabels:
+          {{ include "qar.labels" . | nindent 10 }}
       {{ if and .Values.global.restapi.enabled .Values.restapi.persistence.enabled }}
   - metadata:
       name: odpool
@@ -258,7 +299,8 @@ spec:
         requests:
           storage: {{ .Values.restapi.persistence.size }}
       selector:
-        {{ include "qar.labels" . | nindent 8 }}
+        matchLabels:
+          {{ include "qar.labels" . | nindent 10 }}
       {{- end }}
     {{- end }}
   {{- end }}

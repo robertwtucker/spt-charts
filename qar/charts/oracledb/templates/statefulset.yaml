@@ -11,8 +11,8 @@ spec:
   selector:
     matchLabels:
       {{- include "qar.labels" . | nindent 6 }}
-  strategy:
-    type: Recreate
+  updateStrategy:
+    type: RollingUpdate
   template:
     metadata:
       annotations:
@@ -115,5 +115,6 @@ spec:
         requests:
           storage: {{ .Values.persistence.size }}
       selector:
-        {{ include "qar.labels" . | nindent 8 }}
+        matchLabels:
+          {{ include "qar.labels" . | nindent 10 }}
   {{- end }}

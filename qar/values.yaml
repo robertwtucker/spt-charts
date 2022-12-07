@@ -88,6 +88,27 @@ global:
       secretKey: ""
     # -- Defines the port to run the HTTP listener on. If left undefined, the default port 9080 is used.
     portOverride:
+  arsload:
+    # -- Defines whether to deploy an ARSLOAD server.
+    enabled: false
+    # -- Defines (in plain text) the name of the CMOD ARSLOAD user (for batch-loading documents).
+    # If left undefined, the default user `admin` is used. Use the `userOverrideSource' variable
+    # to define the username using a Secret.
+    userOverride: ""
+    # -- Uses a Secret to define the CMOD ARSLOAD user (for batch-loading documents).
+    userOverrideSource:
+      useSecret: false
+      secretName: ""
+      secretKey: ""
+    # -- Defines (in plain text) the password of the CMOD ARSLOAD user (for batch-loading documents).
+    # If left undefined, the deployment will generate a random alphanumeric password. Use the
+    # 'passwordOverrideSource' variable to define the username using a Secret.
+    passwordOverride: ""
+    # -- Uses a Secret to define the password of the CMOD ARSLOAD user (for batch-loading documents).
+    passwordOverrideSource:
+      useSecret: false
+      secretName: ""
+      secretKey: ""
   fts:
     # -- Defines whether to enable Full-Text Search.
     enabled: false
@@ -98,9 +119,6 @@ global:
     enabled: false
     # -- Defines the port to run the HTTP listener on. If left undefined, the default port 9080 is used. [Not Implemented Yet]
     portOverride:
-  arsload:
-    # -- Defines whether to deploy an ARSLOAD server. [Not Implemented Yet]
-    enabled: false
   zookeeper:
     # -- Defines whether to deploy a Zookeeper instance.
     enabled: false

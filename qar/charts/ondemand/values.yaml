@@ -129,6 +129,61 @@ restapi:
 
 # End REST API block
 
+# ARSLOAD server configuration
+arsload:
+  # -- Time interval in seconds to sleep (arsload command defaults to 600)
+  timeInterval: 600
+
+  persistence:
+    # -- Enable ARSLOAD "hot-folder" input using a PVC.
+    enabled: false
+    # -- Name of an existing PVC to use.
+    existingClaim: ""
+    # -- The path the volume will be mounted at in the ARSLOAD container.
+    mountPath: /opt/qar/data/load
+
+  # Learn about liveness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
+  # Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
+  livenessProbe:
+    # -- Initial delay before probing liveness
+    initialDelaySeconds: 5
+    # -- Period in seconds between liveness checks
+    periodSeconds: 30
+    # -- Timeout in seconds for liveness checks
+    timeoutSeconds: 1
+    # -- Number of consecutive negative tests before declaring failure
+    failureThreshold: 5
+    # -- Number of consecutive positive tests before counting it as a success
+    successThreshold: 1
+
+  # Learn about readiness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
+  # Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
+  readinessProbe:
+    # -- Initial delay before probing readiness
+    initialDelaySeconds: 10
+    # -- Period in seconds between readiness checks
+    periodSeconds: 30
+    # -- Timeout in seconds for readiness checks
+    timeoutSeconds: 1
+    # -- Number of consecutive negative tests before declaring failure
+    failureThreshold: 5
+    # -- Number of consecutive positive tests before counting it as a success
+    successThreshold: 1
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+# End ARSLOAD block
+
 # Full Text Search server configuration
 fts:
   image:

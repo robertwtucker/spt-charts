@@ -61,21 +61,15 @@ Generates the Oracle TNS service name from the database name, if not provided di
 {{- end }}
 
 {{/*
-Defines environment variables for the REST API service.
+Defines environment variables for the CMOD service.
 */}}
-{{- define "ondemand.env.default" -}}
-- name: OD_INSTANCE_NAME
-  value: {{ upper .Values.odInstanceName }}
-- name: OD_HOST
-  value: {{ include "qar.applicationName" . }}-ondemand-hl.{{ .Release.Namespace }}.svc.cluster.local
-- name: OD_PORT
-  value: {{ .Values.global.ondemand.portOverride | default 1445 | quote }}
+{{- define "ondemand.env.init" -}}
 {{- if .Values.global.ondemand.userOverrideSource.useSecret }}
 - name: OD_USER
   valueFrom:
     secretKeyRef:
-      name: {{ required "secretName is mandatory" .Values.global.restapi.userOverrideSource.secretName }}
-      key: {{ required "secretKey is mandatory" .Values.global.restapi.userOverrideSource.secretKey }}
+      name: {{ required "secretName is mandatory" .Values.global.ondemand.userOverrideSource.secretName }}
+      key: {{ required "secretKey is mandatory" .Values.global.ondemand.userOverrideSource.secretKey }}
 {{- else }}
 - name: OD_USER
   valueFrom:
@@ -95,5 +89,89 @@ Defines environment variables for the REST API service.
     secretKeyRef:
       name: {{ include "qar.applicationName" . }}-ondemand
       key: odPassword
+{{- end }}
+{{- end }}
+
+{{/*
+Defines environment variables for the RESTAPI service.
+*/}}
+{{- define "ondemand.env.restapi" -}}
+- name: OD_INSTANCE_NAME
+  value: {{ upper .Values.odInstanceName }}
+- name: OD_HOST
+  value: {{ include "qar.applicationName" . }}-ondemand-hl.{{ .Release.Namespace }}.svc.cluster.local
+- name: OD_PORT
+  value: {{ .Values.global.ondemand.portOverride | default 1445 | quote }}
+{{- if .Values.global.restapi.userOverrideSource.useSecret }}
+- name: OD_USER
+  valueFrom:
+    secretKeyRef:
+      name: {{ required "secretName is mandatory" .Values.global.restapi.userOverrideSource.secretName }}
+      key: {{ required "secretKey is mandatory" .Values.global.restapi.userOverrideSource.secretKey }}
+{{- else }}
+- name: OD_USER
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "qar.applicationName" . }}-ondemand
+      key: restUsername
+{{- end }}
+{{- if .Values.global.restapi.passwordOverrideSource.useSecret }}
+- name: OD_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ required "secretName is mandatory" .Values.global.restapi.passwordOverrideSource.secretName }}
+      key: {{ required "secretKey is mandatory" .Values.global.restapi.passwordOverrideSource.secretKey }}
+{{- else }}
+- name: OD_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "qar.applicationName" . }}-ondemand
+      key: restPassword
+{{- end }}
+{{- end }}
+
+{{/*
+Defines environment variables for the ARSLOAD service.
+*/}}
+{{- define "ondemand.env.arsload" -}}
+- name: OD_INSTANCE_NAME
+  value: {{ upper .Values.odInstanceName }}
+- name: OD_HOST
+  value: {{ include "qar.applicationName" . }}-ondemand-hl.{{ .Release.Namespace }}.svc.cluster.local
+- name: OD_PORT
+  value: {{ .Values.global.ondemand.portOverride | default 1445 | quote }}
+- name: ARS_SRVR
+  value: $(OD_HOST):$(OD_PORT)
+- name: ARSLOAD_PERIOD
+  value: {{ .Values.arsload.timeInterval | quote }}
+{{- if .Values.arsload.persistence.enabled }}
+- name: ARSLOAD_DIRECTORY
+  value: {{ .Values.arsload.persistence.mountPath }}
+{{- end }}
+{{- if .Values.global.arsload.userOverrideSource.useSecret }}
+- name: ARSLOAD_USER
+  valueFrom:
+    secretKeyRef:
+      name: {{ required "secretName is mandatory" .Values.global.arsload.userOverrideSource.secretName }}
+      key: {{ required "secretKey is mandatory" .Values.global.arsload.userOverrideSource.secretKey }}
+{{- else }}
+- name: ARSLOAD_USER
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "qar.applicationName" . }}-ondemand
+      key: loadUsername
+{{- end }}
+{{- if .Values.global.arsload.passwordOverrideSource.useSecret }}
+- name: ARSLOAD_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ required "secretName is mandatory" .Values.global.arsload.passwordOverrideSource.secretName }}
+      key: {{ required "secretKey is mandatory" .Values.global.arsload.passwordOverrideSource.secretKey }}
+{{- else }}
+- name: ARSLOAD_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "qar.applicationName" . }}-ondemand
+      key: loadPassword
 {{- end }}
 {{- end }}

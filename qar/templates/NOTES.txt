@@ -9,6 +9,9 @@ Your deployed applications can be accessed on the following DNS names from withi
 {{- if .Values.global.restapi.enabled }}
   QAR REST API: {{ include "qar.applicationName" . }}-ondemand-restapi.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.global.restapi.portOverride | default 9080 }}
 {{- end }}
+{{- if .Values.global.arsload.enabled }}
+  ARSLOAD: N/A (access via batch load folder only)
+{{- end }}
 {{- if .Values.global.navigator.enabled }}
   navigator: {{ include "qar.applicationName" . }}-navigator.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.global.navigator.portOverride | default 9080 }}
 {{- end }}

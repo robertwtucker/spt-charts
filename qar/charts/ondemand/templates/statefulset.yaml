@@ -183,16 +183,14 @@ spec:
           timeoutSeconds: {{ .Values.arsload.livenessProbe.timeoutSeconds }}
           failureThreshold: {{ .Values.arsload.livenessProbe.failureThreshold }}
           successThreshold: {{ .Values.arsload.livenessProbe.successThreshold }}
-#        readinessProbe:
-#          httpGet:
-#            path: /qar/v1/documentation
-#            port: 9080
-#            scheme: HTTP
-#          initialDelaySeconds: {{ .Values.arsload.readinessProbe.initialDelaySeconds }}
-#          periodSeconds: {{ .Values.arsload.readinessProbe.periodSeconds }}
-#          timeoutSeconds: {{ .Values.arsload.readinessProbe.timeoutSeconds }}
-#          failureThreshold: {{ .Values.arsload.readinessProbe.failureThreshold }}
-#          successThreshold: {{ .Values.arsload.readinessProbe.successThreshold }}
+        readinessProbe:
+          exec:
+            command: ["/bin/bash", "-c", "ps -p $(cat /tmp/qar/run/od.pid)"]
+          initialDelaySeconds: {{ .Values.arsload.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.arsload.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.arsload.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.arsload.readinessProbe.failureThreshold }}
+          successThreshold: {{ .Values.arsload.readinessProbe.successThreshold }}
         volumeMounts:
         - name: work
           mountPath: /opt/qar/tmp

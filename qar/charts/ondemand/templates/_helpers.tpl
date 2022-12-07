@@ -136,12 +136,14 @@ Defines environment variables for the ARSLOAD service.
 {{- define "ondemand.env.arsload" -}}
 - name: OD_INSTANCE_NAME
   value: {{ upper .Values.odInstanceName }}
-- name: OD_HOST
-  value: {{ include "qar.applicationName" . }}-ondemand-hl.{{ .Release.Namespace }}.svc.cluster.local
-- name: OD_PORT
+- name: ARS_HOST
+  valueFrom:
+    fieldRef:
+        fieldPath: metadata.name
+- name: ARS_PORT
   value: {{ .Values.global.ondemand.portOverride | default 1445 | quote }}
 - name: ARS_SRVR
-  value: $(OD_HOST):$(OD_PORT)
+  value: {{ include "qar.applicationName" . }}-ondemand-hl.{{ .Release.Namespace }}.svc.cluster.local
 - name: ARSLOAD_PERIOD
   value: {{ .Values.arsload.timeInterval | quote }}
 {{- if .Values.arsload.persistence.enabled }}

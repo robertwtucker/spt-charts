@@ -140,8 +140,8 @@ spec:
         image: "{{ .Values.restapi.image.name }}:{{ .Values.restapi.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.restapi.imagePullPolicy }}
         ports:
-          - name: http
-            containerPort: 9080
+        - name: http
+          containerPort: 9080
         livenessProbe:
           tcpSocket:
             port: 9080
@@ -161,10 +161,10 @@ spec:
           failureThreshold: {{ .Values.restapi.readinessProbe.failureThreshold }}
           successThreshold: {{ .Values.restapi.readinessProbe.successThreshold }}
         volumeMounts:
-          - name: odpool
-            mountPath: /opt/qar/config/rest/odpool
-          - name: restcfg
-            mountPath: /opt/qar/tmp/restcfg
+        - name: odpool
+          mountPath: /opt/qar/config/rest/odpool
+        - name: restcfg
+          mountPath: /opt/qar/tmp/restcfg
       {{- end}}
       {{- if .Values.global.arsload.enabled }}
       - name: {{ include "qar.applicationName" . }}-ondemand-arsload

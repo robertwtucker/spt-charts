@@ -45,7 +45,7 @@ spec:
         - "-c"
         - "${QAR_HOME}/scripts/init-stash-file.sh"
         env:
-          {{ include "ondemand.env.init" . | nindent 8 }}
+          {{ include "ondemand.env.user" . | nindent 8 }}
         volumeMounts:
         - name: work
           mountPath: /opt/qar/tmp
@@ -90,22 +90,7 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         args: [start, library]
         env:
-        - name: ARS_HOST
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
-        - name: ARS_NUM_DBSRVR
-          value: {{ .Values.db.numSubServers | quote }}
-        - name: ARS_PORT
-          value: {{ .Values.service.nodePorts.ondemand | quote }}
-        - name: ARS_SRVR_INSTANCE
-          value: {{ include "ondemand.serverInstanceName" . }}
-        - name: ARS_STORAGE_MANAGER
-          value: {{ .Values.storageManager }}
-        - name: ENABLE_TRACE
-          value: {{ printf "%t" .Values.trace.enabled | quote }}
-        - name: OD_INSTANCE_NAME
-          value: {{ .Values.odInstanceName }}
+        {{ include "ondemand.env.library" . | nindent 8 }}
         {{ include "ondemand.env.database" . | nindent 8 }}
         ports:
         - name: ars-listener
@@ -205,6 +190,10 @@ spec:
           {{- toYaml .Values.securityContext | nindent 10 }}
         image: "{{ .Values.fts.image.name }}:{{ .Values.fts.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.fts.imagePullPolicy }}
+        env:
+        {{ include "ondemand.env.library" . | nindent 8 }}
+        {{ include "ondemand.env.database" . | nindent 8 }}
+        {{ include "ondemand.env.user" . | nindent 8 }}
         ports:
           - name: http
             containerPort: 8191

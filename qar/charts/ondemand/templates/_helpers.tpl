@@ -61,9 +61,9 @@ Generates the Oracle TNS service name from the database name, if not provided di
 {{- end }}
 
 {{/*
-Defines environment variables for the CMOD service.
+Defines environment variables for the CMOD user.
 */}}
-{{- define "ondemand.env.init" -}}
+{{- define "ondemand.env.user" -}}
 {{- if .Values.global.ondemand.userOverrideSource.useSecret }}
 - name: OD_USER
   valueFrom:
@@ -93,13 +93,33 @@ Defines environment variables for the CMOD service.
 {{- end }}
 
 {{/*
+Defines environment variables for the CMOD library server.
+*/}}
+{{- define "ondemand.env.library" -}}
+- name: ARS_HOST
+  value: {{ include "qar.applicationName" . }}-ondemand-hl.{{ .Release.Namespace }}.svc.cluster.local
+- name: ARS_NUM_DBSRVR
+  value: {{ .Values.db.numSubServers | quote }}
+- name: ARS_PORT
+  value: {{ .Values.service.nodePorts.ondemand | quote }}
+- name: ARS_SRVR_INSTANCE
+  value: {{ include "ondemand.serverInstanceName" . }}
+- name: ARS_STORAGE_MANAGER
+  value: {{ .Values.storageManager }}
+- name: ENABLE_TRACE
+  value: {{ printf "%t" .Values.trace.enabled | quote }}
+- name: OD_INSTANCE_NAME
+  value: {{ .Values.odInstanceName }}
+{{- end }}
+
+{{/*
 Defines environment variables for the RESTAPI service.
 */}}
 {{- define "ondemand.env.restapi" -}}
-- name: OD_INSTANCE_NAME
-  value: {{ upper .Values.odInstanceName }}
 - name: OD_HOST
   value: {{ include "qar.applicationName" . }}-ondemand-hl.{{ .Release.Namespace }}.svc.cluster.local
+- name: OD_INSTANCE_NAME
+  value: {{ upper .Values.odInstanceName }}
 - name: OD_PORT
   value: {{ .Values.global.ondemand.portOverride | default 1445 | quote }}
 {{- if .Values.global.restapi.userOverrideSource.useSecret }}
@@ -134,8 +154,6 @@ Defines environment variables for the RESTAPI service.
 Defines environment variables for the ARSLOAD service.
 */}}
 {{- define "ondemand.env.arsload" -}}
-- name: OD_INSTANCE_NAME
-  value: {{ upper .Values.odInstanceName }}
 - name: ARS_HOST
   valueFrom:
     fieldRef:
@@ -176,4 +194,6 @@ Defines environment variables for the ARSLOAD service.
       name: {{ include "qar.applicationName" . }}-ondemand
       key: loadPassword
 {{- end }}
+- name: OD_INSTANCE_NAME
+  value: {{ upper .Values.odInstanceName }}
 {{- end }}

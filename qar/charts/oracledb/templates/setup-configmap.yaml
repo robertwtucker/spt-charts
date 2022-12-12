@@ -6,23 +6,30 @@ metadata:
   labels:
     {{ include "qar.labels" . | nindent 4 }}
 data:
-  01-create-archive-pdb.sql: |
+  01-patch-listener.sh: |
+    #!/bin/bash
+
+    echo "** Patching Oracle-Net Listener -> legacy client compatibility for CMOD"
+    echo "USE_SID_AS_SERVICE_listener=on" >> /opt/oracle/homes/OraDB21Home1/network/admin/listener.ora
+    lsnrctl reload
+    echo "** Done."
+  02-create-archive-pdb.sql: |
     CREATE PLUGGABLE DATABASE archive
     ADMIN USER archive IDENTIFIED BY "Password12345*"
     FILE_NAME_CONVERT=('/opt/oracle/oradata/ORCLCDB/pdbseed','/opt/oracle/oradata/ORCLCDB/archive');
-  02-open-archive-pdb.sql: |
+  03-open-archive-pdb.sql: |
     ALTER PLUGGABLE DATABASE archive OPEN READ WRITE;
-  03-save-archive-pdb.sql: |
+  04-save-archive-pdb.sql: |
     ALTER PLUGGABLE DATABASE archive SAVE STATE;
-  04-create-navigator-pdb.sql: |
+  05-create-navigator-pdb.sql: |
     CREATE PLUGGABLE DATABASE navigator
     ADMIN USER archive IDENTIFIED BY "Password12345*"
     FILE_NAME_CONVERT=('/opt/oracle/oradata/ORCLCDB/pdbseed','/opt/oracle/oradata/ORCLCDB/navigator');
-  05-open-navigator-pdb.sql: |
+  06-open-navigator-pdb.sql: |
     ALTER PLUGGABLE DATABASE navigator OPEN READ WRITE;
-  06-save-navigator-pdb.sql: |
+  07-save-navigator-pdb.sql: |
     ALTER PLUGGABLE DATABASE navigator SAVE STATE;
-  07-archive-grant-perms.sql: |
+  08-archive-grant-perms.sql: |
     ALTER SESSION SET CONTAINER = archive;
 
     --

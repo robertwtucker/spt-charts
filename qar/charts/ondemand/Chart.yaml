@@ -3,4 +3,4 @@ appVersion: "10.5.0.5"
 description: A Helm chart for Kubernetes
 name: ondemand
 type: application
-version: 0.1.0
+version: 0.2.1

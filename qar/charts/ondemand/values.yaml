@@ -194,6 +194,9 @@ fts:
     # -- FTS image pull policy [Always|IfNotPresent].
     pullPolicy: IfNotPresent
 
+  # -- Full-text index export process polling/sleep interval (in seconds)
+  exportPollDelay: 180
+
   service:
     # -- Provide any additional annotations which may be required.
     annotations: {}

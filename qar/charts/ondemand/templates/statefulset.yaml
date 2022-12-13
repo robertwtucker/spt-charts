@@ -191,6 +191,8 @@ spec:
         image: "{{ .Values.fts.image.name }}:{{ .Values.fts.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.fts.imagePullPolicy }}
         env:
+        - name: ARS_FTI_EXPORT_POLL_DELAY
+          value: {{ .Values.fts.exportPollDelay | quote }}
         {{ include "ondemand.env.library" . | nindent 8 }}
         {{ include "ondemand.env.database" . | nindent 8 }}
         {{ include "ondemand.env.user" . | nindent 8 }}

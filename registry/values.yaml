@@ -1,0 +1,208 @@
+# Registry configuration values
+image:
+  # -- Registry image name.
+  repository: docker.io/registry
+  # -- Overrides the image tag (default is the chart appVersion).
+  tag: ""
+  # -- Registry image pull policy (Always|IfNotPresent).
+  pullPolicy: IfNotPresent
+
+# -- List of image repository pull secrets.
+# Secrets must be manually created in the namespace.
+# ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+# Example:
+# imagePullSecrets:
+#   - name: myRegistryKeySecretName
+imagePullSecrets: []
+# -- Overrides the default name assigned to resources.
+nameOverride: ""
+# -- Overrides the fully-qualified app name generated for resources.
+fullnameOverride: ""
+
+# -- Set the type of storage to use. Currently, only `filesystem` is supported.
+storage: filesystem
+# -- Specifies the name of a Secret with a TLS certificate and key to mount.
+# tlsSecretName: registry.docker.example.com
+tlsSecretName: ""
+secrets:
+  # -- Enables HTTP-Basic authentication by specifying content in
+  # [Apache htpasswd format](https://httpd.apache.org/docs/2.4/programs/htpasswd.html). Only
+  # `bcrypt` format is supported.
+  # htpasswd: |
+  #   foo:$2y$05$CiJ.aC8gIAMdVemlRP8rRO/o9G3L7ELPi156j39vxnrDCx3b/j3DC
+  htpasswd: ""
+  # -- Shared secret for HTTP Basic authentication. If no value is specified, a random
+  # alphanumeric value will be generated.
+  haSharedSecret: ""
+
+persistence:
+  # -- Enable Registry server data persistence using a PVC.
+  enabled: true
+  # -- Name of an existing PVC to use.
+  existingClaim: ""
+  # -- If defined, storageClassName: <storageClass>
+  # If set to "-", storageClassName: "", which disables dynamic provisioning.
+  # If undefined (the default) or set to null, no storageClassName spec is
+  # set, choosing the default provisioner. (gp2 on AWS, standard on GKE, AWS & OpenStack)
+  storageClass: ""
+  # -- PVC Access Mode for the Registry data volume.
+  accessModes:
+    - ReadWriteOnce
+  # -- PVC Storage Request for the Registry data volume.
+  size: 100Gi
+  # -- Whether to allow images to be deleted.
+  deleteEnabled: false
+
+# Service resource parameters for Registry
+# ref: https://kubernetes.io/docs/concepts/services-networking/service/
+service:
+  # -- Type of Service to create (ClusterIP|NodePort|LoadBalancer).
+  type: ClusterIP
+  # -- Registry server port.
+  port: 5000
+
+# Ingress resource parameters for Registry
+# ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
+ingress:
+  # -- Enable Ingress resource generation for Registry.
+  enabled: false
+  # -- Name of an IngressClass cluster resource.
+  className: ""
+  # -- Additional annotations for the Ingress resource. To enable certificate auto-generation, place cert-manager annotations here.
+  # For a full list of possible ingress annotations, please see
+  # ref: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/nginx-configuration/annotations.md
+  # Use this parameter to set the required annotations for cert-manager, see
+  # ref: https://cert-manager.io/docs/usage/ingress/#supported-annotations
+  #
+  # e.g:
+  # annotations:
+  #   kubernetes.io/ingress.class: nginx
+  #   cert-manager.io/cluster-issuer: cluster-issuer-name
+  #   kubernetes.io/tls-acme: "true"
+  annotations: {}
+  # -- Defines is the fully-qualified domain name of this Ingress' host.
+  #  - host: "chart-example.local"
+  #    paths:
+  #      # A collection of paths that map requests to backends.
+  #      - path: /
+  #        # Determines the interpretation of the Path matching.
+  #        pathType: ImplementationSpecific
+  host:
+  # -- A path mapping that corresponds to the Registry backend. If left blank, the path
+  # defaults to `/`.
+  path: /
+  tls:
+    # -- Determines whether TLS is enabled.
+    enabled: true
+    # -- Name of a Secret containing an existing TLS certificate. If using a Cluster Issuer,
+    # this will determine the name of the Secret the issuer creates.
+    secretName: ""
+    # -- Name of the Cluster Issuer to use.
+    clusterIssuer: ""
+
+# Registry deployment resource parameters
+# -- Number of Registry containers to deploy.
+replicaCount: 1
+
+# Registry service account parameters
+serviceAccount:
+  # -- Specifies whether a service account should be created.
+  create: true
+  # -- Annotations to add to the service account.
+  annotations: {}
+  # -- The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template.
+  name: ""
+
+# -- Additional annotations for Registry pods.
+podAnnotations: {}
+
+# -- Configure the Registry pod security context.
+# ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+podSecurityContext:
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
+  runAsUser: 1001
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#volumes-and-file-systems.
+  fsGroup: 1001
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
+  runAsNonRoot: true
+# -- Configure security context
+# ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+securityContext:
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privileged.
+  privileged: false
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privilege-escalation.
+  allowPrivilegeEscalation: false
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
+  runAsUser: 1001
+  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#capabilities.
+  # -- The default (recommended) configuration prohibits all Linux capabilities.
+  capabilities:
+    drop:
+      - all
+
+# Learn about liveness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
+# Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
+livenessProbe:
+  # -- Initial delay before probing liveness
+  initialDelaySeconds: 5
+  # -- Period in seconds between liveness checks
+  periodSeconds: 30
+  # -- Timeout in seconds for liveness checks
+  timeoutSeconds: 1
+  # -- Number of consecutive negative tests before declaring failure
+  failureThreshold: 5
+  # -- Number of consecutive positive tests before counting it as a success
+  successThreshold: 1
+
+# Learn about readiness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
+# Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
+readinessProbe:
+  # -- Initial delay before probing readiness
+  initialDelaySeconds: 3
+  # -- Period in seconds between readiness checks
+  periodSeconds: 30
+  # -- Timeout in seconds for readiness checks
+  timeoutSeconds: 1
+  # -- Number of consecutive negative tests before declaring failure
+  failureThreshold: 5
+  # -- Number of consecutive positive tests before counting it as a success
+  successThreshold: 1
+
+# -- Specifies the resources needed for the container to operate and limits, if any.
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+# Autoscaling parameters
+autoscaling:
+  # -- Enable auto-scaling for the Registry.
+  enabled: false
+  # -- Minimum number of replicas to deploy.
+  minReplicas: 1
+  # -- Maximum number of replicas that can be deployed.
+  maxReplicas: 100
+  # -- Target CPU utilization (percent) for each replica.
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+# -- Node labels for pod assignment.
+# ref: https://kubernetes.io/docs/user-guide/node-selection/
+nodeSelector: {}
+
+# -- Tolerations for pod assignment.
+# ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+tolerations: []
+
+# -- Affinity for pod assignment.
+# ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+# NOTE: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when set
+affinity: {}

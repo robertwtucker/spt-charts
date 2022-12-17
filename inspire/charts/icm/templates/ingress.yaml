@@ -10,23 +10,23 @@ kind: Ingress
 metadata:
   name: {{ include "inspire.applicationName" . }}-icm
   annotations:
-    kubernetes.io/ingress.class: azure/application-gateway
-    appgw.ingress.kubernetes.io/backend-path-prefix: "/"
-    appgw.ingress.kubernetes.io/health-probe-status-codes: "200-399, 400, 404"
-    appgw.ingress.kubernetes.io/health-probe-path: "/health"
+    kubernetes.io/ingress.class: {{ .Values.ingress.className | quote }}
     {{- if (.Values.ingress.tls.enabled) | and .Values.ingress.tls.clusterIssuer }}
     cert-manager.io/cluster-issuer: {{ .Values.ingress.tls.clusterIssuer | quote }}
+    {{- end }}
+    {{- with .Values.ingress.annotations }}
+      {{- toYaml . | nindent 6 }}
     {{- end }}
 spec:
   tls:
   - hosts:
     - {{ .Values.ingress.host }}
-    secretName: {{ .Values.ingress.tls.secretName | default (printf "tls-secret-%s" .Values.ingress.host) }}
+    secretName: {{ .Values.ingress.tls.secretName | default (printf "%s-tls" .Values.ingress.host) }}
   rules:
   - host: {{ .Values.ingress.host }}
     http:
       paths:
-      - path: /icm/*
+      - path: {{ .Values.ingress.path | default "/icm/*" | quote }}
         pathType: ImplementationSpecific
         backend:
           service:

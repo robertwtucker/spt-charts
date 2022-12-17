@@ -101,8 +101,21 @@ externalAccess:
 ingress:
   # -- Since the 15.0 version, this feature allows you to enable Ingress, a Kubernetes APi object, providing load balancing.
   enabled: false
+  # -- Name of the IngressClass cluster resource to use.
+  # e.g: azure/application-gateway
+  className:
+  # -- Additional annotations for the Ingress resource.
+  # e.g:
+  # annotations:
+  #   appgw.ingress.kubernetes.io/backend-path-prefix: "/"
+  #   appgw.ingress.kubernetes.io/health-probe-status-codes: "200-399, 400, 404"
+  #   appgw.ingress.kubernetes.io/health-probe-path: "/health"
+  annotations: {}
   # -- Defines the Ingress host.
   host:
+  # -- A path mapping that corresponds to the ICM backend. If left blank, the path
+  # defaults to `/icm/*`.
+  path:
   tls:
     # -- Enables HTTPS for ICM. TLS must be enabled for 'externalAccess' to work.
     enabled: true

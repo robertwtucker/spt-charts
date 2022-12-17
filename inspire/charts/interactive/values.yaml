@@ -281,8 +281,20 @@ service:
 ingress:
   # -- Enables Ingress, a Kubernetes API object that provides load balancing.
   enabled: false
+  # -- Name of the IngressClass cluster resource to use.
+  # e.g: azure/application-gateway
+  className:
+  # -- Additional annotations for the Ingress resource.
+  # e.g:
+  # annotations:
+  #   appgw.ingress.kubernetes.io/backend-path-prefix: "/interactive/"
+  #   appgw.ingress.kubernetes.io/cookie-based-affinity: "true"
+  annotations: {}
   # -- Defines the Ingress host.
   host:
+  # -- A path mapping that corresponds to the ICM backend. If left blank, the path
+  # defaults to `/interactive/*`.
+  path:
   tls:
     # -- Enables HTTPS for Scaler. It is set to 'true' by default for security reasons.
     enabled: true

@@ -4,24 +4,25 @@ kind: Ingress
 metadata:
   name: {{ include "inspire.applicationName" . }}-scaler
   annotations:
-    kubernetes.io/ingress.class: azure/application-gateway
-    appgw.ingress.kubernetes.io/backend-path-prefix: "/"
-    appgw.ingress.kubernetes.io/cookie-based-affinity: "true"
+    kubernetes.io/ingress.class: {{ .Values.ingress.className | quote }}
     {{- if .Values.ingress.tls.enabled | and .Values.ingress.tls.clusterIssuer }}
-    cert-manager.io/cluster-issuer: {{ .Values.ingress.tls.clusterIssuer }}
+    cert-manager.io/cluster-issuer: {{ .Values.ingress.tls.clusterIssuer | quote }}
+    {{- end }}
+    {{- with .Values.ingress.annotations }}
+      {{- toYaml . | nindent 6 }}
     {{- end }}
 spec:
   {{- if .Values.ingress.tls.enabled }}
   tls:
   - hosts:
     - {{ .Values.ingress.host }}
-    secretName: {{ .Values.ingress.tls.secretName | default (printf "tls-secret-%s" .Values.ingress.host) }}
+    secretName: {{ .Values.ingress.tls.secretName | default (printf "%s-tls" .Values.ingress.host) }}
   {{- end }}
   rules:
   - host: {{ .Values.ingress.host }}
     http:
       paths:
-      - path: /scaler/*
+      - path: {{ .Values.ingress.path | default "/scaler/*" | quote }}
         pathType: ImplementationSpecific
         backend:
           service:

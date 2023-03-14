@@ -151,39 +151,6 @@ spec:
         - name: restcfg
           mountPath: /opt/qar/tmp/restcfg
       {{- end}}
-      {{- if .Values.global.arsload.enabled }}
-      - name: {{ include "qar.applicationName" . }}-ondemand-arsload
-        securityContext:
-          {{- toYaml .Values.securityContext | nindent 10 }}
-        image: "{{ .Values.image.name }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-        imagePullPolicy: {{ .Values.imagePullPolicy }}
-        args: [start, arsload]
-        env:
-          {{ include "ondemand.env.arsload" . | nindent 8 }}
-        livenessProbe:
-          exec:
-            command: ["ps", "-p", "1"]
-          initialDelaySeconds: {{ .Values.arsload.livenessProbe.initialDelaySeconds }}
-          periodSeconds: {{ .Values.arsload.livenessProbe.periodSeconds }}
-          timeoutSeconds: {{ .Values.arsload.livenessProbe.timeoutSeconds }}
-          failureThreshold: {{ .Values.arsload.livenessProbe.failureThreshold }}
-          successThreshold: {{ .Values.arsload.livenessProbe.successThreshold }}
-        readinessProbe:
-          exec:
-            command: ["/bin/bash", "-c", "ps -p $(cat /tmp/qar/run/od.pid)"]
-          initialDelaySeconds: {{ .Values.arsload.readinessProbe.initialDelaySeconds }}
-          periodSeconds: {{ .Values.arsload.readinessProbe.periodSeconds }}
-          timeoutSeconds: {{ .Values.arsload.readinessProbe.timeoutSeconds }}
-          failureThreshold: {{ .Values.arsload.readinessProbe.failureThreshold }}
-          successThreshold: {{ .Values.arsload.readinessProbe.successThreshold }}
-        volumeMounts:
-        - name: work
-          mountPath: /opt/qar/tmp
-        {{- if .Values.arsload.persistence.enabled }}
-        - name: load
-          mountPath: {{ .Values.arsload.persistence.mountPath }}
-        {{- end }}
-      {{- end}}
       {{- if .Values.global.fts.enabled }}
       - name: {{ include "qar.applicationName" . }}-ondemand-fts
         securityContext:
@@ -226,13 +193,6 @@ spec:
       - name: restcfg
         emptyDir: {}
   {{- end }}
-  {{- if and .Values.global.arsload.enabled .Values.arsload.persistence.enabled }}
-    {{- if .Values.arsload.persistence.existingClaim }}
-      - name: load
-        persistentVolumeClaim:
-          claimName: {{ tpl .Values.arsload.persistence.existingClaim $ }}
-    {{- end}}
-  {{- end}}
   {{- if or .Values.persistence.enabled .Values.ondemand.restapi.persistence.enabled }}
     {{- if .Values.global.restapi.enabled }}
       {{- if and .Values.restapi.persistence.enabled .Values.restapi.persistence.existingClaim }}

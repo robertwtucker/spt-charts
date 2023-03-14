@@ -79,7 +79,8 @@ restapi:
     # -- Number of consecutive positive tests before counting it as a success
     successThreshold: 1
 
-  resources: {}
+  resources:
+    {}
     # We usually recommend not to specify default resources and to leave this as a conscious
     # choice for the user. This also increases chances charts run on environments with little
     # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -134,13 +135,40 @@ arsload:
   # -- Time interval in seconds to sleep (arsload command defaults to 600)
   timeInterval: 600
 
-  persistence:
-    # -- Enable ARSLOAD "hot-folder" input using a PVC.
-    enabled: false
-    # -- Name of an existing PVC to use.
-    existingClaim: ""
-    # -- The path the volume will be mounted at in the ARSLOAD container.
-    mountPath: /opt/qar/data/load
+  instances:
+    # - name: folder1
+    #   # -- Name of an existing PVC to use (required).
+    #   existingClaim: "folder1-pvc"
+    #   # -- The path the volume will be mounted at in the ARSLOAD container.
+    #   # Defaults to /opt/qar/data/load.
+    #   mountPath: /opt/qar/data/load
+
+  # -- Provides the ability to customize the deployment using Kubernetes annotations.
+  podAnnotations: {}
+
+  # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  podSecurityContext:
+    # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
+    runAsUser: 1001
+    # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#volumes-and-file-systems.
+    fsGroup: 1001
+    # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
+    #  runAsNonRoot: true
+
+  # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  securityContext:
+    # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privileged.
+    privileged: false
+    # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privilege-escalation.
+    allowPrivilegeEscalation: false
+    # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
+    runAsUser: 1001
+    # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#capabilities.
+    runAsGroup: 1001
+    # -- The default (recommended) configuration prohibits all Linux capabilities.
+    capabilities:
+      drop:
+        - all
 
   # Learn about liveness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
   # Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
@@ -170,7 +198,8 @@ arsload:
     # -- Number of consecutive positive tests before counting it as a success
     successThreshold: 1
 
-  resources: {}
+  resources:
+    {}
     # We usually recommend not to specify default resources and to leave this as a conscious
     # choice for the user. This also increases chances charts run on environments with little
     # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -237,7 +266,8 @@ fts:
     # -- Number of consecutive positive tests before counting it as a success
     successThreshold: 1
 
-  resources: {}
+  resources:
+    {}
     # We usually recommend not to specify default resources and to leave this as a conscious
     # choice for the user. This also increases chances charts run on environments with little
     # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -327,7 +357,8 @@ readinessProbe:
   # -- Number of consecutive positive tests before counting it as a success
   successThreshold: 1
 
-resources: {}
+resources:
+  {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following

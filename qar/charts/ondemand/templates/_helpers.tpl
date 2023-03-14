@@ -164,10 +164,6 @@ Defines environment variables for the ARSLOAD service.
   value: {{ include "qar.applicationName" . }}-ondemand-hl.{{ .Release.Namespace }}.svc.cluster.local
 - name: ARSLOAD_PERIOD
   value: {{ .Values.arsload.timeInterval | quote }}
-{{- if .Values.arsload.persistence.enabled }}
-- name: ARSLOAD_DIRECTORY
-  value: {{ .Values.arsload.persistence.mountPath }}
-{{- end }}
 {{- if .Values.global.arsload.userOverrideSource.useSecret }}
 - name: ARSLOAD_USER
   valueFrom:

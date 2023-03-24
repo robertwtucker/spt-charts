@@ -8,12 +8,12 @@ global:
     # -- Defines whether to deploy Scaler or not.
     enabled: true
     # -- Defines (in plain text) the username of a Scaler user to be created in ICM.
-    # -- If left undefined, the default user called scaler is created.
-    # -- The username value is not treated as a Secret.
+    # If left undefined, the default user called scaler is created.
+    # The username value is not treated as a Secret.
     userOverride: ~
     # -- Defines (in plain text) the password of a Scaler user to be created in ICM.
-    # -- If left undefined, Scaler's deployment will provide you with a random alphanumeric password.
-    # -- Use the 'passOverrideSource' variable instead if you wish to define the password using a Secret.
+    # If left undefined, Scaler's deployment will provide you with a random alphanumeric password.
+    # Use the 'passOverrideSource' variable instead if you wish to define the password using a Secret.
     passOverride: ~
     # -- Uses a Secret to define the password of a Scaler user to be created in ICM.
     passOverrideSource:
@@ -21,18 +21,18 @@ global:
       secretName: ""
       secretKey: ""
     # -- Defines the port to run Scaler on.
-    # -- If left undefined, the default port 30600 is used.
+    # If left undefined, the default port 30600 is used.
     portOverride:
   interactive:
     # -- Defines whether to deploy Interactive or not.
     enabled: true
     # -- Defines the username of an Interactive system user to be created in ICM.
-    # -- If left undefined, the default user called system is created.
-    # -- The username value is not treated as a Secret.
+    # If left undefined, the default user called system is created.
+    # The username value is not treated as a Secret.
     userOverride: ~
     # -- Defines the password of an Interactive system user to be created in ICM.
-    # -- If left undefined, Interactive's deployment will provide you with a random alphanumeric password.
-    # -- Use the 'passOverrideSource' variable instead if you wish to define the password using a Secret.
+    # If left undefined, Interactive's deployment will provide you with a random alphanumeric password.
+    # Use the 'passOverrideSource' variable instead if you wish to define the password using a Secret.
     passOverride: ~
     # -- Uses a Secret to define the password of an Interactive system user to be created in ICM.
     passOverrideSource:
@@ -40,12 +40,12 @@ global:
       secretName: ""
       secretKey: ""
     # -- Defines the port to run Interactive on.
-    # -- If left undefined, the default port 30701 is used.
+    # If left undefined, the default port 30701 is used.
     portOverride:
   icm:
     # -- Defines the password of the ICM admin user.
-    # -- If left undefined, ICM's deployment will provide you with a random alphanumeric password.
-    # -- Use the 'adminPassOverrideSource' variable instead if you wish to define the password using a Secret.
+    # If left undefined, ICM's deployment will provide you with a random alphanumeric password.
+    # Use the 'adminPassOverrideSource' variable instead if you wish to define the password using a Secret.
     adminPassOverride: ~
     # -- Uses a Secret to define the password of the ICM admin user.
     adminPassOverrideSource:
@@ -53,13 +53,13 @@ global:
       secretName: ""
       secretKey: ""
     # -- Defines the port to run ICM on.
-    # -- If left undefined, the default port 30353 is used.
+    # If left undefined, the default port 30353 is used.
     portOverride:
   license:
     # -- Defines the type of your license (cloud licensing or net licensing). [CL/LS]
     method: "CL"
     # -- Defines the URL address of your licensing server (Quadient Cloud server or Inspire License Manager server).
-    # -- Use the 'serverSource' variable instead if you wish to define the URL address using a Secret.
+    # Use the 'serverSource' variable instead if you wish to define the URL address using a Secret.
     server: ""
     # -- Uses a Secret to define the URL address of your licensing server.
     serverSource:
@@ -67,7 +67,7 @@ global:
       secretName: ""
       secretKey: ""
     # -- Defines the URL address of your backup licensing server (Quadient Cloud server or Inspire License Manager server).
-    # -- Use the 'server2Source' variable instead if you wish to define URL address using a Secret.
+    # Use the 'server2Source' variable instead if you wish to define URL address using a Secret.
     server2: ""
     # -- Uses a Secret to define the URL address of your backup licensing server.
     server2Source:
@@ -77,22 +77,17 @@ global:
   dataRecording:
     # -- Since the R15.0 GA version, this defines whether or not you want to prepare the Inspire Flex components for the use of the Data Recording feature. The value of this setting must be set to 'true' for the Data recording feature to work in Kubernetes.
     prepareEnvironment: false
-    # -- You must use the following option when deploying the following Scaler versions to enable the preparation of the Data Recording configuration variables:
-    # - 15.0 versions earlier than SP2
-    # - 15.X FMAP versions earlier than 15.4 FMAP
-    # -- Without this feature enabled, the Data Recording feature will not be able to function.
-    prepareConfigurationVariables: false
   # -- Available since the 15.0 version (except for the 15.2 version) of Scaler.
   sen:
     # -- Defines whether to deploy Scenario Engine or not.
     enabled: false
     # -- Defines (in plain text) the username of a Scenario Engine user to be created in ICM.
-    # -- If left undefined, the default user called 'sen' is created.
-    # -- The username value is not treated as a Secret.
+    # If left undefined, the default user called 'sen' is created.
+    # The username value is not treated as a Secret.
     userOverride: ""
     # -- Defines (in plain text) the password of a Scenario Engine user to be created in ICM.
-    # -- If left undefined, Scaler's deployment will provide you with a random alphanumeric password.
-    # -- Use the 'passOverrideSource' variable instead if you wish to define the password using a Secret.
+    # If left undefined, Scaler's deployment will provide you with a random alphanumeric password.
+    # Use the 'passOverrideSource' variable instead if you wish to define the password using a Secret.
     passOverride: ""
     # -- Uses a Secret to define the password of a Scenario Engine user to be created in ICM.
     passOverrideSource:

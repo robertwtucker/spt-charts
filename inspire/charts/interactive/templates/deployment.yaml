@@ -24,8 +24,8 @@ spec:
       {{- with .Values.deployment.annotations }}
       annotations:
         {{- range $key, $value := . }}
-        {{ $key }}: {{ $value }}
-      {{- end }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
       {{- end }}
       labels:
         {{- include "inspire.labels" . | nindent 8 }}
@@ -127,6 +127,8 @@ spec:
         volumeMounts:
         - name: workdir
           mountPath: "/opt/QuadientInteractive/stores/filestore/workingDirectory"
+        - name: interactive-temp
+          mountPath: "/opt/QuadientInteractive/temp"
       containers:
       - name: {{ include "inspire.applicationName" . }}-interactive
         image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
@@ -159,6 +161,8 @@ spec:
             value: {{ .Values.cookieHttpOnlySecure | quote }}
           - name: COOKIE_PROCESSOR
             value: {{ .Values.cookieProcessor | quote }}
+          - name: SSO_ENVIRONMENTAL
+            value: {{ .Values.ssoEnvironmental | quote }}
 {{- if .Values.customEncryption.enabled }}
 {{- if not .Values.customEncryption.keys }}
 {{- fail "Custom encryption keys are not defined"}}
@@ -249,6 +253,14 @@ spec:
         volumeMounts:
         - name: workdir
           mountPath: "/opt/QuadientInteractive/stores/filestore/workingDirectory"
+        - name: ips-tmp
+          mountPath: /tmp
+        - name: ips-chimenix
+          mountPath: /etc/Chimenix
+        - name: ips-home
+          mountPath: /home/quadient/.quadient
+        - name: ips-data
+          mountPath: /opt/Quadient/Inspire-Designer-data/ips
         - name: interactive-temp
           mountPath: "/opt/QuadientInteractive/temp"
         - name: ips-icm-cache
@@ -277,6 +289,14 @@ spec:
         - name: workdir
           emptyDir: {}
         - name: ips-icm-cache
+          emptyDir: {}
+        - name: ips-tmp
+          emptyDir: {}
+        - name: ips-chimenix
+          emptyDir: {}
+        - name: ips-home
+          emptyDir: {}
+        - name: ips-data
           emptyDir: {}
         - name: interactive-temp
           emptyDir: {}

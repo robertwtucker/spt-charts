@@ -23,12 +23,12 @@ spec:
       maxUnavailable: "50%"
   template:
     metadata:
-    {{- with .Values.deployment.annotations }}
+      {{- with .Values.deployment.annotations }}
       annotations:
-      {{- range $key, $value := . }}
-        {{ $key }}: {{ $value }}
+        {{- range $key, $value := . }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
       {{- end }}
-    {{- end }}
       labels:
         {{- include "inspire.labels" . | nindent 8 }}
       name: {{ include "inspire.applicationName" . }}-icm-template
@@ -117,6 +117,10 @@ spec:
             - name: ADD_PARAMS
               value: "-waitingtime 15 {{ .Values.addParams }}"
             {{- end }}
+            {{ if .Values.configFileContent }}
+            - name: APPEND_TO_CONFIG_FILE
+              value: {{ .Values.configFileContent }}
+            {{- end }}
           ports:
             - containerPort: 30353
               protocol: TCP
@@ -156,6 +160,8 @@ spec:
               mountPath: /tmp
             - name: chimenix
               mountPath: /etc/Chimenix
+            - name: config
+              mountPath: /opt/Quadient/Designer/configs
             - name: home
               mountPath: /home/quadient/.quadient
             {{- if .Values.global.scaler.enabled }}
@@ -172,11 +178,6 @@ spec:
             {{- end }}
             {{- end }}
             {{- include "inspire.secret.asMount" (dict "value" .Values.global.icm.adminPassOverride "source" .Values.global.icm.adminPassOverrideSource "secretName" "admin" "secretKey" "pass" "mountPath" "/opt/Quadient/secrets/admin" "mountSecret" true ) | nindent 12 }}
-            {{ if .Values.configFileContent }}
-            - name: icm-config-volume
-              mountPath: /opt/Quadient/Designer/InspireICM.config
-              subPath: InspireICM.config
-            {{- end }}
             {{- if .Values.db.connectionString | or (eq (include "inspire.secret.isDelegated" .Values.db.connectionStringSource) "true") }}
             {{- include "inspire.secret.asMount" (dict "value" .Values.db.connectionString "source" .Values.db.connectionStringSource "secretName" "icm-connectstring" "secretKey" "dbConnectionString" "mountPath" "/opt/Quadient/secret" "mountSecret" true ) | nindent 12 }}
             {{- end }}
@@ -211,10 +212,7 @@ spec:
           emptyDir: {}
         - name: chimenix
           emptyDir: {}
+        - name: config
+          emptyDir: {}
         - name: home
           emptyDir: {}
-        {{ if .Values.configFileContent }}
-        - name: icm-config-volume
-          configMap:
-            name: {{ include "inspire.applicationName" . }}-icm-config
-        {{- end }}

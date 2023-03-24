@@ -44,55 +44,6 @@
       }
 {{- end }}
     ]
-{{- if and .Values.global.dataRecording.prepareEnvironment .Values.global.dataRecording.prepareConfigurationVariables }}
-    ,"inspireEnvironments": {
-      "Version":1,
-      "Environments":[
-        {
-          "Environment":"Default"
-        }
-      ],
-      "Root":{
-        "Name":"",
-        "EntryType":"Folder",
-        "Children":[
-          {
-            "Name":"System",
-            "EntryType":"Folder",
-            "Children":[
-              {
-                "Name":"DataRecording",
-                "EntryType":"Folder",
-                "Children":[
-                  {
-                    "Name":"Path",
-                    "EntryType":"General",
-                    "Value":{
-                      "String":"network://127.0.0.1:30800"
-                    }
-                  },
-                  {
-                    "Name":"PathICM",
-                    "EntryType":"General",
-                    "Value":{
-                      "String":"network://{{ include "inspire.applicationName" . }}-datarecording.{{ .Release.Namespace }}.svc.cluster.local:30800"
-                    }
-                  },
-                  {
-                    "Name":"Port",
-                    "EntryType":"General",
-                    "Value":{
-                      "Number": 30800
-                    }
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      }
-    }
-{{- end }}
   }
 {{- if .Values.useInitialServerSettings }}
   ,"initialStartup": {

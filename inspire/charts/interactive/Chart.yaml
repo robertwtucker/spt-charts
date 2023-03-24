@@ -1,6 +1,6 @@
 apiVersion: v2
-appVersion: "15.5"
+appVersion: "16.0"
 description: Inspire Interactive
 name: interactive
 type: application
-version: 1.6.0
+version: 2.0.0

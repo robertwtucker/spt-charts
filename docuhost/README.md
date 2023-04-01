@@ -1,6 +1,6 @@
 # Document Host
 
-![Version: 0.1.12](https://img.shields.io/badge/Version-0.1.12-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.3.4](https://img.shields.io/badge/AppVersion-0.3.4-informational?style=flat-square)
+![Version: 0.1.13](https://img.shields.io/badge/Version-0.1.13-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.3.6](https://img.shields.io/badge/AppVersion-0.3.6-informational?style=flat-square)
 
 ## TL;DR
 
@@ -10,7 +10,9 @@ $ helm install test-release ./docuhost
 
 ## Introduction
 
-This [Helm](https://helm.sh) chart installs the Document Host (Docuhost) service used for temporarily hosting demo documents for retrieval using a generated link.
+This [Helm](https://helm.sh) chart installs the Document Host (Docuhost)
+service used for temporarily hosting demo documents for retrieval using a
+generated link.
 
 ## Prerequisites
 
@@ -26,7 +28,9 @@ $ cd charts
 $ helm install dev-release ./docuhost
 ```
 
-These commands deploy Docuhost on the [Kubernetes](https://kubernetes.io) cluster in the default configuration. The [Parameters](#parameters) section lists the parameters that can be configured during installation.
+These commands deploy Docuhost on the [Kubernetes](https://kubernetes.io)
+cluster in the default configuration. The [Parameters](#parameters) section
+lists the parameters that can be configured during installation.
 
 ## Uninstalling the Chart
 
@@ -36,7 +40,8 @@ To uninstall/delete the `dev-release` deployment:
 $ helm uninstall dev-release
 ```
 
-The command removes all the Kubernetes components associated with the chart and deletes the release.
+The command removes all the Kubernetes components associated with the chart and
+deletes the release.
 
 ## Parameters
 
@@ -61,7 +66,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | fullnameOverride                           | string | `""`                                                                                                      | Fully override the name used for chart objects                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | image.pullPolicy                           | string | `"IfNotPresent"`                                                                                          | DocuHost image pull policy                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | image.repository                           | string | `"registry.sptcloud.com/spt/docuhost"`                                                                    | DocuHost image repository                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| image.tag                                  | string | `"0.3.4-1cffaec"`                                                                                         | Override tag specified by `appVersion` in the chart file                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| image.tag                                  | string | `"0.3.6-1cffaec"`                                                                                         | Override tag specified by `appVersion` in the chart file                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | imagePullSecrets                           | list   | `[]`                                                                                                      | List of image repository pull secrets Secrets must be manually created in the namespace. ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/ Example: imagePullSecrets:   - name: myRegistryKeySecretName                                                                                                                                                                                                                                                                                                                     |
 | ingress.annotations                        | object | `{}`                                                                                                      | Additional annotations for the Ingress resource. To enable certificate autogeneration, place cert-manager annotations here. For a full list of possible ingress annotations, please see ref: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/nginx-configuration/annotations.md Use this parameter to set the required annotations for cert-manager, see ref: https://cert-manager.io/docs/usage/ingress/#supported-annotations e.g: annotations:   kubernetes.io/ingress.class: nginx   cert-manager.io/cluster-issuer: cluster-issuer-name |
 | ingress.apiVersion                         | string | `""`                                                                                                      | Force Ingress API version (automatically detected if not set)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
@@ -109,22 +114,26 @@ The command removes all the Kubernetes components associated with the chart and 
 | shortlink.domain                           | string | `"tiny.one"`                                                                                              | Domain name to use for short links                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | tolerations                                | list   | `[]`                                                                                                      | Tolerations for pod assignment ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 
-Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example,
+Specify each parameter using the `--set key=value[,key=value]` argument to
+`helm install`. For example,
 
 ```console
 $ helm install my-release \
   --set db.user=admin,db.password=s3cr3t docuhost
 ```
 
-The above command sets the Docuhost database username and password to `admin` and `s3cr3t`, respectively.
+The above command sets the Docuhost database username and password to `admin`
+and `s3cr3t`, respectively.
 
-Alternatively, a YAML file that specifies the values for the parameters can be provided while installing the chart. For example,
+Alternatively, a YAML file that specifies the values for the parameters can
+before provided while installing the chart. For example,
 
 ```console
 $ helm install my-release -f values.yaml docuhost
 ```
 
-> **Tip**: You can use the default `values.yaml` file and just delete the unchanged items.
+> **Tip**: You can use the default `values.yaml` file and just delete the
+unchanged items.
 
 ----------------------------------------------
 Autogenerated from chart metadata using [helm-docs v1.7.0](https://github.com/norwoodj/helm-docs/releases/v1.7.0)

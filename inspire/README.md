@@ -38,4 +38,6 @@ Inspire
 | global.spt.image.name | string | `""` | Defines the URL address of the SPT content image stored in a Docker repository. |
 | global.spt.image.tag | string | `""` | Defines a specific version of the SPT content image to be deployed. |
 | global.spt.image.pullPolicy | string | `"IfNotPresent"` | Defines the SPT content image pull policy. [IfNotPresent/Always] |
+| global.spt.k8sWaitFor.image.name | string | `""` | Defines the name of the k8s-wait-for image stored in a container repository. |
+| global.spt.k8sWaitFor.image.tag | string | `""` | Specifies the k8s-wait-for version tag to use. |
 

@@ -35,9 +35,9 @@ Inspire
 | global.sen.passOverride | string | `""` | Defines (in plain text) the password of a Scenario Engine user to be created in ICM. If left undefined, Scaler's deployment will provide you with a random alphanumeric password. Use the 'passOverrideSource' variable instead if you wish to define the password using a Secret. |
 | global.sen.passOverrideSource | object | `{"secretKey":"","secretName":"","useSecret":false}` | Uses a Secret to define the password of a Scenario Engine user to be created in ICM. |
 | global.spt.loadBaseContent | bool | `false` | Toggles load of the base demo content. -- NB: Assumes that: - Scaler value 'additionalStorage.enabled' is true. - Scaler value 'additionalStorage.mountPath' is "/opt/scalerAdditionalStorage". |
-| global.spt.image.name | string | `""` | Defines the URL address of the SPT content image stored in a Docker repository. |
-| global.spt.image.tag | string | `""` | Defines a specific version of the SPT content image to be deployed. |
+| global.spt.image.name | string | `"registry.sptcloud.com/spt/spt-util"` | Defines the URL address of the SPT content image stored in a Docker repository. |
+| global.spt.image.tag | string | `"0.2.1"` | Defines a specific version of the SPT content image to be deployed. |
 | global.spt.image.pullPolicy | string | `"IfNotPresent"` | Defines the SPT content image pull policy. [IfNotPresent/Always] |
-| global.spt.k8sWaitFor.image.name | string | `""` | Defines the name of the k8s-wait-for image stored in a container repository. |
-| global.spt.k8sWaitFor.image.tag | string | `""` | Specifies the k8s-wait-for version tag to use. |
+| global.spt.k8sWaitFor.image.name | string | `"ghcr.io/groundnuty/k8s-wait-for"` | Defines the name of the k8s-wait-for image stored in a container repository. |
+| global.spt.k8sWaitFor.image.tag | string | `"no-root-v2.0"` | Specifies the k8s-wait-for version tag to use. |
 

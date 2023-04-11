@@ -33,7 +33,7 @@ spec:
           {{- toYaml .Values.securityContext | nindent 10 }}
         args:
           - "pod"
-          - "lrole=scaler"
+          - "-lrole=scaler"
       containers:
       - name: {{ include "inspire.applicationName" . }}-spt-content-import
         image: "{{ .Values.global.spt.image.name }}:{{ .Values.global.spt.image.tag }}"

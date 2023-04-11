@@ -103,9 +103,9 @@ global:
     loadBaseContent: false
     image:
       # -- Defines the name of the SPT content image stored in a container repository.
-      name: ""
+      name: "registry.sptcloud.com/spt/spt-util"
       # -- Defines a specific version of the SPT content image to be deployed.
-      tag: ""
+      tag: "0.2.1"
       # -- Defines the SPT content image pull policy. [IfNotPresent/Always]
       pullPolicy: IfNotPresent
     k8sWaitFor:

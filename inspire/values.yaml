@@ -3,7 +3,7 @@ global:
   # -- Defines an array of names of secrets, containing the connection settings to Docker image repositories.
   imagePullSecrets: []
   # -- Defines a unique name of an application within a Kubernetes namespace.
-  applicationName: "inspire"
+  applicationName: inspire
   scaler:
     # -- Defines whether to deploy Scaler or not.
     enabled: true
@@ -57,7 +57,7 @@ global:
     portOverride:
   license:
     # -- Defines the type of your license (cloud licensing or net licensing). [CL/LS]
-    method: "CL"
+    method: CL
     # -- Defines the URL address of your licensing server (Quadient Cloud server or Inspire License Manager server).
     # Use the 'serverSource' variable instead if you wish to define the URL address using a Secret.
     server: ""
@@ -103,9 +103,9 @@ global:
     loadBaseContent: false
     image:
       # -- Defines the name of the SPT content image stored in a container repository.
-      name: "registry.sptcloud.com/spt/spt-util"
+      name: registry.sptcloud.com/spt/spt-util
       # -- Defines a specific version of the SPT content image to be deployed.
-      tag: "0.2.1"
+      tag: 0.2.1
       # -- Defines the SPT content image pull policy. [IfNotPresent/Always]
       pullPolicy: IfNotPresent
     k8sWaitFor:

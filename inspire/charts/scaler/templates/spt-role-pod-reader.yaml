@@ -1,0 +1,26 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "inspire.applicationName" . }}-pod-reader
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "inspire.labels" . | nindent 4 }}
+rules:
+- apiGroups:
+    - ""
+  resources:
+    - pods
+    - services
+  verbs:
+    - get
+    - list
+    - watch
+- apiGroups:
+    - apps
+  resources:
+    - deployments
+    - statefulSets
+  verbs:
+    - get
+    - list
+    - watch

@@ -102,10 +102,16 @@ global:
     #  - Scaler value 'additionalStorage.mountPath' == "/opt/scalerAdditionalStorage".
     loadBaseContent: false
     image:
-      # -- Defines the URL address of the SPT content image stored in a Docker repository.
+      # -- Defines the name of the SPT content image stored in a container repository.
       name: ""
       # -- Defines a specific version of the SPT content image to be deployed.
       tag: ""
       # -- Defines the SPT content image pull policy. [IfNotPresent/Always]
       pullPolicy: IfNotPresent
+    k8sWaitFor:
+      image:
+        # -- Defines the name of the k8s-wait-for image stored in a container repository.
+        name: ghcr.io/groundnuty/k8s-wait-for
+        # -- Specifies the k8s-wait-for version tag to use.
+        tag: no-root-v2.0
 

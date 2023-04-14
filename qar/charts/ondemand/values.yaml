@@ -135,6 +135,7 @@ arsload:
   # -- Time interval in seconds to sleep (arsload command defaults to 600)
   timeInterval: 600
 
+  # -- List of arsload deployment instances (one replica per input volume).
   instances:
     # - name: folder1
     #   # -- Name of an existing PVC to use (required).

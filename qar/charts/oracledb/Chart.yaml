@@ -3,4 +3,4 @@ appVersion: "21.3.0-ee"
 description: A Helm chart for Kubernetes
 name: oracledb
 type: application
-version: 0.2.1
+version: 0.2.2

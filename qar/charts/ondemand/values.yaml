@@ -42,14 +42,14 @@ restapi:
   service:
     # -- Provide any additional annotations which may be required.
     annotations: {}
-    # -- Defines the value for the Kubernetes service object [ClusterIP|LoadBalancer].
+    # -- Defines the value for the Kubernetes service object [ClusterIP|LoadBalancer|NodePort].
     type: ClusterIP
-    # Node ports to expose
+    # NodePort value to assign (.service.type must be `NodePort`).
     # NOTE: choose port between <30000-32767>
     # ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
     nodePorts:
       # -- Node port for WAS
-      http: 9080
+      http: ""
 
   # Learn about liveness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
   # Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
@@ -230,14 +230,14 @@ fts:
   service:
     # -- Provide any additional annotations which may be required.
     annotations: {}
-    # -- Defines the value for the Kubernetes service object [ClusterIP|LoadBalancer].
+    # -- Defines the value for the Kubernetes service object [ClusterIP|LoadBalancer|NodePort].
     type: ClusterIP
-    # Node ports to expose
+    # NodePort value to assign (.service.type must be `NodePort`).
     # NOTE: choose port between <30000-32767>
     # ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
     nodePorts:
       # -- Node port for WAS
-      http: 9181
+      http: ""
 
   # Learn about liveness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
   # Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
@@ -321,14 +321,14 @@ replicaCount: 1
 service:
   # -- Provide any additional annotations which may be required.
   annotations: {}
-  # -- Defines the value for the Kubernetes service object [ClusterIP|LoadBalancer].
+  # -- Defines the value for the Kubernetes service object [ClusterIP|LoadBalancer|NodePort].
   type: ClusterIP
-  # Node ports to expose
+  # NodePort value to assign (service.type must be `NodePort`).
   # NOTE: choose port between <30000-32767>
   # ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
   nodePorts:
     # -- Node port for CMOD
-    ondemand: 1445
+    ondemand: ""
 
 # Learn about liveness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
 # Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.

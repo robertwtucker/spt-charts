@@ -1,0 +1,6 @@
+dependencies:
+- name: oracledb
+  repository: oci://registry.sptcloud.com/charts
+  version: 0.1.0
+digest: sha256:ae5dbf975f532e0e063527d241d284bbaf15b9d0e17e5ae933bb4ca90227b006
+generated: "2023-04-20T14:10:58.480347-04:00"

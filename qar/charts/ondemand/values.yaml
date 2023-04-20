@@ -3,7 +3,7 @@ image:
   # -- Defines the URL address of the QAR server image stored in a container repository.
   name: registry.sptcloud.com/qar/ondemand
   # -- Overrides tag specified by the `appVersion` in the chart file.
-  tag: ""
+  tag: "10.5.0.5-oracle-ubi-8.7-1112"
   # -- QAR image pull policy [Always|IfNotPresent].
   pullPolicy: IfNotPresent
 
@@ -35,7 +35,7 @@ restapi:
     # -- Defines the URL address of the QAR REST API server image stored in a container repository.
     name: registry.sptcloud.com/qar/ondemand-restapi
     # -- Overrides tag specified by the `appVersion` in the chart file.
-    tag: ""
+    tag: "10.5.0.5-liberty-23.0.0.2"
     # -- QAR REST API image pull policy [Always|IfNotPresent].
     pullPolicy: IfNotPresent
 
@@ -220,7 +220,7 @@ fts:
     # -- Defines the URL address of the FTS server image stored in a container repository.
     name: registry.sptcloud.com/qar/ondemand-fts
     # -- Overrides tag specified by the `appVersion` in the chart file.
-    tag: ""
+    tag: "10.5.0.5-ubi-8.7-1112"
     # -- FTS image pull policy [Always|IfNotPresent].
     pullPolicy: IfNotPresent
 

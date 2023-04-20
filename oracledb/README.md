@@ -1,6 +1,6 @@
 # Oracle Database Helm Chart
 
-This Helm chart deploys a development instance of the Oracle database version 12.2.0.1, for use with the Oracle SOA Suite Helm chart.
+This Helm chart has been adapted for use with the Helm charts for deploying Quadient's Archive and Retrieval.
 
 ## Disclaimer
 
@@ -45,29 +45,29 @@ kubectl create secret docker-registry image-secret -n ${namespace} --docker-serv
 
 1. Add the Helm repository to your known repositories
 
-    ```bash
-    helm repo add oracle https://oracle.github.io/helm-charts --force-update
-    ```
+   ```bash
+   helm repo add oracle https://oracle.github.io/helm-charts --force-update
+   ```
 
 2. Create a secret for the database credentials.
 
-    This step is optional but recommended. You can also pass credentials directly as `credentials.username` and `credentials.password` values, however they will be available in clear through the `helm get values <deployment>` command.
+   This step is optional but recommended. You can also pass credentials directly as `credentials.username` and `credentials.password` values, however they will be available in clear through the `helm get values <deployment>` command.
 
-    ```bash
-    kubectl create secret generic db_credentials \
-      -n ${namespace}
-      --from-literal=username=SYS \
-      --from-literal=password='<password_containing_1upper_1number_1special>'
-    ```
+   ```bash
+   kubectl create secret generic db_credentials \
+     -n ${namespace}
+     --from-literal=username=SYS \
+     --from-literal=password='<password_containing_1upper_1number_1special>'
+   ```
 
 3. Deploy the chart
 
-    ```bash
-    helm install ${deployment_name} oracle/oracledb \
-        --namespace ${namespace} \
-        --set credentials.secretName=db_credentials \
-        --set sid=${cdb_name} \
-        --set pdb=${pdb_name} \
-        --set domain=${domain_name} \
-        --set 'imagePullSecrets[0].name=image-secret'
-    ```
+   ```bash
+   helm install ${deployment_name} oracle/oracledb \
+       --namespace ${namespace} \
+       --set credentials.secretName=db_credentials \
+       --set sid=${cdb_name} \
+       --set pdb=${pdb_name} \
+       --set domain=${domain_name} \
+       --set 'imagePullSecrets[0].name=image-secret'
+   ```

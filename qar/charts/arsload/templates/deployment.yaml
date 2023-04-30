@@ -1,5 +1,5 @@
 {{- if .Values.global.arsload.enabled -}}
-{{- range .Values.arsload.instances }}
+{{- range .Values.instances }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -16,7 +16,7 @@ spec:
     type: Recreate
   template:
     metadata:
-    {{- with $.Values.arsload.podAnnotations }}
+    {{- with $.Values.podAnnotations }}
       annotations:
       {{- range $key, $value := . }}
         {{ $key }}: {{ $value | quote }}
@@ -24,10 +24,10 @@ spec:
     {{- end }}
       labels:
         {{- include "qar.labels" $ | nindent 8 }}
-      name: {{ include "qar.applicationName" $ }}-ondemand-template
+      name: {{ include "qar.applicationName" $ }}-arsload-template
     spec:
       securityContext:
-        {{- toYaml $.Values.arsload.podSecurityContext | nindent 8 }}
+        {{- toYaml $.Values.podSecurityContext | nindent 8 }}
       serviceAccountName: {{ include "qar.serviceAccountName" $ }}
   {{- if $.Values.global.imagePullSecrets }}
       imagePullSecrets:
@@ -44,14 +44,20 @@ spec:
         - "-c"
         - "${QAR_HOME}/scripts/init-stash-file.sh"
         env:
-          {{ include "ondemand.env.user" $ | nindent 8 }}
+          {{ include "arsload.env" $ | nindent 8 }}
         volumeMounts:
         - name: work
           mountPath: /opt/qar/tmp
+      - name: {{ include "qar.applicationName" . }}-arsload-wait-ondemand
+        image: "{{ .Values.global.wait.image.name }}:{{ .Values.global.wait.image.tag }}"
+        imagePullPolicy: IfNotPresent
+        args:
+          - "pod"
+          - "-lrole=ondemand"
       containers:
       - name: {{ include "qar.applicationName" $ }}-arsload-{{ .name }}
         securityContext:
-          {{- toYaml $.Values.arsload.securityContext | nindent 10 }}
+          {{- toYaml $.Values.securityContext | nindent 10 }}
         image: "{{ $.Values.image.name }}:{{ $.Values.image.tag | default $.Chart.AppVersion }}"
         imagePullPolicy: {{ $.Values.imagePullPolicy }}
         args: [start, arsload]
@@ -62,19 +68,19 @@ spec:
         livenessProbe:
           exec:
             command: ["ps", "-p", "1"]
-          initialDelaySeconds: {{ $.Values.arsload.livenessProbe.initialDelaySeconds }}
-          periodSeconds: {{ $.Values.arsload.livenessProbe.periodSeconds }}
-          timeoutSeconds: {{ $.Values.arsload.livenessProbe.timeoutSeconds }}
-          failureThreshold: {{ $.Values.arsload.livenessProbe.failureThreshold }}
-          successThreshold: {{ $.Values.arsload.livenessProbe.successThreshold }}
+          initialDelaySeconds: {{ $.Values.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ $.Values.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ $.Values.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ $.Values.livenessProbe.failureThreshold }}
+          successThreshold: {{ $.Values.livenessProbe.successThreshold }}
         readinessProbe:
           exec:
             command: ["/bin/bash", "-c", "ps -p $(cat /tmp/qar/run/od.pid)"]
-          initialDelaySeconds: {{ $.Values.arsload.readinessProbe.initialDelaySeconds }}
-          periodSeconds: {{ $.Values.arsload.readinessProbe.periodSeconds }}
-          timeoutSeconds: {{ $.Values.arsload.readinessProbe.timeoutSeconds }}
-          failureThreshold: {{ $.Values.arsload.readinessProbe.failureThreshold }}
-          successThreshold: {{ $.Values.arsload.readinessProbe.successThreshold }}
+          initialDelaySeconds: {{ $.Values.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ $.Values.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ $.Values.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ $.Values.readinessProbe.failureThreshold }}
+          successThreshold: {{ $.Values.readinessProbe.successThreshold }}
         volumeMounts:
         - name: work
           mountPath: /opt/qar/tmp

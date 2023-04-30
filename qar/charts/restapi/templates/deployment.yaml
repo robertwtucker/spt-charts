@@ -1,0 +1,104 @@
+{{- if .Values.global.restapi.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "qar.applicationName" $ }}-restapi
+  namespace: {{ .Release.namespace | quote }}
+  labels:
+    {{- include "qar.labels" $ | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "qar.labels" $ | nindent 6 }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+      {{- range $key, $value := . }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
+    {{- end }}
+      labels:
+        {{- include "qar.labels" $ | nindent 8 }}
+      name: {{ include "qar.applicationName" $ }}-restapi-template
+    spec:
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      serviceAccountName: {{ include "qar.serviceAccountName" $ }}
+  {{- if .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+    {{- range .Values.global.imagePullSecrets }}
+      - name: {{ . }}
+    {{- end }}
+  {{- end }}
+      initContainers:
+      - name: {{ include "qar.applicationName" . }}-restapi-init
+        image: "{{ .Values.image.name }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        args:
+        - "sh"
+        - "-c"
+        - "${QAR_HOME}/scripts/generate-rest-config.sh"
+        env:
+          {{ include "restapi.env" . | nindent 8 }}
+        securityContext:
+          runAsUser: 0
+        volumeMounts:
+        - name: odpool
+          mountPath: /opt/qar/config/rest/odpool
+        - name: restcfg
+          mountPath: /opt/qar/tmp/restcfg
+      - name: {{ include "qar.applicationName" . }}-restapi-wait-ondemand
+        image: "{{ .Values.global.wait.image.name }}:{{ .Values.global.wait.image.tag }}"
+        imagePullPolicy: IfNotPresent
+        args:
+          - "pod"
+          - "-lrole=ondemand"
+      containers:
+      - name: {{ include "qar.applicationName" . }}-restapi
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+        image: "{{ .Values.image.name }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        ports:
+        - name: http
+          containerPort: 9080
+        livenessProbe:
+          tcpSocket:
+            port: 9080
+          initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+          successThreshold: {{ .Values.livenessProbe.successThreshold }}
+        readinessProbe:
+          httpGet:
+            path: /qar/v1/documentation
+            port: 9080
+            scheme: HTTP
+          initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+          successThreshold: {{ .Values.readinessProbe.successThreshold }}
+        volumeMounts:
+        - name: odpool
+          mountPath: /opt/qar/config/rest/odpool
+        - name: restcfg
+          mountPath: /opt/qar/tmp/restcfg
+      volumes:
+      - name: restcfg
+        emptyDir: {}
+  {{- if .Values.persistence.enabled }}
+    {{- if .Values.persistence.existingClaim }}
+      - name: odpool
+        persistentVolumeClaim:
+          claimName: {{ tpl .Values.persistence.existingClaim $ }}
+    {{- else }}
+      - name: odpool
+        emptyDir: {}
+    {{- end }}
+  {{- end }}
+{{- end -}}

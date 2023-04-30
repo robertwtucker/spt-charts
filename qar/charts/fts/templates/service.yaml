@@ -7,7 +7,7 @@ metadata:
   labels:
     {{ include "qar.labels" . | nindent 4 }}
   annotations:
-    {{- with .Values.fts.service.annotations }}
+    {{- with .Values.service.annotations }}
     {{ tpl (toYaml .) $ | indent 4 }}
     {{- end }}
     description: Service for the QAR OnDemand REST API
@@ -16,12 +16,12 @@ spec:
   - name: http
     port: {{ .Values.global.fts.portOverride | default 8191 }}
     targetPort: http
-    {{- if and (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) (not (empty .Values.fts.service.nodePorts.http)) }}
-    nodePort: {{ .Values.fts.service.nodePorts.http }}
-    {{- else if eq .Values.fts.service.type "ClusterIP" }}
+    {{- if and (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) (not (empty .Values.service.nodePorts.http)) }}
+    nodePort: {{ .Values.service.nodePorts.http }}
+    {{- else if eq .Values.service.type "ClusterIP" }}
     nodePort: null
     {{- end }}
   selector:
     {{ include "qar.labels" . | nindent 4 }}
-  type: {{ .Values.fts.service.type }}
+  type: {{ .Values.service.type }}
 {{- end }}

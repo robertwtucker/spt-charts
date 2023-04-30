@@ -2,7 +2,7 @@
 
 global:
   # -- Defines a unique name of an application within a Kubernetes namespace.
-  applicationName: "qar"
+  applicationName: 'qar'
   # -- List of image repository pull secrets. Secrets must be manually created in the namespace.
   # ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
   # Example:
@@ -13,12 +13,12 @@ global:
     # -- Defines (in plain text) the password to be created for the Oracle database's SYS user.
     # If left undefined, the deployment will generate a random alphanumeric password. Use the
     # 'passwordOverrideSource' variable to define the password using a Secret.
-    passwordOverride: ""
+    passwordOverride: ''
     # -- Uses a Secret to define the password of the CMOD user to be created in the Oracle database(s).
     passwordOverrideSource:
       useSecret: false
-      secretName: ""
-      secretKey: ""
+      secretName: ''
+      secretKey: ''
     tnsListener:
       # -- Defines the port to run the TNS listener on. If left undefined, the default port 1521 is used.
       portOverride:
@@ -30,39 +30,39 @@ global:
       # -- Defines (in plain text) the name of the administrative user to be created in the oracled
       # database(s). If left undefined, the default user `archive` is created. Use the `userOverrideSource'
       # variable to define the username using a Secret.
-      userOverride: ""
+      userOverride: ''
       # -- Uses a Secret to define the administrative user to be created in the Oracle database(s).
       userOverrideSource:
         useSecret: false
-        secretName: ""
-        secretKey: ""
+        secretName: ''
+        secretKey: ''
       # -- Defines (in plain text) the password of the administrative user to be created in the
       # Oracle database(s). If left undefined, the deployment will generate a random alphanumeric
       # password. Use the 'passwordOverrideSource' variable to define the password using a Secret.
-      passwordOverride: ""
+      passwordOverride: ''
       # -- Uses a Secret to define the password of the administrative user to be created in the
       # Oracle database(s).
       passwordOverrideSource:
         useSecret: false
-        secretName: ""
-        secretKey: ""
+        secretName: ''
+        secretKey: ''
     # -- Defines (in plain text) the name of the CMOD admin user. If left undefined, the default user
     # `admin` is created. Use the `userOverrideSource' variable to define the username using a Secret.
-    userOverride: ""
+    userOverride: ''
     # -- Uses a Secret to define the CMOD admin user.
     userOverrideSource:
       useSecret: false
-      secretName: ""
-      secretKey: ""
+      secretName: ''
+      secretKey: ''
     # -- Defines (in plain text) the password of the CMOD admin user. If left undefined, the deployment
     # will generate a random alphanumeric password. Use the 'passwordOverrideSource' variable to
     # define the password using a Secret.
-    passwordOverride: ""
+    passwordOverride: ''
     # -- Uses a Secret to define the password of the CMOD user.
     passwordOverrideSource:
       useSecret: false
-      secretName: ""
-      secretKey: ""
+      secretName: ''
+      secretKey: ''
     # -- Defines the port to run the ARS listener on. If left undefined, the default port 1445 is used.
     portOverride:
   restapi:
@@ -71,21 +71,21 @@ global:
     # -- Defines (in plain text) the name of the CMOD user to use when generating the REST configuration
     # (OD access pool). If left undefined, the default user `admin` is used. Use the `userOverrideSource'
     # variable to define the username using a Secret.
-    userOverride: ""
+    userOverride: ''
     # -- Uses a Secret to define the CMOD user used when generating the REST configuration.
     userOverrideSource:
       useSecret: false
-      secretName: ""
-      secretKey: ""
+      secretName: ''
+      secretKey: ''
     # -- Defines (in plain text) the password of the CMOD user to use when generating the REST configuration
     # (OD access pool). If left undefined, the deployment will generate a random alphanumeric password. Use
     # the 'passwordOverrideSource' variable to define the username using a Secret.
-    passwordOverride: ""
+    passwordOverride: ''
     # -- Uses a Secret to define the password of the CMOD user used when generating the REST configuration.
     passwordOverrideSource:
       useSecret: false
-      secretName: ""
-      secretKey: ""
+      secretName: ''
+      secretKey: ''
     # -- Defines the port to run the HTTP listener on. If left undefined, the default port 9080 is used.
     portOverride:
   arsload:
@@ -94,21 +94,21 @@ global:
     # -- Defines (in plain text) the name of the CMOD ARSLOAD user (for batch-loading documents).
     # If left undefined, the default user `admin` is used. Use the `userOverrideSource' variable
     # to define the username using a Secret.
-    userOverride: ""
+    userOverride: ''
     # -- Uses a Secret to define the CMOD ARSLOAD user (for batch-loading documents).
     userOverrideSource:
       useSecret: false
-      secretName: ""
-      secretKey: ""
+      secretName: ''
+      secretKey: ''
     # -- Defines (in plain text) the password of the CMOD ARSLOAD user (for batch-loading documents).
     # If left undefined, the deployment will generate a random alphanumeric password. Use the
     # 'passwordOverrideSource' variable to define the username using a Secret.
-    passwordOverride: ""
+    passwordOverride: ''
     # -- Uses a Secret to define the password of the CMOD ARSLOAD user (for batch-loading documents).
     passwordOverrideSource:
       useSecret: false
-      secretName: ""
-      secretKey: ""
+      secretName: ''
+      secretKey: ''
   fts:
     # -- Defines whether to enable Full-Text Search.
     enabled: false
@@ -125,3 +125,10 @@ global:
     # -- Defines the port to run the Zookeeper listener on.
     # If left undefined, the default port 1445 is used.
     portOverride:
+  # Learn about k8s-wait-for at https://github.com/groundnuty/k8s-wait-for
+  wait:
+    image:
+      # -- Defines the name of the k8s-wait-for image stored in a container repository.
+      name: groundnuty/k8s-wait-for
+      # -- Specifies the version tag to use.
+      tag: no-root-v1.7

@@ -1,36 +1,14 @@
-# QAR CMOD chart values
+# REST API configuration
 image:
-  # -- Defines the URL address of the QAR server image stored in a container repository.
-  name: registry.sptcloud.com/qar/ondemand
+  # -- Defines the URL address of the QAR REST API server image stored in a container repository.
+  name: registry.sptcloud.com/qar/ondemand-restapi
   # -- Overrides tag specified by the `appVersion` in the chart file.
-  tag: 10.5.0.5-oracle-ubi-8.7-1112
-  # -- QAR image pull policy [Always|IfNotPresent].
+  tag: 10.5.0.5-liberty-23.0.0.2
+  # -- QAR REST API image pull policy [Always|IfNotPresent].
   pullPolicy: IfNotPresent
 
-db:
-  # -- Specifies the DBMS used by the Library Server [DB2|ORACLE].
-  engine: ORACLE
-  # -- Defines the Oracle TNS service name for the CMOD database. If left undefined, the
-  # lower-cased `serverInstanceName` value is used.
-  tnsServiceName: ''
-  # -- Determines the number of processes that CMOD starts on the library server to
-  # handle connections to the database. Specify a value that supports the peak number
-  # of concurrent database connections library server needs to handle.
-  numSubServers: 10
-# -- Used in the header line of the `ars.ini` file to identify the name of the CMOD instance.
-odInstanceName: ARCHIVE
-# -- Identifies the name of the CMOD database (will be lower-cased for database creation).
-# If not provided, the name `archive` will be used.
-serverInstanceName: ARCHIVE
-# -- Determines whether the server program is linked to a cache-only storage manager or an
-# archive storage manager. Required on library servers. [TSM|NO_TSM|CACHE_ONLY]
-storageManager: NO_TSM
-trace:
-  # -- Enables the system trace facility
-  enabled: false
-
 # -- QAR component designation.
-role: ondemand
+role: restapi
 
 # -- Enter the name of an existing service account to use. Otherwise, one will be created by default.
 existingServiceAccount: ''
@@ -70,24 +48,24 @@ service:
   annotations: {}
   # -- Defines the value for the Kubernetes service object [ClusterIP|LoadBalancer|NodePort].
   type: ClusterIP
-  # NodePort value to assign (service.type must be `NodePort`).
+  # NodePort value to assign (.service.type must be `NodePort`).
   # NOTE: choose port between <30000-32767>
   # ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
   nodePorts:
-    # -- Node port for CMOD
-    ondemand: ''
+    # -- Node port for WAS
+    http: ''
 
 # Learn about liveness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
 # Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
 livenessProbe:
   # -- Initial delay before probing liveness
-  initialDelaySeconds: 2
+  initialDelaySeconds: 5
   # -- Period in seconds between liveness checks
   periodSeconds: 30
   # -- Timeout in seconds for liveness checks
   timeoutSeconds: 1
   # -- Number of consecutive negative tests before declaring failure
-  failureThreshold: 3
+  failureThreshold: 5
   # -- Number of consecutive positive tests before counting it as a success
   successThreshold: 1
 
@@ -95,13 +73,13 @@ livenessProbe:
 # Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
 readinessProbe:
   # -- Initial delay before probing readiness
-  initialDelaySeconds: 2
+  initialDelaySeconds: 10
   # -- Period in seconds between readiness checks
   periodSeconds: 30
   # -- Timeout in seconds for readiness checks
   timeoutSeconds: 1
   # -- Number of consecutive negative tests before declaring failure
-  failureThreshold: 3
+  failureThreshold: 5
   # -- Number of consecutive positive tests before counting it as a success
   successThreshold: 1
 
@@ -133,12 +111,12 @@ ingress:
   #      - chart-example.local
 
 persistence:
-  # -- Enable CMOD Library server data persistence using a PVC.
+  # -- Enable REST API pool configuration persistence using a PVC.
   enabled: true
   # -- Name of an existing PVC to use.
   existingClaim: ''
   # -- The path the volume will be mounted at.
-  mountPath: /opt/qar/data
+  mountPath: /opt/qar/config/rest/odpool
   # -- If defined, storageClassName: <storageClass>
   # If set to "-", storageClassName: "", which disables dynamic provisioning.
   # If undefined (the default) or set to null, no storageClassName spec is
@@ -148,23 +126,8 @@ persistence:
   accessModes:
     - ReadWriteOnce
   # -- PVC Storage Request for the CMOD data volume.
-  size: 8Gi
+  size: 100Ki
   # -- Additional annotations, as required.
   annotations: {}
   # -- Additional labels, as required.
   labels: {}
-
-# Learn about Horizontal Pod Autoscaler at https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
-autoscaling:
-  # -- Enables the autoscaling feature.
-  enabled: false
-  # -- Defines the lower limit for the number of CMOD nodes that can be set by the autoscaling configuration.
-  minReplicas: 1
-  # -- Defines the upper limit for the number of CMOOD nodes that can be set by the autoscaling configuration.
-  maxReplicas: 3
-  # -- Kubernetes calculates average utilization this way: ((pod cpu usage)/(scaler.request + ips.request).
-  # CPU requests and CPU limits must be configured using the same values.
-  targetCPUUtilizationPercentage: 80
-
-# -- Defines whether to create a batch job to perform initial setup processing.
-performInitialSetup: false

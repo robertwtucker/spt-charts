@@ -7,7 +7,7 @@ Your deployed applications can be accessed on the following DNS names from withi
   Oracle: {{ include "qar.applicationName" . }}-oracledb-hl.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.global.oracledb.portOverride | default 1521 }}
   QAR: {{ include "qar.applicationName" . }}-ondemand-hl.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.global.ondemand.portOverride | default 1445 }}
 {{- if .Values.global.restapi.enabled }}
-  QAR REST API: {{ include "qar.applicationName" . }}-ondemand-restapi.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.global.restapi.portOverride | default 9080 }}
+  QAR REST API: {{ include "qar.applicationName" . }}-restapi.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.global.restapi.portOverride | default 9080 }}
 {{- end }}
 {{- if .Values.global.arsload.enabled }}
   ARSLOAD: N/A (access via batch load folder only)
@@ -23,12 +23,12 @@ To get the authentication details, execute the following commands:
 {{- else }}
   The Oracle database SYS user's password is managed externally.
 {{- end }}
-{{- if eq (include "qar.secret.isDelegated" .Values.global.ondemand.userOverrideSource) "false" }}
+{{- if eq (include "qar.secret.isDelegated" .Values.global.ondemand.db.userOverrideSource) "false" }}
   export QAR_DB_USER=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "qar.applicationName" . }}-ondemand -o jsonpath="{.data.dbUsername}" | base64 --decode)
 {{- else }}
   The QAR database user name is managed externally.
 {{- end }}
-{{- if eq (include "qar.secret.isDelegated" .Values.global.ondemand.passwordOverrideSource) "false" }}
+{{- if eq (include "qar.secret.isDelegated" .Values.global.ondemand.db.passwordOverrideSource) "false" }}
   export QAR_DB_PASSWORD=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "qar.applicationName" . }}-ondemand -o jsonpath="{.data.dbPassword}" | base64 --decode)
 {{- else }}
   The QAR database user's password is managed externally.
@@ -44,22 +44,22 @@ To get the authentication details, execute the following commands:
   The QAR administrative user's password is managed externally.
 {{- end }}
 {{- if eq (include "qar.secret.isDelegated" .Values.global.restapi.userOverrideSource) "false" }}
-  export QAR_REST_USER=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "qar.applicationName" . }}-ondemand -o jsonpath="{.data.restUsername}" | base64 --decode)
+  export QAR_REST_USER=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "qar.applicationName" . }}-restapi -o jsonpath="{.data.restUsername}" | base64 --decode)
 {{- else }}
   The QAR REST API user's name is managed externally.
 {{- end }}
 {{- if eq (include "qar.secret.isDelegated" .Values.global.restapi.passwordOverrideSource) "false" }}
-  export QAR_REST_PASSWORD=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "qar.applicationName" . }}-ondemand -o jsonpath="{.data.restPassword}" | base64 --decode)
+  export QAR_REST_PASSWORD=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "qar.applicationName" . }}-restapi -o jsonpath="{.data.restPassword}" | base64 --decode)
 {{- else }}
   The QAR REST API user's password is managed externally.
 {{- end }}
 {{- if eq (include "qar.secret.isDelegated" .Values.global.arsload.userOverrideSource) "false" }}
-  export QAR_ARLOAD_USER=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "qar.applicationName" . }}-ondemand -o jsonpath="{.data.loadUsername}" | base64 --decode)
+  export QAR_ARLOAD_USER=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "qar.applicationName" . }}-arsload -o jsonpath="{.data.loadUsername}" | base64 --decode)
 {{- else }}
   The QAR ARSLOAD user's name is managed externally.
 {{- end }}
 {{- if eq (include "qar.secret.isDelegated" .Values.global.arsload.passwordOverrideSource) "false" }}
-  export QAR_ARSLOAD_PASSWORD=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "qar.applicationName" . }}-ondemand -o jsonpath="{.data.loadPassword}" | base64 --decode)
+  export QAR_ARSLOAD_PASSWORD=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "qar.applicationName" . }}-arsload -o jsonpath="{.data.loadPassword}" | base64 --decode)
 {{- else }}
   The QAR ARSLOAD user's password is managed externally.
 {{- end }}
@@ -68,7 +68,7 @@ To get the authentication details, execute the following commands:
 
 ** REST API Credentials **
 To get the pool credentials for accessing the REST API, execute the following command:
-  kubectl cp {{ include "qar.applicationName" . }}-ondemand-0:/opt/qar/config/rest/odpool/{{ .Values.global.restapi.userOverride | default "admin" }}.rest.credentials ./{{ .Values.global.restapi.userOverride | default "admin" }}.rest.credentials -c {{ include "qar.applicationName" . }}-ondemand-restapi
+  kubectl cp {{ include "qar.applicationName" . }}-restapi:/opt/qar/config/rest/odpool/{{ .Values.global.restapi.userOverride | default "admin" }}.rest.credentials ./{{ .Values.global.restapi.userOverride | default "admin" }}.rest.credentials
 {{- end }}
 
 ** Port Forwarding **
@@ -76,7 +76,7 @@ To connect to your applications execute the following commands:
   $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "qar.applicationName" . }}-oracledb {{ .Values.global.oracledb.portOverride | default 1521 }}:{{ .Values.global.oracledb.portOverride | default 1521 }}
   $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "qar.applicationName" . }}-ondemand {{ .Values.global.ondemand.portOverride | default 1445 }}:{{ .Values.global.ondemand.portOverride | default 1445 }}
 {{- if .Values.global.restapi.enabled }}
-  $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "qar.applicationName" . }}-ondemand-restapi {{ .Values.global.restapi.portOverride | default 9080 }}:{{ .Values.global.restapi.portOverride | default 9080 }}
+  $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "qar.applicationName" . }}-restapi {{ .Values.global.restapi.portOverride | default 9080 }}:{{ .Values.global.restapi.portOverride | default 9080 }}
 {{- end }}
 {{- if .Values.global.navigator.enabled }}
   $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "qar.applicationName" . }}-navigator {{ .Values.global.navigator.portOverrid | default 9080 }}:{{ .Values.global.navigator.portOverride | default 9080 }}

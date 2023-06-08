@@ -2,14 +2,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "qar.applicationName" $ }}-restapi
+  name: {{ include "qar.applicationName" . }}-restapi
   namespace: {{ .Release.namespace | quote }}
   labels:
-    {{- include "qar.labels" $ | nindent 4 }}
+    {{- include "qar.labels" . | nindent 4 }}
 spec:
   selector:
     matchLabels:
-      {{- include "qar.labels" $ | nindent 6 }}
+      {{- include "qar.labels" . | nindent 6 }}
   strategy:
     type: Recreate
   template:
@@ -21,12 +21,12 @@ spec:
       {{- end }}
     {{- end }}
       labels:
-        {{- include "qar.labels" $ | nindent 8 }}
-      name: {{ include "qar.applicationName" $ }}-restapi-template
+        {{- include "qar.labels" . | nindent 8 }}
+      name: {{ include "qar.applicationName" . }}-restapi-template
     spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      serviceAccountName: {{ include "qar.serviceAccountName" $ }}
+      serviceAccountName: {{ include "qar.serviceAccountName" . }}
   {{- if .Values.global.imagePullSecrets }}
       imagePullSecrets:
     {{- range .Values.global.imagePullSecrets }}
@@ -95,7 +95,7 @@ spec:
     {{- if .Values.persistence.existingClaim }}
       - name: odpool
         persistentVolumeClaim:
-          claimName: {{ tpl .Values.persistence.existingClaim $ }}
+          claimName: {{ tpl .Values.persistence.existingClaim . }}
     {{- else }}
       - name: odpool
         emptyDir: {}

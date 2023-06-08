@@ -7,33 +7,11 @@ image:
   # -- QAR image pull policy [Always|IfNotPresent].
   pullPolicy: IfNotPresent
 
-db:
-  # -- Specifies the DBMS used by the Library Server [DB2|ORACLE].
-  engine: ORACLE
-  # -- Defines the Oracle TNS service name for the CMOD database. If left undefined, the
-  # lower-cased `serverInstanceName` value is used.
-  tnsServiceName: ''
-  # -- Determines the number of processes that CMOD starts on the library server to
-  # handle connections to the database. Specify a value that supports the peak number
-  # of concurrent database connections library server needs to handle.
-  numSubServers: 10
-# -- Used in the header line of the `ars.ini` file to identify the name of the CMOD instance.
-odInstanceName: ARCHIVE
-# -- Identifies the name of the CMOD database (will be lower-cased for database creation).
-# If not provided, the name `archive` will be used.
-serverInstanceName: ARCHIVE
-# -- Determines whether the server program is linked to a cache-only storage manager or an
-# archive storage manager. Required on library servers. [TSM|NO_TSM|CACHE_ONLY]
-storageManager: NO_TSM
-trace:
-  # -- Enables the system trace facility
-  enabled: false
-
 # -- QAR component designation.
 role: ondemand
 
 # -- Enter the name of an existing service account to use. Otherwise, one will be created by default.
-existingServiceAccount: ''
+existingServiceAccount: ""
 
 # -- Provides the ability to customize the deployment using Kubernetes annotations.
 podAnnotations: {}
@@ -75,7 +53,7 @@ service:
   # ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
   nodePorts:
     # -- Node port for CMOD
-    ondemand: ''
+    ondemand: ""
 
 # Learn about liveness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
 # Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
@@ -125,7 +103,7 @@ ingress:
   annotations: {}
   hosts:
     # -- Defines the host(s) for this Ingress.
-    - host: ''
+    - host: ""
   # -- Defines the TLS-enabled host(s) and options.
   tls: []
   #  - secretName: chart-example-tls
@@ -136,14 +114,14 @@ persistence:
   # -- Enable CMOD Library server data persistence using a PVC.
   enabled: true
   # -- Name of an existing PVC to use.
-  existingClaim: ''
+  existingClaim: ""
   # -- The path the volume will be mounted at.
   mountPath: /opt/qar/data
   # -- If defined, storageClassName: <storageClass>
   # If set to "-", storageClassName: "", which disables dynamic provisioning.
   # If undefined (the default) or set to null, no storageClassName spec is
   # set, choosing the default provisioner. (gp2 on AWS, standard on GKE, AWS & OpenStack)
-  storageClass: ''
+  storageClass: ""
   # -- PVC Access Mode for the CMOD data volume.
   accessModes:
     - ReadWriteOnce

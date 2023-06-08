@@ -48,8 +48,8 @@ spec:
         volumeMounts:
         - name: work
           mountPath: /opt/qar/tmp
-      - name: {{ include "qar.applicationName" . }}-arsload-wait-ondemand
-        image: "{{ .Values.global.wait.image.name }}:{{ .Values.global.wait.image.tag }}"
+      - name: {{ include "qar.applicationName" $ }}-arsload-wait-ondemand
+        image: "{{ $.Values.global.wait.image.name }}:{{ $.Values.global.wait.image.tag }}"
         imagePullPolicy: IfNotPresent
         args:
           - "pod"

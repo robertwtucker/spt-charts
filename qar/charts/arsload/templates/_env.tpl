@@ -39,5 +39,5 @@ Defines environment variables for the ARSLOAD service.
       key: loadPassword
 {{- end }}
 - name: OD_INSTANCE_NAME
-  value: {{ upper .Values.ondemand.odInstanceName }}
+  value: {{ upper .Values.global.ondemand.odInstanceName }}
 {{- end }}

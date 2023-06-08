@@ -62,7 +62,7 @@ spec:
         imagePullPolicy: {{ $.Values.imagePullPolicy }}
         args: [start, arsload]
         env:
-          {{ include "ondemand.env.arsload" $ | nindent 8 }}
+          {{ include "arsload.env" $ | nindent 8 }}
         - name: ARSLOAD_DIRECTORY
           value: {{ .mountPath | default "/opt/qar/data/load"}}
         livenessProbe:

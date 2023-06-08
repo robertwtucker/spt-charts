@@ -7,13 +7,6 @@ We truncate at 63 chars because of the DNS naming spec.
 {{- end -}}
 
 {{/*
-Ensures the default database name is specified.
-*/}}
-{{- define "ondemand.serverInstanceName" -}}
-{{- .Values.serverInstanceName | default "archive" | lower }}
-{{- end }}
-
-{{/*
 Generates the Oracle TNS service name from the database name, if not provided directly.
 */}}
 {{- define "ondemand.tnsServiceName" -}}

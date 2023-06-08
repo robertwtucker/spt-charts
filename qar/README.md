@@ -53,13 +53,20 @@ The command removes all the Kubernetes components associated with the chart and 
 | global.imagePullSecrets | list | `\[\]` | List of image repository pull secrets. Secrets must be manually created in the namespace. ref: [https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/) Example: imagePullSecrets:   - name: myRegistryKeySecretName |
 | global.navigator.enabled | bool | `false` | Defines whether to deploy a Content Navigator server.  _\[Not Implemented Yet\]_ |
 | global.navigator.portOverride | string | `nil` | Defines the port to run the HTTP listener on. If left undefined, the default port 9080 is used.  _\[Not Implemented Yet\]_ |
+| global.ondemand.db.engine | string | `"ORACLE"` | Specifies the DBMS used by the Library Server \[DB2/ORACLE\]. |
+| global.ondemand.db.numSubServers | int | `10` | Determines the number of processes that CMOD starts on the library server to handle connections to the database. Specify a value that supports the peak number of concurrent database connections library server needs to handle. |
 | global.ondemand.db.passwordOverride | string | `""` | Defines (in plain text) the password of the administrative user to be created in the Oracle database(s). If left undefined, the deployment will generate a random alphanumeric password. Use the 'passwordOverrideSource' variable to define the password using a Secret. |
 | global.ondemand.db.passwordOverrideSource | object | `{"secretKey":"","secretName":"","useSecret":false}` | Uses a Secret to define the password of the administrative user to be created in the Oracle database(s). |
+| global.ondemand.db.tnsServiceName | string | `""` | Defines the Oracle TNS service name for the CMOD database. If left undefined, the lower-cased `serverInstanceName` value is used. |
 | global.ondemand.db.userOverride | string | `""` | Defines (in plain text) the name of the administrative user to be created in the oracled database(s). If left undefined, the default user `archive` is created. Use the `userOverrideSource' variable to define the username using a Secret. |
 | global.ondemand.db.userOverrideSource | object | `{"secretKey":"","secretName":"","useSecret":false}` | Uses a Secret to define the administrative user to be created in the Oracle database(s). |
+| global.ondemand.odInstanceName | string | `"ARCHIVE"` | Used in the header line of the `ars.ini` file to identify the name of the CMOD instance. |
 | global.ondemand.passwordOverride  | string | `""` | Defines (in plain text) the password of the CMOD admin user. If left undefined, the deployment will generate a random alphanumeric password. Use the 'passwordOverrideSource' variable to define the password using a Secret. |
 | global.ondemand.passwordOverrideSource | object | `{"secretKey":"","secretName":"","useSecret":false}` | Uses a Secret to define the password of the CMOD user. |
 | global.ondemand.portOverride | string | `nil` | Defines the port to run the ARS listener on. If left undefined, the default port 1445 is used. |
+| global.ondemand.serverInstanceName | string | `"ARCHIVE"` | Identifies the name of the CMOD database (will be lower-cased for database creation). If not provided, the name `archive` will be used. |
+| global.ondemand.storageManager | string | `"NO_TSM"` | Determines whether the server program is linked to a cache-only storage manager or an archive storage manager. Required on library servers. \[TSM/NO_TSM/CACHE_ONLY\] |
+| global.ondemand.trace.enabled | bool | `false` | Enables the system trace facility |
 | global.ondemand.userOverride | string | `""` | Defines (in plain text) the name of the CMOD admin user. If left undefined, the default user `admin` is created. Use the `userOverrideSource' variable to define the username using a Secret. |
 | global.ondemand.userOverrideSource | object | `{"secretKey":"","secretName":"","useSecret":false}` | Uses a Secret to define the CMOD admin user. |
 | global.oracledb.emExpress.portOverride | string | `nil` | Defines the port to run the EM Express app on. If left undefined, the default port 5500 is used. |
@@ -91,9 +98,6 @@ The command removes all the Kubernetes components associated with the chart and 
 | ondemand.autoscaling.maxReplicas | int | `3` | Defines the upper limit for the number of CMOD nodes that can be set by the autoscaling configuration. |
 | ondemand.autoscaling.minReplicas | int | `1` | Defines the lower limit for the number of CMOD nodes that can be set by the autoscaling configuration. |
 | ondemand.autoscaling.targetCPUUtilizationPercentage | int | `80` | Kubernetes calculates average utilization this way: ((pod cpu usage)/(scaler.request + ips.request). CPU requests and CPU limits must be configured using the same values. |
-| ondemand.db.engine | string | `"ORACLE"` | Specifies the DBMS used by the Library Server \[DB2/ORACLE\]. |
-| ondemand.db.numSubServers | int | `10` | Determines the number of processes that CMOD starts on the library server to handle connections to the database. Specify a value that supports the peak number of concurrent database connections library server needs to handle. |
-| ondemand.db.tnsServiceName | string | `""` | Defines the Oracle TNS service name for the CMOD database. If left undefined, the lower-cased `serverInstanceName` value is used. |
 | ondemand.existingServiceAccount | string | `""` | Enter the name of an existing service account to use. Otherwise, one will be created by default. |
 | ondemand.fts.exportPollDelay | int | `180` | Full-text index export process polling/sleep interval (in seconds). |
 | ondemand.fts.image.name | string | `"registry.sptcloud.com/qar/ondemand-fts"` | Defines the URL address of the FTS server image stored in a container repository. |
@@ -128,7 +132,6 @@ The command removes all the Kubernetes components associated with the chart and 
 | ondemand.livenessProbe.periodSeconds | int | `30` | Period in seconds between liveness checks. |
 | ondemand.livenessProbe.successThreshold | int | `1` | Number of consecutive positive tests before counting it as a success. |
 | ondemand.livenessProbe.timeoutSeconds | int | `1` | Timeout in seconds for liveness checks. |
-| ondemand.odInstanceName | string | `"ARCHIVE"` | Used in the header line of the `ars.ini` file to identify the name of the CMOD instance. |
 | ondemand.performInitialSetup | bool | `false` | Defines whether to create a batch job to perform initial setup processing. |
 | ondemand.persistence.accessModes | list | `\[ReadWriteOnce\]` | PVC Access Mode for the CMOD data volume. |
 | ondemand.persistence.annotations | object | `{}` | Additional annotations, as required. |
@@ -182,12 +185,9 @@ The command removes all the Kubernetes components associated with the chart and 
 | ondemand.securityContext.privileged | bool | `false` | ref: [https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privileged](https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privileged). |
 | ondemand.securityContext.runAsGroup | int | `1001` | ref: [https://kubernetes.io/docs/concepts/policy/pod-security-policy/#capabilities](https://kubernetes.io/docs/concepts/policy/pod-security-policy/#capabilities). |
 | ondemand.securityContext.runAsUser | int | `1001` | ref: [https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups](https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups). |
-| ondemand.serverInstanceName | string | `"ARCHIVE"` | Identifies the name of the CMOD database (will be lower-cased for database creation). If not provided, the name `archive` will be used. |
 | ondemand.service.annotations | object | `{}` | Provide any additional annotations which may be required. |
 | ondemand.service.nodePorts.ondemand | string | `""` | NodePort value to assign (.service.type must be `NodePort`). |
 | ondemand.service.type | string | `"ClusterIP"` | Defines the value for the Kubernetes service object \[ClusterIP/LoadBalancer/NodePort\]. |
-| ondemand.storageManager | string | `"NO_TSM"` | Determines whether the server program is linked to a cache-only storage manager or an archive storage manager. Required on library servers. \[TSM/NO_TSM/CACHE_ONLY\] |
-| ondemand.trace.enabled | bool | `false` | Enables the system trace facility |
 | oracledb.characterSet | string | `""` | The character set to use when creating the database (default: AL32UTF8) |
 | oracledb.existingServiceAccount | string | `""` | Enter the name of an existing service account to use. Otherwise, one will be created by default. |
 | oracledb.image.name | string | `"container-registry.oracle.com/database/express"` | Defines the URL address of the Oracle database image stored in a Docker image repository. |

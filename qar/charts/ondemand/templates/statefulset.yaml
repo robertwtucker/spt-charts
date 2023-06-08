@@ -45,7 +45,7 @@ spec:
         - "-c"
         - "${QAR_HOME}/scripts/init-stash-file.sh"
         env:
-          {{ include "ondemand.env.user" . | nindent 8 }}
+          {{ include "qar.env.user" . | nindent 8 }}
         volumeMounts:
         - name: work
           mountPath: /opt/qar/tmp
@@ -63,8 +63,8 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         args: [start, library]
         env:
-        {{ include "ondemand.env.library" . | nindent 8 }}
-        {{ include "ondemand.env.database" . | nindent 8 }}
+        {{ include "qar.env.library" . | nindent 8 }}
+        {{ include "qar.env.database" . | nindent 8 }}
         ports:
         - name: ars-listener
           containerPort: 1445

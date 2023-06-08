@@ -5,7 +5,7 @@ Defines environment variables for the RESTAPI service.
 - name: OD_HOST
   value: {{ include "qar.applicationName" . }}-ondemand-hl.{{ .Release.Namespace }}.svc.cluster.local
 - name: OD_INSTANCE_NAME
-  value: {{ upper .Values.odInstanceName }}
+  value: {{ upper .Values.global.ondemand.odInstanceName }}
 - name: OD_PORT
   value: {{ .Values.global.ondemand.portOverride | default 1445 | quote }}
 {{- if .Values.global.restapi.userOverrideSource.useSecret }}

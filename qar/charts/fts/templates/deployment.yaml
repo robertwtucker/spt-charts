@@ -2,14 +2,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "qar.applicationName" $ }}-fts
+  name: {{ include "qar.applicationName" . }}-fts
   namespace: {{ .Release.namespace | quote }}
   labels:
-    {{- include "qar.labels" $ | nindent 4 }}
+    {{- include "qar.labels" . | nindent 4 }}
 spec:
   selector:
     matchLabels:
-      {{- include "qar.labels" $ | nindent 6 }}
+      {{- include "qar.labels" . | nindent 6 }}
   strategy:
     type: Recreate
   template:
@@ -22,11 +22,11 @@ spec:
     {{- end }}
       labels:
         {{- include "qar.labels" $ | nindent 8 }}
-      name: {{ include "qar.applicationName" $ }}-fts-template
+      name: {{ include "qar.applicationName" . }}-fts-template
     spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      serviceAccountName: {{ include "qar.serviceAccountName" $ }}
+      serviceAccountName: {{ include "qar.serviceAccountName" . }}
   {{- if .Values.global.imagePullSecrets }}
       imagePullSecrets:
     {{- range .Values.global.imagePullSecrets }}
@@ -56,9 +56,9 @@ spec:
         env:
         - name: ARS_FTI_EXPORT_POLL_DELAY
           value: {{ .Values.exportPollDelay | quote }}
-        {{ include "ondemand.env.library" . | nindent 8 }}
-        {{ include "ondemand.env.database" . | nindent 8 }}
-        {{ include "ondemand.env.user" . | nindent 8 }}
+        {{ include "qar.env.library" . | nindent 8 }}
+        {{ include "qar.env.database" . | nindent 8 }}
+        {{ include "qar.env.user" . | nindent 8 }}
         ports:
           - name: http
             containerPort: 8191
@@ -82,16 +82,6 @@ spec:
           - name: work
             mountPath: /opt/qar/tmp
       volumes:
-      - name: restcfg
+      - name: work
         emptyDir: {}
-  {{- if .Values.persistence.enabled }}
-    {{- if .Values.persistence.existingClaim }}
-      - name: odpool
-        persistentVolumeClaim:
-          claimName: {{ tpl .Values.persistence.existingClaim $ }}
-    {{- else }}
-      - name: odpool
-        emptyDir: {}
-    {{- end }}
-  {{- end }}
 {{- end -}}

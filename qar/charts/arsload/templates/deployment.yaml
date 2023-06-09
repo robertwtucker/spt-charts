@@ -44,7 +44,7 @@ spec:
         - "-c"
         - "${QAR_HOME}/scripts/init-stash-file.sh"
         env:
-          {{ include "arsload.env" $ | nindent 8 }}
+          {{ include "qar.env.user" $ | nindent 8 }}
         volumeMounts:
         - name: work
           mountPath: /opt/qar/tmp

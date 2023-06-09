@@ -120,8 +120,5 @@ spec:
       resources:
         requests:
           storage: {{ .Values.persistence.size }}
-      selector:
-        matchLabels:
-          {{ include "qar.labels" . | nindent 10 }}
     {{- end }}
   {{- end }}

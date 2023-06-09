@@ -3,7 +3,7 @@ image:
   # -- Defines the URL address of the QAR REST API server image stored in a container repository.
   name: registry.sptcloud.com/qar/ondemand
   # -- Overrides tag specified by the `appVersion` in the chart file.
-  tag: 10.5.0.5-ubi-8.7-1112
+  tag: 10.5.0.5-oracle-ubi-8.7-1112
   # -- QAR REST API image pull policy [Always|IfNotPresent].
   pullPolicy: IfNotPresent
 
@@ -23,7 +23,7 @@ instances:
 role: arsload
 
 # -- Enter the name of an existing service account to use. Otherwise, one will be created by default.
-existingServiceAccount: ''
+existingServiceAccount: ""
 
 # -- Provides the ability to customize the deployment using Kubernetes annotations.
 podAnnotations: {}

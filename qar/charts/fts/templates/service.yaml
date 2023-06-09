@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "qar.applicationName" . }}-ondemand-fts
+  name: {{ include "qar.applicationName" . }}-fts
   namespace: {{ .Release.Namespace | quote }}
   labels:
     {{ include "qar.labels" . | nindent 4 }}

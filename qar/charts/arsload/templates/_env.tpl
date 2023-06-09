@@ -3,13 +3,9 @@ Defines environment variables for the ARSLOAD service.
 */}}
 {{- define "arsload.env" -}}
 - name: ARS_HOST
-  valueFrom:
-    fieldRef:
-        fieldPath: metadata.name
+  value: {{ include "qar.applicationName" . }}-ondemand-hl.{{ .Release.Namespace }}.svc.cluster.local
 - name: ARS_PORT
   value: {{ .Values.global.ondemand.portOverride | default 1445 | quote }}
-- name: ARS_SRVR
-  value: {{ include "qar.applicationName" . }}-ondemand-hl.{{ .Release.Namespace }}.svc.cluster.local
 - name: ARSLOAD_PERIOD
   value: {{ .Values.timeInterval | quote }}
 {{- if .Values.global.arsload.userOverrideSource.useSecret }}
@@ -22,7 +18,7 @@ Defines environment variables for the ARSLOAD service.
 - name: ARSLOAD_USER
   valueFrom:
     secretKeyRef:
-      name: {{ include "qar.applicationName" . }}-ondemand
+      name: {{ include "qar.applicationName" . }}-arsload
       key: loadUsername
 {{- end }}
 {{- if .Values.global.arsload.passwordOverrideSource.useSecret }}
@@ -35,7 +31,7 @@ Defines environment variables for the ARSLOAD service.
 - name: ARSLOAD_PASSWORD
   valueFrom:
     secretKeyRef:
-      name: {{ include "qar.applicationName" . }}-ondemand
+      name: {{ include "qar.applicationName" . }}-arsload
       key: loadPassword
 {{- end }}
 - name: OD_INSTANCE_NAME

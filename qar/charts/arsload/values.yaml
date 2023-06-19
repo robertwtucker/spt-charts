@@ -1,11 +1,4 @@
 # ARSLOAD deployment configuration
-image:
-  # -- Defines the URL address of the QAR REST API server image stored in a container repository.
-  name: registry.sptcloud.com/qar/ondemand
-  # -- Overrides tag specified by the `appVersion` in the chart file.
-  tag: 10.5.0.5-oracle-ubi-8.7-1112
-  # -- QAR REST API image pull policy [Always|IfNotPresent].
-  pullPolicy: IfNotPresent
 
 # -- Time interval in seconds to sleep (arsload command defaults to 600)
 timeInterval: 600

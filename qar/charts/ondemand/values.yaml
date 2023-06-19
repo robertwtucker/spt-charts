@@ -1,11 +1,4 @@
 # QAR CMOD chart values
-image:
-  # -- Defines the URL address of the QAR server image stored in a container repository.
-  name: registry.sptcloud.com/qar/ondemand
-  # -- Overrides tag specified by the `appVersion` in the chart file.
-  tag: 10.5.0.5-oracle-ubi-8.7-1112
-  # -- QAR image pull policy [Always|IfNotPresent].
-  pullPolicy: IfNotPresent
 
 # -- QAR component designation.
 role: ondemand

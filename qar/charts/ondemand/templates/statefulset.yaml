@@ -38,7 +38,7 @@ spec:
   {{- end }}
       initContainers:
       - name: {{ include "qar.applicationName" . }}-ondemand-stash-init
-        image: "{{ .Values.image.name }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        image: "{{ .Values.global.ondemand.image.name }}:{{ .Values.global.ondemand.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: IfNotPresent
         args:
         - "sh"
@@ -59,8 +59,8 @@ spec:
       - name: {{ include "qar.applicationName" . }}-ondemand-library
         securityContext:
           {{- toYaml .Values.securityContext | nindent 10 }}
-        image: "{{ .Values.image.name }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        image: "{{ .Values.global.ondemand.image.name }}:{{ .Values.global.ondemand.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.global.ondemand.image.pullPolicy }}
         args: [start, library]
         env:
         {{ include "qar.env.library" . | nindent 8 }}

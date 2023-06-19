@@ -37,7 +37,7 @@ spec:
   {{- end }}
       initContainers:
       - name: {{ include "qar.applicationName" $ }}-arsload-stash-init
-        image: "{{ $.Values.image.name }}:{{ $.Values.image.tag | default $.Chart.AppVersion }}"
+        image: "{{ $.Values.global.arsload.image.name }}:{{ $.Values.global.arsload.image.tag | default $.Chart.AppVersion }}"
         imagePullPolicy: IfNotPresent
         args:
         - "sh"
@@ -58,8 +58,8 @@ spec:
       - name: {{ include "qar.applicationName" $ }}-arsload-{{ .name }}
         securityContext:
           {{- toYaml $.Values.securityContext | nindent 10 }}
-        image: "{{ $.Values.image.name }}:{{ $.Values.image.tag | default $.Chart.AppVersion }}"
-        imagePullPolicy: {{ $.Values.imagePullPolicy }}
+        image: "{{ $.Values.global.arsload.image.name }}:{{ $.Values.global.arsload.image.tag | default $.Chart.AppVersion }}"
+        imagePullPolicy: {{ $.Values.global.arsload.image.pullPolicy }}
         args: [start, arsload]
         env:
           {{ include "arsload.env" $ | nindent 8 }}

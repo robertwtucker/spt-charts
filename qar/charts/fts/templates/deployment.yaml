@@ -35,8 +35,8 @@ spec:
   {{- end }}
       initContainers:
       - name: {{ include "qar.applicationName" . }}-fts-init
-        image: "{{ .Values.image.name }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        image: "{{ .Values.global.fts.image.name }}:{{ .Values.global.fts.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.global.fts.image.ullPolicy }}
         args: ["init"]
         volumeMounts:
           - name: work
@@ -51,8 +51,8 @@ spec:
       - name: {{ include "qar.applicationName" . }}-fts
         securityContext:
           {{- toYaml .Values.securityContext | nindent 10 }}
-        image: "{{ .Values.image.name }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        image: "{{ .Values.global.fts.image.name }}:{{ .Values.global.fts.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.global.fts.image.pullPolicy }}
         env:
         - name: ARS_FTI_EXPORT_POLL_DELAY
           value: {{ .Values.exportPollDelay | quote }}

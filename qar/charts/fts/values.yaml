@@ -1,11 +1,4 @@
 # Full Text Search server configuration
-image:
-  # -- Defines the URL address of the FTS server image stored in a container repository.
-  name: registry.sptcloud.com/qar/ondemand-fts
-  # -- Overrides tag specified by the `appVersion` in the chart file.
-  tag: 10.5.0.5-ubi-8.7-1112
-  # -- FTS image pull policy [Always|IfNotPresent].
-  pullPolicy: IfNotPresent
 
 # -- Full-text index export process polling/sleep interval (in seconds)
 exportPollDelay: 180
@@ -53,7 +46,7 @@ service:
   # ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
   nodePorts:
     # -- Node port for WAS
-    http: ''
+    http: ""
 
 # Learn about liveness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
 # Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.

@@ -1,0 +1,10 @@
+{{- if .Values.global.fts.enabled -}}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ include "qar.applicationName" . }}-fts
+  labels:
+    {{- include "qar.labels" . | nindent 4 }}
+data:
+  token: ""
+{{- end -}}

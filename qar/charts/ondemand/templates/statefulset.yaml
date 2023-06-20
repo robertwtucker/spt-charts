@@ -49,6 +49,15 @@ spec:
         volumeMounts:
         - name: work
           mountPath: /opt/qar/tmp
+    {{- if .Values.global.fts.enabled }}
+      - name: {{ include "qar.applicationName" . }}-fts-init
+        image: "{{ .Values.global.fts.image.name }}:{{ .Values.global.fts.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.global.fts.image.ullPolicy }}
+        args: ["init"]
+        volumeMounts:
+          - name: work
+            mountPath: /opt/qar/tmp
+    {{- end }}
       - name: {{ include "qar.applicationName" . }}-ondemand-wait-db
         image: "{{ .Values.global.wait.image.name }}:{{ .Values.global.wait.image.tag }}"
         imagePullPolicy: IfNotPresent
@@ -89,11 +98,19 @@ spec:
         volumeMounts:
         - name: work
           mountPath: /opt/qar/tmp
+        - name: fti-config
+          mountPath: /opt/qar/config/fti
         - name: data
           mountPath: /opt/qar/data
       volumes:
       - name: work
         emptyDir: {}
+      - name: fti-config
+        configMap:
+          name: {{ include "qar.applicationName" . }}-fts
+          items:
+          - key: token
+            path: fts.token
   {{- if not .Values.persistence.enabled }}
       - name: data
         emptyDir: {}

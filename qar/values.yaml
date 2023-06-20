@@ -9,6 +9,8 @@ global:
   # imagePullSecrets:
   #   - name: myRegistryKeySecretName
   imagePullSecrets: []
+  # -- Enter the name of an existing service account to use. Otherwise, one will be created by default.
+  existingServiceAccount: ""
   oracledb:
     # -- Defines (in plain text) the password to be created for the Oracle database's SYS user.
     # If left undefined, the deployment will generate a random alphanumeric password. Use the

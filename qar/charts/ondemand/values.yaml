@@ -1,10 +1,7 @@
-# QAR CMOD chart values
+# QAR OnDemand chart values
 
 # -- QAR component designation.
 role: ondemand
-
-# -- Enter the name of an existing service account to use. Otherwise, one will be created by default.
-existingServiceAccount: ""
 
 # -- Provides the ability to customize the deployment using Kubernetes annotations.
 podAnnotations: {}

@@ -10,6 +10,10 @@ roleRef:
   kind: Role
   name: {{ include "qar.applicationName" . }}-pod-reader
 subjects:
-  - kind: ServiceAccount
-    name: default
-    namespace: {{ .Release.Namespace | quote }}
+- kind: ServiceAccount
+{{- if empty .Values.global.existingServiceAccount }}
+  name: {{ include "qar.applicationName" . }}
+{{- else }}
+  name: {{ .Values.global.existingServiceAccount }}
+{{- end }}
+  namespace: {{ .Release.Namespace | quote }}

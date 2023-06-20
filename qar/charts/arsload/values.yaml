@@ -15,9 +15,6 @@ instances:
 # -- QAR component designation.
 role: arsload
 
-# -- Enter the name of an existing service account to use. Otherwise, one will be created by default.
-existingServiceAccount: ""
-
 # -- Provides the ability to customize the deployment using Kubernetes annotations.
 podAnnotations: {}
 

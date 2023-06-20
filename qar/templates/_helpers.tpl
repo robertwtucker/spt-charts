@@ -17,10 +17,10 @@ role: {{ .Values.role }}
 Create the name of the service account to use
 */}}
 {{- define "qar.serviceAccountName" -}}
-{{- if .Values.existingServiceAccount }}
-{{- printf "%s-%s" (include "qar.applicationName" .) .Values.role }}
+{{- if empty .Values.global.existingServiceAccount }}
+{{- include "qar.applicationName" . }}
 {{- else }}
-{{- .Values.existingServiceAccount }}
+{{- .Values.global.existingServiceAccount }}
 {{- end }}
 {{- end }}
 

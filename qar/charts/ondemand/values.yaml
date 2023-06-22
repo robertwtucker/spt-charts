@@ -128,10 +128,9 @@ autoscaling:
   enabled: false
   # -- Defines the lower limit for the number of CMOD nodes that can be set by the autoscaling configuration.
   minReplicas: 1
-  # -- Defines the upper limit for the number of CMOOD nodes that can be set by the autoscaling configuration.
+  # -- Defines the upper limit for the number of CMOD nodes that can be set by the autoscaling configuration.
   maxReplicas: 3
-  # -- Kubernetes calculates average utilization this way: ((pod cpu usage)/(scaler.request + ips.request).
-  # CPU requests and CPU limits must be configured using the same values.
+  # -- CPU requests and CPU limits must be configured using the same values.
   targetCPUUtilizationPercentage: 80
 
 # -- Defines whether to create a batch job to perform initial setup processing.

@@ -104,25 +104,3 @@ ingress:
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
-
-persistence:
-  # -- Enable REST API pool configuration persistence using a PVC.
-  enabled: true
-  # -- Name of an existing PVC to use.
-  existingClaim: ""
-  # -- The path the volume will be mounted at.
-  mountPath: /opt/qar/config/rest/odpool
-  # -- If defined, storageClassName: <storageClass>
-  # If set to "-", storageClassName: "", which disables dynamic provisioning.
-  # If undefined (the default) or set to null, no storageClassName spec is
-  # set, choosing the default provisioner. (gp2 on AWS, standard on GKE, AWS & OpenStack)
-  storageClass: ""
-  # -- PVC Access Mode for the CMOD data volume.
-  accessModes:
-    - ReadWriteOnce
-  # -- PVC Storage Request for the CMOD data volume.
-  size: 100Ki
-  # -- Additional annotations, as required.
-  annotations: {}
-  # -- Additional labels, as required.
-  labels: {}

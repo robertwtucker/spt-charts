@@ -1,5 +1,10 @@
 # REST API configuration
 
+# -- Name of the REST connection pool to create. Defaults to `odpool` if blank.
+poolName: ""
+# -- Name of the REST consumer to create for the pool. Defaults to `admin` if blank.
+consumerName: ""
+
 # -- QAR component designation.
 role: restapi
 

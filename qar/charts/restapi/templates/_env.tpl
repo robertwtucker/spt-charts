@@ -34,4 +34,16 @@ Defines environment variables for the RESTAPI service.
       name: {{ include "qar.applicationName" . }}-restapi
       key: restPassword
 {{- end }}
-{{- end }}
+{{- end -}}
+
+{{/*
+Defines environment variables for the REST configuration.
+*/}}
+{{- define "restcfg.env" -}}
+- name: REST_CONSUMER_NAME
+  value: {{ .Values.consumerName | default "admin" }}
+- name: REST_POOL_NAME
+  value: {{ .Values.poolName | default "odpool" }}
+- name: RESTCFG_NAME
+  value: {{ include "qar.applicationName" . }}-{{ .Values.role }}
+{{- end -}}

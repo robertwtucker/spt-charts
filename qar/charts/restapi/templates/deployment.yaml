@@ -37,31 +37,27 @@ spec:
       - name: {{ include "qar.applicationName" . }}-restapi-init
         image: "{{ .Values.global.restapi.image.name }}:{{ .Values.global.restapi.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.global.restapi.image.pullPolicy }}
-        args:
-        - "sh"
-        - "-c"
-        - "${QAR_HOME}/scripts/generate-rest-config.sh"
+        args: ["sh", "-c", "${QAR_HOME}/scripts/generate-rest-config.sh"]
         env:
           {{ include "restapi.env" . | nindent 8 }}
+          {{ include "restcfg.env" . | nindent 8 }}
         securityContext:
           runAsUser: 0
         volumeMounts:
-        - name: odpool
-          mountPath: /opt/qar/config/rest/odpool
-        - name: restcfg
-          mountPath: /opt/qar/tmp/restcfg
+        - name: restcfg-work
+          mountPath: /opt/qar/config/rest/work
+        - name: restcfg-stored
+          mountPath: /opt/qar/config/rest/stored
       - name: {{ include "qar.applicationName" . }}-restapi-wait-ondemand
         image: "{{ .Values.global.wait.image.name }}:{{ .Values.global.wait.image.tag }}"
         imagePullPolicy: IfNotPresent
-        args:
-          - "pod"
-          - "-lrole=ondemand"
+        args: ["pod", "-lrole=ondemand"]
       containers:
       - name: {{ include "qar.applicationName" . }}-restapi
         securityContext:
           {{- toYaml .Values.securityContext | nindent 10 }}
-        image: "{{ .Values.image.name }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        image: "{{ .Values.global.restapi.image.name }}:{{ .Values.global.restapi.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.global.restapi.image.pullPolicy }}
         ports:
         - name: http
           containerPort: 9080
@@ -84,21 +80,12 @@ spec:
           failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
           successThreshold: {{ .Values.readinessProbe.successThreshold }}
         volumeMounts:
-        - name: odpool
-          mountPath: /opt/qar/config/rest/odpool
-        - name: restcfg
-          mountPath: /opt/qar/tmp/restcfg
+        - name: restcfg-work
+          mountPath: /opt/qar/config/rest/work
       volumes:
-      - name: restcfg
+      - name: restcfg-work
         emptyDir: {}
-  {{- if .Values.persistence.enabled }}
-    {{- if .Values.persistence.existingClaim }}
-      - name: odpool
-        persistentVolumeClaim:
-          claimName: {{ tpl .Values.persistence.existingClaim . }}
-    {{- else }}
-      - name: odpool
-        emptyDir: {}
-    {{- end }}
-  {{- end }}
+      - name: restcfg-stored
+        configMap:
+          name: {{ include "qar.applicationName" . }}-{{ .Values.role }}
 {{- end -}}

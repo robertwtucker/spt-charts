@@ -102,7 +102,7 @@ global:
       # -- Defines the URL address of the REST API server image stored in a container repository.
       name: registry.sptcloud.com/qar/ondemand-restapi
       # -- Overrides tag specified by the `appVersion` in the chart file.
-      tag: 10.5.0.5-liberty-23.0.0.2
+      tag: 10.5.0.5-liberty-23.0.0.5
       # -- QAR REST API image pull policy [Always|IfNotPresent].
       pullPolicy: IfNotPresent
     # -- Defines (in plain text) the name of the CMOD user to use when generating the REST configuration

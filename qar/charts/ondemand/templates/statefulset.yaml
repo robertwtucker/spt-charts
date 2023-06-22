@@ -51,6 +51,9 @@ spec:
         image: "{{ .Values.global.fts.image.name }}:{{ .Values.global.fts.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.global.fts.image.pullPolicy }}
         args: ["init"]
+        env:
+        - name: CONFIG_NAME
+          value: {{ include "qar.applicationName" . }}-fts
         volumeMounts:
           - name: work
             mountPath: /opt/qar/tmp

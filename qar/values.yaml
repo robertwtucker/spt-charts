@@ -180,6 +180,6 @@ global:
   wait:
     image:
       # -- Defines the name of the k8s-wait-for image stored in a container repository.
-      name: groundnuty/k8s-wait-for
+      name: ghcr.io/groundnuty/k8s-wait-for
       # -- Specifies the version tag to use.
-      tag: no-root-v1.7
+      tag: no-root-v2.0

@@ -4,7 +4,7 @@ metadata:
   name: {{ include "oracledb.svc.headless" . }}
   namespace: {{ .Release.Namespace | quote }}
   labels:
-    {{ include "qar.labels" . | nindent 4 }}
+    {{ include "oracledb.labels" . | nindent 4 }}
   annotations:
     {{- with .Values.service.annotations }}
     {{ tpl (toYaml .) $ | indent 4 }}
@@ -17,10 +17,10 @@ spec:
   publishNotReadyAddresses: true
   ports:
     - name: tns-listener
-      port: {{ .Values.global.oracledb.tnsListener.portOverride | default 1521 }}
+      port: 1521
       targetPort: tns-listener
     - name: tcp-emexpress
-      port: {{ .Values.global.oracledb.emExpress.portOverride | default 5500 }}
+      port: 5500
       targetPort: tcp-emexpress
   selector:
-    {{ include "qar.labels" . | nindent 4 }}
+    {{ include "oracledb.labels" . | nindent 4 }}

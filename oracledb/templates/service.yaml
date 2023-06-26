@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "qar.applicationName" . }}-oracledb
+  name: {{ include "oracledb.applicationName" . }}-oracledb
   namespace: {{ .Release.Namespace | quote }}
   labels:
-    {{ include "qar.labels" . | nindent 4 }}
+    {{ include "oracledb.labels" . | nindent 4 }}
   annotations:
     {{- with .Values.service.annotations }}
     {{ tpl (toYaml .) $ | indent 4 }}
@@ -13,7 +13,7 @@ metadata:
 spec:
   ports:
   - name: tns-listener
-    port: {{ .Values.global.oracledb.tnsListener.portOverride | default 1521 }}
+    port: 1521
     targetPort: tns-listener
     {{- if and (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) (not (empty .Values.service.nodePorts.oracledb)) }}
     nodePort: {{ .Values.service.nodePorts.oracledb }}
@@ -21,7 +21,7 @@ spec:
     nodePort: null
     {{- end }}
   - name: tcp-emexpress
-    port: {{ .Values.global.oracledb.emExpress.portOverride | default 5500 }}
+    port: 5500
     targetPort: tcp-emexpress
     {{- if and (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) (not (empty .Values.service.nodePorts.emexpress)) }}
     nodePort: {{ .Values.service.nodePorts.emexpress }}
@@ -29,5 +29,5 @@ spec:
     nodePort: null
     {{- end }}
   selector:
-    {{ include "qar.labels" . | nindent 4 }}
+    {{ include "oracledb.labels" . | nindent 4 }}
   type: {{ .Values.service.type }}

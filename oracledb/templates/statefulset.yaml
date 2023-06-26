@@ -67,8 +67,10 @@ spec:
         resources:
           {{- toYaml .Values.resources | nindent 10 }}
         volumeMounts:
+      {{- if or .Values.setupScriptContent .Values.setupConfigMap }}
         - name: setup
           mountPath: "/opt/oracle/scripts/setup"
+      {{- end }}
       {{- if .Values.shmVolume.enabled }}
         - name: dshm
           mountPath: "/dev/shm"
@@ -78,9 +80,15 @@ spec:
           mountPath: {{ .Values.persistence.mountPath | quote }}
       {{- end }}
       volumes:
+    {{- if and .Values.setupScriptContent (not .Values.setupConfigMap) }}
       - name: setup
         configMap:
           name: {{ include "oracledb.applicationName" . }}-oracledb-setup
+    {{- else if .Values.setupConfigMap }}
+      - name: setup
+        configMap:
+          name: {{ .Values.setupConfigMap }}
+    {{- end }}
     {{- if .Values.shmVolume.enabled }}
       - name: dshm
         emptyDir:

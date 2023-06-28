@@ -66,7 +66,7 @@ Defines environment variables for the Oracle database service.
 - name: ORACLE_HOST
   value: {{ include "qar.applicationName" . }}-oracledb.{{ .Release.Namespace }}.svc.cluster.local
 - name: ORACLE_PORT
-  value: {{ .Values.global.oracledb.tnsListener.portOverride | default 1521 | quote }}
+  value: "1521"
 - name: ORACLE_SERVICE_NAME
   value: {{ include "ondemand.tnsServiceName" . }}
 {{- if .Values.global.ondemand.userOverrideSource.useSecret }}

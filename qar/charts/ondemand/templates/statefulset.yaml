@@ -72,6 +72,10 @@ spec:
         env:
         {{ include "qar.env.library" . | nindent 8 }}
         {{ include "qar.env.database" . | nindent 8 }}
+      {{- if .Values.global.zookeeper.enabled }}
+        - name: ZOOKEEPER_SERVER_LIST
+          value: {{ .Values.global.zookeeper.serverList | quote }}
+      {{- end }}
         ports:
         - name: ars-listener
           containerPort: 1445

@@ -28,13 +28,41 @@ Defines environment variables for the CMOD user.
       name: {{ include "qar.applicationName" . }}-ondemand
       key: odPassword
 {{- end }}
+{{- if .Values.global.zookeeper.enabled }}
+  {{- if .Values.global.zookeeper.userOverrideSource.useSecret }}
+- name: ZK_USER
+  valueFrom:
+    secretKeyRef:
+      name: {{ required "secretName is mandatory" .Values.global.zookeeper.userOverrideSource.secretName }}
+      key: {{ required "secretKey is mandatory" .Values.global.zookeeper.userOverrideSource.secretKey }}
+  {{- else }}
+- name: ZK_USER
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "qar.applicationName" . }}-ondemand
+      key: zkUsername
+  {{- end }}
+  {{- if .Values.global.zookeeper.passwordOverrideSource.useSecret }}
+- name: ZK_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ required "secretName is mandatory" .Values.global.zookeeper.passwordOverrideSource.secretName }}
+      key: {{ required "secretKey is mandatory" .Values.global.zookeeper.passwordOverrideSource.secretKey }}
+  {{- else }}
+- name: ZK_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "qar.applicationName" . }}-ondemand
+      key: zkPassword
+  {{- end }}
 {{- end }}
+{{- end -}}
 
 {{/*
 Defines environment variables for the Oracle database service.
 */}}
 {{- define "qar.env.database" -}}
-{{- if eq (upper .Values.global.ondemand.db.engine) "ORACLE" -}}
+{{- if eq (upper .Values.global.ondemand.db.engine) "ORACLE" }}
 - name: ORACLE_HOST
   value: {{ include "qar.applicationName" . }}-oracledb.{{ .Release.Namespace }}.svc.cluster.local
 - name: ORACLE_PORT
@@ -68,7 +96,7 @@ Defines environment variables for the Oracle database service.
       key: dbPassword
 {{- end }}
 {{- end }}
-{{- end }}
+{{- end -}}
 
 {{/*
 Defines environment variables for the CMOD library server.
@@ -88,5 +116,4 @@ Defines environment variables for the CMOD library server.
   value: {{ printf "%t" .Values.global.ondemand.trace.enabled | quote }}
 - name: OD_INSTANCE_NAME
   value: {{ .Values.global.ondemand.odInstanceName }}
-{{- end }}
-
+{{- end -}}

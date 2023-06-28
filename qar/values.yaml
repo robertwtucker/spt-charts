@@ -11,22 +11,6 @@ global:
   imagePullSecrets: []
   # -- Enter the name of an existing service account to use. Otherwise, one will be created by default.
   existingServiceAccount: ""
-  oracledb:
-    # -- Defines (in plain text) the password to be created for the Oracle database's SYS user.
-    # If left undefined, the deployment will generate a random alphanumeric password. Use the
-    # `passwordOverrideSource` variable to define the password using a Secret.
-    passwordOverride: ""
-    # -- Uses a Secret to define the password of the CMOD user to be created in the Oracle database(s).
-    passwordOverrideSource:
-      useSecret: false
-      secretName: ""
-      secretKey: ""
-    tnsListener:
-      # -- Defines the port to run the TNS listener on. If left undefined, the default port 1521 is used.
-      portOverride:
-    emExpress:
-      # -- Defines the port to run the EM Express app on. If left undefined, the default port 5500 is used.
-      portOverride:
   ondemand:
     image:
       # -- Defines the URL address of the QAR server image stored in a container repository.
@@ -94,7 +78,6 @@ global:
       secretKey: ""
     # -- Defines the port to run the ARS listener on. If left undefined, the default port 1445 is used.
     portOverride:
-
   restapi:
     # -- Defines whether to deploy a REST API server.
     enabled: false
@@ -170,6 +153,31 @@ global:
     enabled: false
     # -- Defines the port to run the HTTP listener on. If left undefined, the default port 9080 is used. [Not Implemented Yet]
     portOverride:
+  zookeeper:
+    # -- Use Zookeeper to manage locking between multiple active CMOD server
+    # server instances. This should be set to `true` when `replicaCount` > 1.
+    enabled: false
+    # -- Comma-separated list of Zookeeper servers to use. For example,
+    # serverList: zoo1.example.com:2181,zoo2.example.com:2181
+    serverList: ""
+    # -- Defines (in plain text) the name of the Zookeeper user.
+    # If left undefined, the default user `admin` is used. Use the `userOverrideSource` variable
+    # to define the username using a Secret.
+    userOverride: ""
+    # -- Uses a Secret to define the Zookeeper user.
+    userOverrideSource:
+      useSecret: false
+      secretName: ""
+      secretKey: ""
+    # -- Defines (in plain text) the Zookeeper user's password.
+    # If left undefined, the deployment will generate a random alphanumeric password. Use the
+    # `passwordOverrideSource` variable to define the password using a Secret.
+    passwordOverride: ""
+    # -- Uses a Secret to define the Zookeeper user's password.
+    passwordOverrideSource:
+      useSecret: false
+      secretName: ""
+      secretKey: ""
   # Learn about k8s-wait-for at https://github.com/groundnuty/k8s-wait-for
   wait:
     image:

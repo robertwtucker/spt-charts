@@ -223,3 +223,14 @@ Multiple sources can have same source and thus the source should be specified as
     secretName: {{ . }}
 {{- end }}
 {{- end }}
+
+{{/*
+Return the list of Zookeeper servers to use (string format).
+*/}}
+{{- define "qar.zookeeper.servers" -}}
+{{- $serverList := list -}}
+{{- range .Values.global.zookeeper.servers -}}
+{{- $serverList = append $serverList . -}}
+{{- end -}}
+{{- printf "%s" (default "" (join "," $serverList)) -}}
+{{- end -}}

@@ -157,9 +157,12 @@ global:
     # -- Use Zookeeper to manage locking between multiple active CMOD server
     # server instances. This should be set to `true` when `replicaCount` > 1.
     enabled: false
-    # -- Comma-separated list of Zookeeper servers to use. For example,
-    # serverList: zoo1.example.com:2181,zoo2.example.com:2181
-    serverList: ""
+    # -- List of Zookeeper servers to use.
+    # Example:
+    # servers:
+    # - zoo1.example.com:2181
+    # - zoo2.example.com:2181
+    servers: []
     # -- Defines (in plain text) the name of the Zookeeper user.
     # If left undefined, the default user `admin` is used. Use the `userOverrideSource` variable
     # to define the username using a Secret.

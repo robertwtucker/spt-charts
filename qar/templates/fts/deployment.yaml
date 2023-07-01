@@ -1,0 +1,91 @@
+{{- if .Values.fts.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "qar.fullname" . }}-fts
+  namespace: {{ include "qar.namespace" . }}
+  labels: {{- include "qar.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: fts
+    {{- if .Values.commonLabels }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 4 }}
+    {{- end }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.fts.replicaCount }}
+  {{- if .Values.fts.updateStrategy }}
+  strategy: {{- toYaml .Values.fts.updateStrategy | nindent 4 }}
+  {{- end }}
+  selector:
+    matchLabels: {{- include "qar.labels.matchLabels" . | nindent 6 }}
+      app.kubernetes.io/component: fts
+  template:
+    metadata:
+      labels: {{- include "qar.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/component: fts
+        {{- if .Values.fts.podLabels }}
+        {{- include "common.tplvalues.render" ( dict "value" $.Values.fts.podLabels "context" $ ) | nindent 8 }}
+        {{- end }}
+        {{- if .Values.commonLabels }}
+        {{- include "common.tplvalues.render" ( dict "value" $.Values.commonLabels "context" $ ) | nindent 8 }}
+        {{- end }}
+      {{- if .Values.fts.podAnnotations }}
+      annotations:
+        {{- include "common.tplvalues.render" ( dict "value" $.Values.fts.podAnnotations "context" $ ) | nindent 8 }}
+      {{- end }}
+    spec:
+      serviceAccountName: {{ include "qar.serviceAccountName" . }}
+      {{- if .Values.fts.podSecurityContext }}
+      securityContext: {{- omit .Values.fts.podSecurityContext "enabled" | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+      {{- range .Values.global.imagePullSecrets }}
+      - name: {{ . }}
+      {{- end }}
+      {{- end }}
+      {{- if .Values.fts.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.fts.terminationGracePeriodSeconds }}
+      {{- end }}
+      initContainers:
+      - name: wait-for-ondemand
+        image: {{ .Values.wait.image.name }}:{{ .Values.wait.image.tag }}
+        imagePullPolicy: {{ .Values.wait.image.pullPolicy }}
+        args: [pod, -lapp.kubernetes.io/component=ondemand]
+      containers:
+      - name: ondemand-fts
+        image: {{ .Values.fts.image.name }}:{{ .Values.fts.image.tag }}
+        imagePullPolicy: {{ .Values.fts.image.pullPolicy }}
+        {{- if .Values.fts.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.fts.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+        {{- end }}
+        env:
+        - name: ARS_FTI_EXPORT_POLL_DELAY
+          value: {{ .Values.exportPollDelay | quote }}
+        {{ include "qar.env.library" . | nindent 8 }}
+        {{ include "qar.env.database" . | nindent 8 }}
+        {{ include "qar.env.user" . | nindent 8 }}
+        ports:
+          - name: fts
+            containerPort: {{ .Values.fts.containerPorts.fts }}
+        {{- if .Values.fts.livenessProbe.enabled }}
+        livenessProbe: {{- include "common.tplvalues.render" ( dict "value" (omit .Values.fts.livenessProbe "enabled" ) "context" $ ) | nindent 10 }}
+          exec:
+            command: [ps, -p, 1]
+        {{- end }}
+        {{- if .Values.fts.readinessProbe.enabled }}
+        readinessProbe: {{- include "common.tplvalues.render" ( dict "value" (omit .Values.fts.readinessProbe "enabled" ) "context" $ ) | nindent 10 }}
+          tcpSocket:
+            port: {{ .Values.fts.containerPorts.fts }}
+        {{- end }}
+        {{- if .Values.fts.resources }}
+        resources: {{- toYaml .Values.fts.resources | nindent 10 }}
+        {{- end }}
+        volumeMounts:
+          - name: work
+            mountPath: /opt/qar/tmp
+      volumes:
+      - name: work
+        emptyDir: {}
+{{- end -}}

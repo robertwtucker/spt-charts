@@ -1,0 +1,35 @@
+{{- if .Values.fts.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "qar.fullname" . }}-fts
+  namespace: {{ include "qar.namespace" . | quote }}
+  labels: {{- include "qar.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: ondemand-fts
+    {{- if .Values.commonLabels }}
+    {{ include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 4 }}
+    {{- end }}
+  {{- if or .Values.fts.service.annotations .Values.commonAnnotations }}
+  annotations:
+  {{- if .Values.fts.service.annotations }}
+  {{- include "common.tplvalues.render" ( dict "value" .Values.fts.service.annotations "context" $ ) | nindent 4 }}
+  {{- end }}
+  {{- if .Values.commonAnnotations }}
+  {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+  {{- end }}
+spec:
+  type: {{ .Values.fts.service.type }}
+  ports:
+  - name: {{ .Values.fts.service.portName | quote }}
+    port: {{ .Values.fts.service.ports.fts | default 8191 }}
+    targetPort: fts
+    {{- if and (or (eq .Values.fts.service.type "NodePort") (eq .Values.fts.service.type "LoadBalancer")) (not (empty .Values.service.fts.nodePorts.fts)) }}
+    nodePort: {{ .Values.fts.service.nodePorts.fts }}
+    {{- else if eq .Values.fts.service.type "ClusterIP" }}
+    nodePort: null
+    {{- end }}
+  selector:
+    {{ include "qar.labels.matchLabels" . | nindent 4 }}
+    app.kubernetes.io/component: ondemand-fts
+{{- end -}}

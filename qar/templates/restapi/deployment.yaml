@@ -1,0 +1,141 @@
+{{- if .Values.restapi.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "qar.fullname" . }}-restapi
+  namespace: {{ include "qar.namespace" . }}
+  labels: {{- include "qar.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: restapi
+    {{- if .Values.commonLabels }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 4 }}
+    {{- end }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.restapi.replicaCount }}
+  {{- if .Values.restapi.updateStrategy }}
+  strategy: {{- toYaml .Values.restapi.updateStrategy | nindent 4 }}
+  {{- end }}
+  selector:
+    matchLabels: {{- include "qar.labels.matchLabels" . | nindent 6 }}
+      app.kubernetes.io/component: restapi
+  template:
+    metadata:
+      labels: {{- include "qar.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/component: restapi
+        {{- if .Values.restapi.podLabels }}
+        {{- include "common.tplvalues.render" ( dict "value" $.Values.restapi.podLabels "context" $ ) | nindent 8 }}
+        {{- end }}
+        {{- if .Values.commonLabels }}
+        {{- include "common.tplvalues.render" ( dict "value" $.Values.commonLabels "context" $ ) | nindent 8 }}
+        {{- end }}
+      {{- if .Values.restapi.podAnnotations }}
+      annotations:
+        {{- include "common.tplvalues.render" ( dict "value" $.Values.restapi.podAnnotations "context" $ ) | nindent 8 }}
+      {{- end }}
+    spec:
+      serviceAccountName: {{ include "qar.serviceAccountName" . }}
+      {{- if .Values.restapi.podSecurityContext }}
+      securityContext: {{- omit .Values.restapi.podSecurityContext "enabled" | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+      {{- range .Values.global.imagePullSecrets }}
+      - name: {{ . }}
+      {{- end }}
+      {{- end }}
+      {{- if .Values.restapi.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.restapi.terminationGracePeriodSeconds }}
+      {{- end }}
+      {{- if .Values.restapi.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.restapi.terminationGracePeriodSeconds }}
+      {{- end }}
+      initContainers:
+      - name: ondemand-restapi-init
+        image: {{ .Values.restapi.image.name }}:{{ .Values.restapi.image.tag }}
+        imagePullPolicy: {{ .Values.restapi.image.pullPolicy }}
+        {{- if .Values.restapi.generateConfigSecurityContext.enabled }}
+        securityContext: {{- omit .Values.restapi.generateConfigSecurityContext "enabled" | toYaml | nindent 10 }}
+        {{- end }}
+        args: [/bin/sh, -c, "${QAR_HOME}/scripts/generate-rest-config.sh"]
+        env:
+        - name: OD_HOST
+          value: {{ include "ondemand.svc.host" . }}
+        - name: OD_PORT
+          value: {{ include "ondemand.svc.port" . | quote }}
+        - name: OD_INSTANCE_NAME
+          value: {{ upper .Values.odInstanceName }}
+        {{- if .Values.restapi.auth.usernameSource.useSecret }}
+        - name: OD_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ required "secretName is mandatory" .Values.restapi.auth.usernameSource.secretName }}
+              key: {{ required "secretKey is mandatory" .Values.restapi.auth.usernameSource.secretKey }}
+        {{- else }}
+        - name: OD_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "qar.fullname" . }}-restapi
+              key: restUsername
+        {{- end }}
+        {{- if .Values.restapi.auth.passwordSource.useSecret }}
+        - name: OD_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ required "secretName is mandatory" .Values.restapi.auth.passwordSource.secretName }}
+              key: {{ required "secretKey is mandatory" .Values.restapi.auth.passwordSource.secretKey }}
+        {{- else }}
+        - name: OD_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "qar.fullname" . }}-restapi
+              key: restPassword
+        {{- end }}
+        - name: REST_CONSUMER_NAME
+          value: {{ .Values.restapi.consumerName | default "admin" }}
+        - name: REST_POOL_NAME
+          value: {{ .Values.restapi.poolName | default "odpool" }}
+        - name: RESTCFG_NAME
+          value: {{ include "qar.fullname" . }}-restapi
+        volumeMounts:
+        - name: restcfg-work
+          mountPath: /opt/qar/config/rest/work
+        - name: restcfg-stored
+          mountPath: /opt/qar/config/rest/stored
+      - name: wait-for-ondemand
+        image: {{ .Values.wait.image.name }}:{{ .Values.wait.image.tag }}
+        imagePullPolicy: {{ .Values.wait.image.pullPolicy }}
+        args: ["pod", "-lapp.kubernetes.io/component=ondemand"]
+      containers:
+      - name: {{ include "qar.fullname" . }}-restapi
+        image: {{ .Values.restapi.image.name }}:{{ .Values.restapi.image.tag }}
+        imagePullPolicy: {{ .Values.restapi.image.pullPolicy }}
+        {{- if .Values.restapi.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.restapi.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+        {{- end }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.restapi.containerPorts.http }}
+        {{- if .Values.restapi.livenessProbe.enabled }}
+        livenessProbe: {{- include "common.tplvalues.render" ( dict "value" (omit .Values.restapi.livenessProbe "enabled" ) "context" $ ) | nindent 10 }}
+          tcpSocket:
+            port: {{ .Values.restapi.containerPorts.http }}
+        {{- end }}
+        {{- if .Values.restapi.readinessProbe.enabled }}
+        readinessProbe: {{- include "common.tplvalues.render" ( dict "value" (omit .Values.restapi.readinessProbe "enabled" ) "context" $ ) | nindent 10 }}
+          httpGet:
+            path: /qar/v1/documentation
+            port: {{ .Values.restapi.containerPorts.http }}
+            scheme: HTTP
+        {{- end }}
+        volumeMounts:
+        - name: restcfg-work
+          mountPath: /opt/qar/config/rest/work
+      volumes:
+      - name: restcfg-work
+        emptyDir: {}
+      - name: restcfg-stored
+        configMap:
+          name: {{ include "qar.fullname" . }}-restapi
+{{- end -}}

@@ -1,0 +1,53 @@
+{{- if and .Values.performInitialSetup .Release.IsInstall }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "qar.fullname" . }}-ondemand-initial-setup
+  namespace: {{ include "qar.namespace" . }}
+  labels: {{- include "qar.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: ondemand
+    {{- if .Values.commonLabels }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" . ) | nindent 4 }}
+    {{- end }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" . ) | nindent 4 }}
+  {{- end }}
+spec:
+  template:
+    metadata:
+      name: {{ include "qar.fullname" . }}-ondemand-initial-setup
+      labels: {{- include "qar.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/component: ondemand
+        {{- if $.Values.podLabels }}
+        {{- include "common.tplvalues.render" ( dict "value" $.Values.podLabels "context" . ) | nindent 8 }}
+        {{- end }}
+        {{- if $.Values.commonLabels }}
+        {{- include "common.tplvalues.render" ( dict "value" $.Values.commonLabels "context" . ) | nindent 8 }}
+        {{- end }}
+      {{- if $.Values.podAnnotations }}
+      annotations: {{- include "common.tplvalues.render" ( dict "value" $.Values.podAnnotations "context" . ) | nindent 8 }}
+      {{- end }}
+    spec:
+      restartPolicy: OnFailure
+      {{- if .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+      {{- range .Values.global.imagePullSecrets }}
+      - name: {{ . }}
+      {{- end }}
+      {{- end }}
+      initContainers:
+      - name: {{ include "qar.fullname" . }}-ondemand-wait-active
+        image: {{ .Values.wait.image.name }}:{{ .Values.wait.image.tag }}
+        imagePullPolicy: IfNotPresent
+        args: ["pod", "-lapp.kubernetes.io/component=ondemand"]
+      containers:
+      - name: {{ include "qar.fullname" . }}-ondemand-initial-setup
+        image: {{ .Values.image.name }}:{{ .Values.image.tag }}
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+        {{- end }}
+        args: [/bin/sh", -c, "${QAR_HOME}/scripts/initial-setup.sh"]
+        env: {{- include "ondemand.env.default" . | nindent 8 }}
+  backoffLimit: 5
+  ttlSecondsAfterFinished: 600
+{{- end }}

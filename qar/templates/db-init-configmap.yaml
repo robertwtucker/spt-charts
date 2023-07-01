@@ -1,0 +1,88 @@
+{{- $odDatabaseName := lower .Values.serverInstanceName -}}
+{{- $odUsername := "" -}}
+{{- if .Values.auth.usernameSource.useSecret -}}
+# {{- $odUserSecret := lookup "v1" "Secret" "" .Values.auth.usernameSource.secretName -}}
+{{- $odUserKey := .Values.auth.usernameSource.secretKey -}}
+((- $odUsername = (lookup "v1" "Secret" "" .Values.auth.usernameSource.secretName).data.$odUserKey -))
+{{- else -}}
+{{- $odUsername = lower .Values.auth.username | default "admin" -}}
+{{- end -}}
+{{- $odPassword := "" -}}
+{{- if.Values.auth.passwordSource.useSecret -}}
+# {{- $odPasswordSecret := lookup "v1" "Secret" "" .Values.auth.passwordSource.secretName -}}
+{{- $odPasswordKey := .Values.auth.passwordSource.secretKey -}}
+((- $odPassword = (lookup "v1" "Secret" "" .Values.auth.passwordSource.secretName).data.$odPasswordKey -))
+{{- else -}}
+{{- $odPassword = lower .Values.auth.password -}}
+{{- end -}}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ include "qar.fullname" . }}-db-init-scripts
+  namespace: {{ include "qar.namespace" . | quote }}
+  labels: {{- include "qar.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: ondemand
+    {{- if .Values.commonLabels }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 4 }}
+    {{- end }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+data:
+  01-patch-listener.sh: |
+    #!/bin/sh
+
+    echo "** Patching Oracle-Net Listener -> legacy client compatibility for CMOD"
+    echo "USE_SID_AS_SERVICE_listener=on" >> /opt/oracle/homes/OraDB21Home1/network/admin/listener.ora
+    lsnrctl reload
+    echo "** Done."
+  02-create-archive-pdb.sql: |
+    CREATE PLUGGABLE DATABASE {{ $odDatabaseName }}
+    ADMIN USER {{ $odUsername }} IDENTIFIED BY "{{ $odPassword }}"
+    FILE_NAME_CONVERT=('/opt/oracle/oradata/ORCLCDB/pdbseed','/opt/oracle/oradata/ORCLCDB/archive');
+  03-open-archive-pdb.sql: |
+    ALTER PLUGGABLE DATABASE {{ $odDatabaseName }} OPEN READ WRITE;
+  04-save-archive-pdb.sql: |
+    ALTER PLUGGABLE DATABASE {{ $odDatabaseName }} SAVE STATE;
+  05-create-navigator-pdb.sql: |
+    CREATE PLUGGABLE DATABASE navigator
+    ADMIN USER {{ $odUsername }} IDENTIFIED BY "{{ $odPassword }}"
+    FILE_NAME_CONVERT=('/opt/oracle/oradata/ORCLCDB/pdbseed','/opt/oracle/oradata/ORCLCDB/navigator');
+  06-open-navigator-pdb.sql: |
+    ALTER PLUGGABLE DATABASE navigator OPEN READ WRITE;
+  07-save-navigator-pdb.sql: |
+    ALTER PLUGGABLE DATABASE navigator SAVE STATE;
+  08-archive-grant-perms.sql: |
+    ALTER SESSION SET CONTAINER = {{ $odDatabaseName }};
+
+    --
+    -- Create Content Manager OnDemand role : ONDEMAND
+    --
+    DROP ROLE ONDEMAND;
+    CREATE ROLE ONDEMAND;
+    -- Database
+    grant SELECT ANY DICTIONARY to ONDEMAND;
+    -- Session
+    grant CREATE SESSION to ONDEMAND;
+    -- Tablespaces
+    grant CREATE TABLESPACE to ONDEMAND;
+    grant DROP TABLESPACE to ONDEMAND;
+    -- Tables
+    grant ALTER ANY TABLE to ONDEMAND;
+    grant BACKUP ANY TABLE to ONDEMAND;
+    grant CREATE TABLE to ONDEMAND;
+    grant DELETE ANY TABLE to ONDEMAND;
+    grant DROP ANY TABLE to ONDEMAND;
+    grant INSERT ANY TABLE to ONDEMAND;
+    grant LOCK ANY TABLE to ONDEMAND;
+    grant SELECT ANY TABLE to ONDEMAND;
+    grant UPDATE ANY TABLE to ONDEMAND;
+    -- Indexes
+    grant CREATE ANY INDEX to ONDEMAND;
+    grant DROP ANY INDEX to ONDEMAND;
+
+    --
+    -- Grant role & permissions to ARCHIVE user
+    ---
+    grant ONDEMAND to {{ $odUsername }};
+    grant UNLIMITED TABLESPACE to {{ $odUsername }};

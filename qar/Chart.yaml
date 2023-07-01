@@ -1,6 +1,9 @@
 apiVersion: v2
 appVersion: '10.5.0.5'
 dependencies:
+  - name: common
+    version: 2.x.x
+    repository: oci://registry-1.docker.io/bitnamicharts
   - name: oracledb
     version: 0.1.2
     repository: oci://registry.sptcloud.com/charts

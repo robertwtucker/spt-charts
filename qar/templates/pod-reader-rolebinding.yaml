@@ -1,19 +1,25 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: {{ include "qar.applicationName" . }}-pod-reader
-  namespace: {{ .Release.Namespace | quote }}
-  labels:
-    {{- include "qar.labels" . | nindent 4 }}
+  name: {{ include "qar.fullname" . }}-pod-reader
+  namespace: {{ include "qar.namespace" . | quote }}
+  labels: {{- include "qar.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: ondemand
+    {{- if .Values.commonLabels }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 4 }}
+    {{- end }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: {{ include "qar.applicationName" . }}-pod-reader
+  name: {{ include "qar.fullname" . }}-pod-reader
 subjects:
 - kind: ServiceAccount
 {{- if empty .Values.global.existingServiceAccount }}
-  name: {{ include "qar.applicationName" . }}
+  name: {{ include "qar.fullname" . }}
 {{- else }}
   name: {{ .Values.global.existingServiceAccount }}
 {{- end }}
-  namespace: {{ .Release.Namespace | quote }}
+  namespace: {{ include "qar.namespace" . | quote }}

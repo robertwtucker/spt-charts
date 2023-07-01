@@ -1,0 +1,153 @@
+{{- if eq .Values.architecture "replicated" -}}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "qar.fullname" . }}-ondemand
+  namespace: {{ include "qar.namespace" . }}
+  labels: {{- include "qar.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: ondemand
+    {{- if .Values.commonLabels }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 4 }}
+    {{- end }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+spec:
+  serviceName: {{ include "ondemand.svc.headless" . }}
+  replicas: {{ .Values.replicaCount }}
+  {{- if .Values.updateStrategy }}
+  updateStrategy: {{- toYaml .Values.updateStrategy | nindent 4 -}}
+  {{- end }}
+  selector:
+    matchLabels: {{- include "qar.labels.matchLabels" . | nindent 6 }}
+      app.kubernetes.io/component: ondemand
+  template:
+    metadata:
+      labels: {{- include "qar.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/component: ondemand
+        {{- if .Values.podLabels }}
+        {{- include "common.tplvalues.render" ( dict "value" $.Values.podLabels "context" $ ) | nindent 8 }}
+        {{- end }}
+        {{- if .Values.commonLabels }}
+        {{- include "common.tplvalues.render" ( dict "value" $.Values.commonLabels "context" $ ) | nindent 8 }}
+        {{- end }}
+      {{- if .Values.podAnnotations }}
+      annotations:
+        {{- include "common.tplvalues.render" ( dict "value" $.Values.podAnnotations "context" $ ) | nindent 8 }}
+      {{- end }}
+    spec:
+      serviceAccountName: {{ include "qar.serviceAccountName" . }}
+      {{- if .Values.podSecurityContext }}
+      securityContext: {{- omit .Values.podSecurityContext "enabled" | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+      {{- range .Values.global.imagePullSecrets }}
+      - name: {{ . }}
+      {{- end }}
+      {{- end }}
+      {{- if .Values.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      {{- end }}
+      initContainers:
+      - name: stash-file-init
+        image: {{ .Values.image.name }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        args: [/bin/sh", -c, "${QAR_HOME}/scripts/init-stash-file.sh"]
+        env: {{- include "qar.env.user" . | nindent 8 }}
+        volumeMounts:
+        - name: work
+          mountPath: /opt/qar/tmp
+      {{- if .Values.fts.enabled }}
+      - name: ondemand-fts-init
+        image: {{ .Values.fts.image.name }}:{{ .Values.fts.image.tag }}
+        imagePullPolicy: {{ .Values.fts.image.pullPolicy }}
+        args: [init]
+        env:
+        - name: CONFIG_NAME
+          value: {{ include "qar.fullname" . }}-fts
+        volumeMounts:
+          - name: work
+            mountPath: /opt/qar/tmp
+      {{- end }}
+      - name: wait-for-dbms
+        image: {{ .Values.wait.image.name }}:{{ .Values.wait.image.tag }}
+        imagePullPolicy: {{ .Values.wait.image.pullPolicy }}
+        args: [pod, -lrole=oracledb]
+      containers:
+      - name: ondemand
+        image: {{ .Values.image.name }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        {{- if $.Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+        {{- end }}
+        args: [start, library]
+        env:
+        {{- include "qar.env.library" . | nindent 8 }}
+        {{- include "qar.env.database" . | nindent 8 }}
+        {{- if .Values.zookeeper.enabled }}
+        - name: ZOOKEEPER_SERVER_LIST
+          value: {{ include "zookeeper.servers" . | quote }}
+        {{- end }}
+        ports:
+        - name: ondemand
+          containerPort: {{ .Values.containerPorts.onDemand }}
+        {{- if .Values.livenessProbe.enabled }}
+        livenessProbe: {{- include "common.tplvalues.render" ( dict "value" (omit .Values.livenessProbe "enabled" ) "context" $ ) | nindent 10 }}
+          exec:
+            command: [ps, -p, 1]
+        {{- end }}
+        {{- if .Values.readinessProbe.enabled }}
+        readinessProbe: {{- include "common.tplvalues.render" ( dict "value" (omit .Values.readinessProbe "enabled" ) "context" $ ) | nindent 10 }}
+          exec:
+            command: [/bin/sh, -c, "${OD_HOME}/bin/arssockd -h ${OD_INSTANCE_NAME} -P | grep -q Okay"]
+        {{- end }}
+        {{- if .Values.resources }}
+        resources: {{- toYaml .Values.resources | nindent 10 }}
+        {{- end }}
+        volumeMounts:
+        - name: work
+          mountPath: /opt/qar/tmp
+        - name: fti-config
+          mountPath: /opt/qar/config/fti
+        - name: data
+          mountPath: /opt/qar/data
+      volumes:
+      - name: work
+        emptyDir: {}
+      - name: fti-config
+        configMap:
+          name: {{ include "qar.fullname" . }}-fts
+          items:
+          - key: token
+            path: fts.token
+  {{- if not .Values.persistence.enabled }}
+      - name: data
+        emptyDir: {}
+  {{- else }}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+      {{- if .Values.persistence.annotations }}
+      annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.persistence.annotations "context" $ ) | nindent 8 }}
+      {{- end }}
+    spec:
+      accessModes:
+      {{- range .Values.persistence.accessModes }}
+      - {{ . | quote }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ .Values.persistence.size }}
+          {{- if .Values.persistence.volumeClaimTemplates.requests }}
+          {{- include "common.tplvalues.render" ( dict "value" .Values.persistence.volumeClaimTemplates.requests "context" $ ) | nindent 12 }}
+          {{- end }}
+      {{- if .Values.persistence.volumeClaimTemplates.dataSource }}
+      dataSource: {{- include "common.tplvalues.render" ( dict "value" .Values.persistence.volumeClaimTemplates.dataSource "context" $ ) | nindent 10 }}
+      {{- end }}
+      {{- if .Values.persistence.volumeClaimTemplates.selector }}
+      selector: {{- include "common.tplvalues.render" ( dict "value" .Values.persistence.volumeClaimTemplates.selector "context" $ ) | nindent 10 }}
+      {{- end }}
+      {{ include "common.storage.class" ( dict "persistence" .Values.persistence "global" .Values.global ) }}
+  {{- end }}
+{{- end -}}

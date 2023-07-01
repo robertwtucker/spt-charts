@@ -1,6 +1,0 @@
-apiVersion: v2
-appVersion: '10.5.0.5'
-description: A Helm chart for Kubernetes
-name: fts
-type: application
-version: 0.2.5

@@ -1,17 +1,15 @@
-kind: Role
-apiVersion: rbac.authorization.k8s.io/v1
+{{- if .Values.restapi.enabled -}}
+kind: ConfigMap
+apiVersion: v1
 metadata:
-  name: {{ include "qar.fullname" . }}-configmap-updater
+  name: {{ include "qar.fullname" . }}-restapi
   namespace: {{ include "qar.namespace" . | quote }}
   labels: {{- include "qar.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/component: ondemand
+    app.kubernetes.io/component: restapi
     {{- if .Values.commonLabels }}
     {{- include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 4 }}
     {{- end }}
   {{- if .Values.commonAnnotations }}
   annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
   {{- end }}
-rules:
-- apiGroups: [""]
-  resources: [configmaps]
-  verbs:  [patch]
+{{- end -}}

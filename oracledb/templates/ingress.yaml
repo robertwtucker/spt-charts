@@ -2,10 +2,10 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "qar.applicationName" . }}-oracledb
+  name: {{ include "oracledb.applicationName" . }}-oracledb
   namespace: {{ .Release.Namespace | quote }}
   labels:
-    {{- include "qar.labels" . | nindent 4 }}
+    {{- include "oracledb.labels" . | nindent 4 }}
   {{- with .Values.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -28,11 +28,11 @@ spec:
       - path: /oracle/*
         pathType: ImplementationSpecific
         backend:
-          serviceName: {{ include "qar.applicationName" . }}-oracledb
-          servicePort: {{ .Values.global.oracledb.portOverride | default 1521 }}
+          serviceName: {{ include "oracledb.applicationName" . }}-oracledb
+          servicePort: 1521
       - path: /em/*
         pathType: ImplementationSpecific
         backend:
-          serviceName: {{ include "qar.applicationName" . }}-emexpress
+          serviceName: {{ include "oracledb.applicationName" . }}-emexpress
           servicePort: 5500
-{{- end }}
+{{- end -}}

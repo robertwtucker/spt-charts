@@ -1,0 +1,35 @@
+{{- if .Values.restapi.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "qar.fullname" . }}-restapi
+  namespace: {{ include "qar.namespace" . | quote }}
+  labels: {{- include "qar.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: restapi
+    {{- if .Values.commonLabels }}
+    {{ include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 4 }}
+    {{- end }}
+  {{- if or .Values.restapi.service.annotations .Values.commonAnnotations }}
+  annotations:
+  {{- if .Values.restapi.service.annotations }}
+  {{- include "common.tplvalues.render" ( dict "value" .Values.restapi.service.annotations "context" $ ) | nindent 4 }}
+  {{- end }}
+  {{- if .Values.commonAnnotations }}
+  {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+  {{- end }}
+spec:
+  type: {{ .Values.restapi.service.type }}
+  ports:
+  - name: {{ .Values.restapi.service.portName | quote }}
+    port: {{ .Values.restapi.service.ports.http | default 9080 }}
+    targetPort: http
+    {{- if and (or (eq .Values.restapi.service.type "NodePort") (eq .Values.restapi.service.type "LoadBalancer")) (not (empty .Values.service.nodePorts.http)) }}
+    nodePort: {{ .Values.restapi.service.nodePorts.http }}
+    {{- else if eq .Values.restapi.service.type "ClusterIP" }}
+    nodePort: null
+    {{- end }}
+  selector:
+    {{ include "qar.labels.matchLabels" . | nindent 4 }}
+    app.kubernetes.io/component: restapi
+{{- end -}}

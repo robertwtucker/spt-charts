@@ -1,0 +1,136 @@
+{{- if .Values.arsload.enabled -}}
+{{- range .Values.arsload.instances }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "qar.fullname" $ }}-arsload-{{ .name }}
+  namespace: {{ include "qar.namespace" $ | quote }}
+  labels: {{- include "qar.labels.standard" $ | nindent 4 }}
+    app.kubernetes.io/component: arsload
+    {{- if $.Values.commonLabels }}
+    {{ include "common.tplvalues.render" ( dict "value" $.Values.commonLabels "context" $ ) | nindent 4 }}
+    {{- end }}
+  {{- if $.Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" ( dict "value" $.Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: 1
+  {{- if $.Values.arsload.updateStrategy }}
+  strategy: {{- toYaml $.Values.arsload.updateStrategy | nindent 4 -}}
+  {{- end }}
+  selector:
+    matchLabels: {{- include "qar.labels.matchLabels" $ | nindent 6 }}
+      app.kubernetes.io/component: arsload
+  template:
+    metadata:
+      labels: {{- include "qar.labels.standard" $ | nindent 8 }}
+        app.kubernetes.io/component: arsload
+        {{- if $.Values.arsload.podLabels }}
+        {{- include "common.tplvalues.render" ( dict "value" $.Values.arsload.podLabels "context" $ ) | nindent 8 }}
+        {{- end }}
+        {{- if $.Values.commonLabels }}
+        {{- include "common.tplvalues.render" ( dict "value" $.Values.commonLabels "context" $ ) | nindent 8 }}
+        {{- end }}
+      {{- if $.Values.arsload.podAnnotations }}
+      annotations:
+        {{- include "common.tplvalues.render" ( dict "value" $.Values.arsload.podAnnotations "context" $ ) | nindent 8 }}
+      {{- end }}
+    spec:
+      serviceAccountName: {{ include "qar.serviceAccountName" $ }}
+      {{- if $.Values.arsload.podSecurityContext.enabled }}
+      securityContext: {{- omit $.Values.arsload.podSecurityContext "enabled" | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if $.Values.global.imagePullSecrets }}
+      imagePullSecrets:
+      {{- range $.Values.global.imagePullSecrets }}
+      - name: {{ . }}
+      {{- end }}
+      {{- end }}
+      {{- if $.Values.arsload.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ $.Values.arsload.terminationGracePeriodSeconds }}
+      {{- end }}
+      initContainers:
+      - name: stash-file-init
+        image: {{ $.Values.arsload.image.name }}:{{ $.Values.arsload.image.tag }}
+        imagePullPolicy: {{ $.Values.arsload.image.pullPolicy }}
+        args: [/bin/sh, -c, "${QAR_HOME}/scripts/init-stash-file.sh"]
+        env: {{- include "qar.env.user" $ | nindent 8 }}
+        volumeMounts:
+        - name: work
+          mountPath: /opt/qar/tmp
+      - name: wait-for-ondemand
+        image: {{ $.Values.wait.image.name }}:{{ $.Values.wait.image.tag }}
+        imagePullPolicy: {{$.Values.wait.image.pullPolicy }}
+        args: ["pod", "-lapp.kubernetes.io/component=ondemand"]
+      containers:
+      - name: arsload-{{ .name }}
+        image: {{ $.Values.arsload.image.name }}:{{ $.Values.arsload.image.tag }}
+        imagePullPolicy: {{ $.Values.arsload.image.pullPolicy }}
+        {{- if $.Values.arsload.containerSecurityContext.enabled }}
+        securityContext: {{- omit $.Values.arsload.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+        {{- end }}
+        args: [start, arsload]
+        env:
+        - name: ARS_HOST
+          value: {{ include "ondemand.svc.host" $ }}
+        - name: ARS_PORT
+          value: {{ include "ondemand.svc.port" $ | quote }}
+        - name: ARSLOAD_PERIOD
+          value: {{ $.Values.arsload.timeInterval | quote }}
+        {{- if $.Values.arsload.auth.usernameSource.useSecret }}
+        - name: ARSLOAD_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ required "secretName is mandatory" $.Values.arsload.auth.usernameSource.secretName }}
+              key: {{ required "secretKey is mandatory" $.Values.arsload.auth.usernameSource.secretKey }}
+        {{- else }}
+        - name: ARSLOAD_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "qar.fullname" $ }}-arsload
+              key: username
+        {{- end }}
+        {{- if $.Values.arsload.auth.passwordSource.useSecret }}
+        - name: ARSLOAD_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ required "secretName is mandatory" $.Values.arsload.auth.passwordSource.secretName }}
+              key: {{ required "secretKey is mandatory" $.Values.arsload.auth.passwordSource.secretKey }}
+        {{- else }}
+        - name: ARSLOAD_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "qar.fullname" $ }}-arsload
+              key: password
+        {{- end }}
+        - name: ARSLOAD_DIRECTORY
+          value: {{ .mountPath | default "/opt/qar/data/load"}}
+        - name: OD_INSTANCE_NAME
+          value: {{ upper $.Values.odInstanceName }}
+        {{- if $.Values.arsload.livenessProbe.enabled }}
+        livenessProbe: {{- include "common.tplvalues.render" ( dict "value" ( omit $.Values.arsload.livenessProbe "enabled" ) "context" $ ) | nindent 10 }}
+          exec:
+            command: [ps, -p, 1]
+        {{- end }}
+        {{- if $.Values.arsload.readinessProbe.enabled }}
+        readinessProbe: {{- include "common.tplvalues.render" ( dict "value" ( omit $.Values.arsload.readinessProbe "enabled" ) "context" $ ) | nindent 10 }}
+          exec:
+            command: [/bin/sh, -c, "ps -p $(cat /tmp/qar/run/od.pid)"]
+        {{- end }}
+        {{- if $.Values.arsload.resources }}
+        resources: {{- toYaml $.Values.arsload.resources | nindent 10 }}
+        {{- end }}
+        volumeMounts:
+        - name: work
+          mountPath: /opt/qar/tmp
+        - name: load
+          mountPath: {{ .mountPath | default "/opt/qar/data/load"}}
+      volumes:
+      - name: work
+        emptyDir: {}
+      - name: load
+        persistentVolumeClaim:
+          claimName: {{ .existingClaim }}
+---
+{{- end }}
+{{- end -}}

@@ -1,10 +1,13 @@
 apiVersion: v2
 appVersion: "10.5.0.5"
 dependencies:
+  - name: common
+    version: 2.x.x
+    repository: oci://registry-1.docker.io/bitnamicharts
   - name: oracledb
-    version: 0.1.1
+    version: 0.1.2
     repository: oci://registry.sptcloud.com/charts
 description: A Helm chart for Kubernetes
 name: qar
 type: application
-version: 0.2.3
+version: 0.2.5

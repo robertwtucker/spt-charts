@@ -1,0 +1,32 @@
+{{- if eq .Values.architecture "replicated" -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ondemand.svc.headless" . }}
+  namespace: {{ include "qar.namespace" . | quote }}
+  labels: {{- include "qar.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: ondemand
+    {{- if .Values.commonLabels }}
+    {{ include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" . ) | nindent 4 }}
+    {{- end }}
+  {{- if or .Values.service.headless.annotations .Values.commonAnnotations }}
+  annotations:
+  {{- if .Values.service.headless.annotations }}
+  {{- include "common.tplvalues.render" ( dict "value" $.Values.service.headless.annotations "context" . ) | nindent 4 }}
+  {{- end }}
+  {{- if .Values.commonAnnotations }}
+  {{- include "common.tplvalues.render" ( dict "value" $.Values.commonAnnotations "context" . ) | nindent 4 }}
+  {{- end }}
+  {{- end }}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+  - name: {{ .Values.service.portName }}
+    port: {{ .Values.service.ports.ondemand | default 1445 }}
+    targetPort: ondemand
+  selector:
+    {{ include "qar.labels.matchLabels" . | nindent 4 }}
+    app.kubernetes.io/component: ondemand
+{{- end -}}

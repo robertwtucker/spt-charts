@@ -1,0 +1,41 @@
+{{- if .Values.restapi.ingress.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "qar.fullname" . }}-restapi
+  namespace: {{ include "qar.namespace" . | quote }}
+  labels: {{- include "qar.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: restapi
+    {{- if .Values.commonLabels }}
+    {{ include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 4 }}
+    {{- end }}
+  {{- if or .Values.restapi.ingress.annotations .Values.commonAnnotations }}
+  annotations:
+  {{- if .Values.restapi.ingress.annotations }}
+  {{- include "common.tplvalues.render" ( dict "value" .Values.restapi.ingress.annotations "context" $ ) | nindent 4 }}
+  {{- end }}
+  {{- if .Values.commonAnnotations }}
+  {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+  {{- end }}
+spec:
+  {{- if .Values.restapi.ingress.tls }}
+  tls:
+  {{- range .Values.restapi.ingress.tls }}
+  - hosts:
+    {{- range .hosts }}
+    - {{ . | quote }}
+    {{- end }}
+    secretName: {{ .secretName }}
+  {{- end }}
+  {{- end }}
+  rules:
+  - host: {{ .Values.restapi.ingress.host }}
+    http:
+      paths:
+        - path: /*
+          pathType: ImplementationSpecific
+          backend:
+            serviceName: {{ include "qar.fullname" . }}-restapi
+            servicePort: {{ .Values.restapi.service.ports.http }}
+{{- end -}}

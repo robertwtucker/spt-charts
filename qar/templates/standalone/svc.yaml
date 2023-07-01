@@ -1,0 +1,34 @@
+{{- if not ( eq .Values.architecture "replicated" ) -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "qar.fullname" . }}-ondemand
+  namespace: {{ include "qar.namespace" . | quote }}
+  labels: {{- include "qar.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: ondemand
+    {{- if .Values.commonLabels }}
+    {{ include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 4 }}
+    {{- end }}
+  {{- if or .Values.service.annotations .Values.commonAnnotations }}
+  annotations:
+  {{- if .Values.service.annotations }}
+  {{- include "common.tplvalues.render" ( dict "value" .Values.service.annotations "context" $ ) | nindent 4 }}
+  {{- end }}
+  {{- if .Values.commonAnnotations }}
+  {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+  - name: {{ .Values.service.portName | quote }}
+    port: {{ .Values.service.ports.ondemand | default 1445 }}
+    targetPort: ondemand
+    {{- if and (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) .Values.service.nodePorts.ondemand }}
+    nodePort: {{ .Values.service.nodePorts.ondemand }}
+    {{- else if eq .Values.service.type "ClusterIP" }}
+    nodePort: null
+    {{- end }}
+  selector: {{- include "qar.labels.matchLabels" . | nindent 4 }}
+    app.kubernetes.io/component: ondemand
+{{- end -}}

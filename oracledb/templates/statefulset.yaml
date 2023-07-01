@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ include "qar.applicationName" . }}-oracledb
+  name: {{ include "oracledb.applicationName" . }}-oracledb
   namespace: {{ .Release.Namespace | quote }}
   labels:
-    {{- include "qar.labels" . | nindent 4 }}
+    {{- include "oracledb.labels" . | nindent 4 }}
 spec:
   serviceName: {{ include "oracledb.svc.headless" . }}
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "qar.labels" . | nindent 6 }}
+      {{- include "oracledb.labels" . | nindent 6 }}
   updateStrategy:
     type: RollingUpdate
   template:
@@ -22,21 +22,21 @@ spec:
         {{- end }}
         {{- end }}
       labels:
-        {{- include "qar.labels" . | nindent 8 }}
-      name: {{ include "qar.applicationName" . }}-oracledb-template
+        {{- include "oracledb.labels" . | nindent 8 }}
+      name: {{ include "oracledb.applicationName" . }}-oracledb-template
     spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      serviceAccountName: {{ include "qar.serviceAccountName" . }}
-{{- if .Values.global.imagePullSecrets }}
+      serviceAccountName: {{ include "oracledb.serviceAccountName" . }}
+      {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
-{{- range .Values.global.imagePullSecrets }}
+      {{- range .Values.imagePullSecrets }}
       - name: {{ . }}
-{{- end }}
-{{- end }}
+      {{- end }}
+      {{- end }}
       terminationGracePeriodSeconds: 30
       containers:
-      - name: {{ include "qar.applicationName" . }}-oracledb
+      - name: {{ include "oracledb.applicationName" . }}-oracledb
         securityContext:
           {{- toYaml .Values.securityContext | nindent 10 }}
         image: "{{ .Values.image.name }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -67,8 +67,10 @@ spec:
         resources:
           {{- toYaml .Values.resources | nindent 10 }}
         volumeMounts:
+      {{- if or .Values.setupScriptContent .Values.setupConfigMap }}
         - name: setup
           mountPath: "/opt/oracle/scripts/setup"
+      {{- end }}
       {{- if .Values.shmVolume.enabled }}
         - name: dshm
           mountPath: "/dev/shm"
@@ -78,9 +80,15 @@ spec:
           mountPath: {{ .Values.persistence.mountPath | quote }}
       {{- end }}
       volumes:
+    {{- if and .Values.setupScriptContent (not .Values.setupConfigMap) }}
       - name: setup
         configMap:
-          name: {{ include "qar.applicationName" . }}-oracledb-setup
+          name: {{ include "oracledb.applicationName" . }}-oracledb-setup
+    {{- else if .Values.setupConfigMap }}
+      - name: setup
+        configMap:
+          name: {{ .Values.setupConfigMap }}
+    {{- end }}
     {{- if .Values.shmVolume.enabled }}
       - name: dshm
         emptyDir:
@@ -101,7 +109,7 @@ spec:
   - metadata:
       name: data
       labels:
-        {{ include "qar.labels" . | nindent 8 }}
+        {{ include "oracledb.labels" . | nindent 8 }}
       {{- with .Values.persistence.annotations }}
       annotations:
         {{- toYaml . | nindent 8 }}

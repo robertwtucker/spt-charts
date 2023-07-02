@@ -2,13 +2,21 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "oracledb.applicationName" . }}-oracledb
-  namespace: {{ .Release.Namespace | quote }}
-  labels:
-    {{- include "oracledb.labels" . | nindent 4 }}
-  {{- with .Values.ingress.annotations }}
+  name: {{ include "oracledb.fullname" . }}
+  namespace: {{ include "oracledb.namespace" . | quote }}
+  labels: {{- include "oracledb.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: oracledb
+    {{- if .Values.commonLabels }}
+    {{ include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 4 }}
+    {{- end }}
+  {{- if or .Values.ingress.annotations .Values.commonAnnotations }}
   annotations:
-    {{- toYaml . | nindent 4 }}
+  {{- if .Values.ingress.annotations }}
+  {{- include "common.tplvalues.render" ( dict "value" $.Values.ingress.annotations "context" $ ) | nindent 4 }}
+  {{- end }}
+  {{- if .Values.commonAnnotations }}
+  {{- include "common.tplvalues.render" ( dict "value" $.Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
   {{- end }}
 spec:
   {{- if .Values.ingress.tls }}
@@ -29,10 +37,10 @@ spec:
         pathType: ImplementationSpecific
         backend:
           serviceName: {{ include "oracledb.applicationName" . }}-oracledb
-          servicePort: 1521
+          servicePort: {{ .Values.service.ports.oracledb }}
       - path: /em/*
         pathType: ImplementationSpecific
         backend:
           serviceName: {{ include "oracledb.applicationName" . }}-emexpress
-          servicePort: 5500
+          servicePort: {{ .Values.service.ports.emexpress }}
 {{- end -}}

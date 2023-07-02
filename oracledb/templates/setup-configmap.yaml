@@ -1,11 +1,17 @@
-{{- if and .Values.setupScriptContent (not .Values.setupConfigMap) }}
+{{- if and .Values.setupScripts.content (not .Values.setupScripts.existingConfigMap) -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "oracledb.applicationName" . }}-oracledb-setup
-  namespace: {{ .Release.Namespace | quote }}
-  labels:
-    {{ include "oracledb.labels" . | nindent 4 }}
+  name: {{ include "oracledb.fullname" . }}-setup
+  namespace: {{ include "oracledb.namespace" . | quote }}
+  labels: {{- include "oracledb.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: oracledb
+    {{- if .Values.commonLabels }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 4 }}
+    {{- end }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
 data:
-{{- .Values.setupScriptContent | nindent 2 }}
-{{- end }}
+{{- .Values.setupScripts.content | nindent 2 }}
+{{- end -}}

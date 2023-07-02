@@ -1,0 +1,43 @@
+{{- if eq .Values.architecture "standalone" -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "oracledb.fullname" . }}
+  namespace: {{ include "oracledb.namespace" . | quote }}
+  labels: {{- include "oracledb.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: oracledb
+    {{- if .Values.commonLabels }}
+    {{ include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 4 }}
+    {{- end }}
+  {{- if or .Values.service.annotations .Values.commonAnnotations }}
+  annotations:
+  {{- if .Values.service.annotations }}
+  {{- include "common.tplvalues.render" ( dict "value" .Values.service.annotations "context" $ ) | nindent 4 }}
+  {{- end }}
+  {{- if .Values.commonAnnotations }}
+  {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+  - name: oracledb
+    port: {{ .Values.service.ports.oracledb }}
+    targetPort: oracledb
+    {{- if and (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) (not (empty .Values.service.nodePorts.oracledb)) }}
+    nodePort: {{ .Values.service.nodePorts.oracledb }}
+    {{- else if eq .Values.service.type "ClusterIP" }}
+    nodePort: null
+    {{- end }}
+  - name: emexpress
+    port: {{ .Values.service.ports.emexpress }}
+    targetPort: emexpress
+    {{- if and (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) (not (empty .Values.service.nodePorts.emexpress)) }}
+    nodePort: {{ .Values.service.nodePorts.emexpress }}
+    {{- else if eq .Values.service.type "ClusterIP" }}
+    nodePort: null
+    {{- end }}
+  selector:
+    {{ include "oracledb.labels.matchLabels" . | nindent 4 }}
+    app.kubernetes.io/component: ondemand
+{{- end -}}

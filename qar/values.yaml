@@ -2,7 +2,7 @@
 
 global:
   # -- Global image registry
-  imageRegistry: ''
+  imageRegistry: ""
   # -- List of image repository pull secrets. Secrets must be manually created in the namespace.
   # ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
   # Example:
@@ -10,17 +10,17 @@ global:
   #   - name: myRegistryKeySecretName
   imagePullSecrets: []
   # -- Override the namespace for resources deployed by the chart (can itself be overridden by the local namespaceOverride).
-  namespaceOverride: ''
+  namespaceOverride: ""
   # -- StorageClass for all PersistentVolumes
-  storageClass: ''
+  storageClass: ""
 # Common parameters
 
 # -- String to partially override the qar.fullname template (will maintain the release name)
-nameOverride: ''
+nameOverride: ""
 # -- String to fully override the qar.fullname template
-fullnameOverride: ''
+fullnameOverride: ""
 # -- String to fully override the qar.namespace
-namespaceOverride: ''
+namespaceOverride: ""
 # -- Add labels to all the deployed resources (sub-charts are not considered). Evaluated as a template.
 commonLabels: {}
 # Common annotations to add to all QAR resources (sub-charts are not considered). Evaluated as a template.
@@ -52,27 +52,27 @@ trace:
 auth:
   # -- Defines (in plain text) the name of the CMOD admin user. If left undefined, the default user
   # `admin` is created. Use the `auth.usernameSource` variable to define the username using an existing Secret.
-  username: ''
+  username: ""
   # -- Uses a Secret to define the CMOD administrative user.
   usernameSource:
     useSecret: false
-    secretName: ''
-    secretKey: ''
+    secretName: ""
+    secretKey: ""
   # -- Defines (in plain text) the password of the CMOD admin user. If left undefined, the deployment
   # will generate a random alphanumeric password. Use the `auth.passwordSource` variable to
   # define the password using an existing Secret.
-  password: ''
+  password: ""
   # -- Uses a Secret to define the CMOD administrative user's password.
   passwordSource:
     useSecret: false
-    secretName: ''
-    secretKey: ''
+    secretName: ""
+    secretKey: ""
 db:
   # -- Specifies the DBMS used by the Library Server [DB2|ORACLE].
   engine: ORACLE
   # -- Defines the Oracle TNS service name for the CMOD database. If left undefined, the
   # lower-cased `serverInstanceName` value is used.
-  tnsServiceName: ''
+  tnsServiceName: ""
   # -- Determines the number of processes that CMOD starts on the library server to
   # handle connections to the database. Specify a value that supports the peak number
   # of concurrent database connections library server needs to handle.
@@ -81,22 +81,22 @@ db:
     # -- Defines (in plain text) the name of the administrative user to be created in the Oracle
     # database(s). If left undefined, the default user `archive` is created. Use the `auth.usernameSource`
     # variable to define the username using a Secret.
-    username: ''
+    username: ""
     # -- Uses a Secret to define the administrative user to be created in the Oracle database(s).
     usernameSource:
       useSecret: false
-      secretName: ''
-      secretKey: ''
+      secretName: ""
+      secretKey: ""
     # -- Defines (in plain text) the password of the administrative user to be created in the
     # Oracle database(s). If left undefined, the deployment will generate a random alphanumeric
     # password. Use the `auth.passwordSource` variable to define the password using an existing Secret.
-    password: ''
+    password: ""
     # -- Uses a Secret to define the password of the administrative user to be created in the
     # Oracle database(s).
     passwordSource:
       useSecret: false
-      secretName: ''
-      secretKey: ''
+      secretName: ""
+      secretKey: ""
 # Zookeeper configuration
 zookeeper:
   # -- Use Zookeeper to manage locking between multiple active CMOD server
@@ -112,21 +112,21 @@ zookeeper:
     # -- Defines (in plain text) the name of the Zookeeper user.
     # If left undefined, the default user `admin` is used. Use the `auth.usernameSource` variable
     # to define the username using a Secret.
-    username: ''
+    username: ""
     # -- Uses a Secret to define the Zookeeper user.
     usernameSource:
       useSecret: false
-      secretName: ''
-      secretKey: ''
+      secretName: ""
+      secretKey: ""
     # -- Defines (in plain text) the Zookeeper user's password.
     # If left undefined, the deployment will generate a random alphanumeric password. Use the
     # `auth.passwordSource` variable to define the password using a Secret.
-    password: ''
+    password: ""
     # -- Uses a Secret to define the Zookeeper user's password.
     passwordSource:
       useSecret: false
-      secretName: ''
-      secretKey: ''
+      secretName: ""
+      secretKey: ""
 
 # -- Defines whether to create a batch job to perform initial setup processing (experimental).
 performInitialSetup: false
@@ -143,9 +143,9 @@ replicaCount: 1
 updateStrategy:
   type: RollingUpdate
 # -- OnDemand Termination Grace Period
-terminationGracePeriodSeconds: ''
+terminationGracePeriodSeconds: ""
 # -- Enter the name of an existing service account to use. Otherwise, one will be created by default.
-existingServiceAccount: ''
+existingServiceAccount: ""
 # -- OnDemand pod labels
 # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
 podLabels: {}
@@ -154,7 +154,7 @@ podLabels: {}
 podAnnotations: {}
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
 podSecurityContext:
-  # -- Enable the OnDemand pod security context.
+  # -- Enable the OracleDB container security context.
   enabled: true
   # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
   runAsUser: 1001
@@ -245,7 +245,7 @@ service:
   # ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
   nodePorts:
     # -- Port to bind to for NodePort service type
-    ondemand: ''
+    ondemand: ""
   headless:
     # -- Headless service annotations
     annotations: {}
@@ -257,7 +257,7 @@ ingress:
   annotations: {}
   hosts:
     # -- Defines the host(s) for this Ingress.
-    - host: ''
+    - host: ""
   # -- Defines the TLS-enabled host(s) and options.
   tls: []
   #  - secretName: chart-example-tls
@@ -268,16 +268,16 @@ persistence:
   # -- Enable OnDemand Library server data persistence using a PVC.
   enabled: true
   # -- Name of an existing PVC to use.
-  existingClaim: ''
+  existingClaim: ""
   # -- Set to `keep` to avoid removing PVCs during a helm delete operation.
-  resourcePolicy: ''
+  resourcePolicy: ""
   # -- The path the volume will be mounted at.
   mountPath: /opt/qar/data
   # -- If defined, storageClassName: <storageClass>
   # If set to "-", storageClassName: "", which disables dynamic provisioning.
   # If undefined (the default) or set to null, no storageClassName spec is
   # set, choosing the default provisioner. (gp2 on AWS, standard on GKE, AWS & OpenStack)
-  storageClass: ''
+  storageClass: ""
   # -- PVC Access Mode for the CMOD data volume.
   accessModes:
     - ReadWriteOnce
@@ -300,7 +300,7 @@ oracledb:
   image:
     name: registry.sptcloud.com/oracle/database
   fullnameOverride: qar
-  password: ''
+  password: ""
 
 # arsload deployment configuration
 arsload:
@@ -317,21 +317,21 @@ arsload:
     # -- Defines (in plain text) the name of the CMOD ARSLOAD user (for batch-loading documents).
     # If left undefined, the default user `admin` is used. Use the `auth.usernameSource` variable
     # to define the username using a Secret.
-    username: ''
+    username: ""
     # -- Uses a Secret to define the CMOD ARSLOAD user.
     usernameSource:
       useSecret: false
-      secretName: ''
-      secretKey: ''
+      secretName: ""
+      secretKey: ""
     # -- Defines (in plain text) the password of the CMOD ARSLOAD user (for batch-loading documents).
     # If left undefined, the deployment will generate a random alphanumeric password. Use the
     # `auth.passwordSource` variable to define the user name using an existing Secret.
-    password: ''
+    password: ""
     # -- Uses a Secret to define the CMOD ARSLOAD user's password.
     passwordSource:
       useSecret: false
-      secretName: ''
-      secretKey: ''
+      secretName: ""
+      secretKey: ""
   # -- Time interval in seconds to sleep (arsload command defaults to 600)
   timeInterval: 600
   # -- List of arsload deployment instances (one replica per input volume).
@@ -350,7 +350,7 @@ arsload:
   updateStrategy:
     type: Recreate
   # -- ARSLOAD Termination Grace Period
-  terminationGracePeriodSeconds: ''
+  terminationGracePeriodSeconds: ""
   # -- ARSLOAD pod labels
   # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
   podLabels: {}
@@ -444,25 +444,25 @@ restapi:
     # -- Defines (in plain text) the name of the CMOD user (consumer) to use when generating the REST configuration
     # (OD access pool). If left undefined, the default user `admin` is used. Use the `auth.usernameSource`
     # variable to define the username using a Secret.
-    username: ''
+    username: ""
     # -- Uses a Secret to define the CMOD REST API user (consumer) used when generating the REST configuration.
     usernameSource:
       useSecret: false
-      secretName: ''
-      secretKey: ''
+      secretName: ""
+      secretKey: ""
     # -- Defines (in plain text) the password of the CMOD user (consumer) to use when generating the REST configuration
     # (OD access pool). If left undefined, the deployment will generate a random alphanumeric password. Use
     # the `auth.passwordSource` variable to define the user name using an existing Secret.
-    password: ''
+    password: ""
     # -- Uses a Secret to define the CMOD REST API user's (consumer's) password.
     passwordSource:
       useSecret: false
-      secretName: ''
-      secretKey: ''
+      secretName: ""
+      secretKey: ""
   # -- Name of the REST connection pool to create. Defaults to `odpool` if blank.
-  poolName: ''
+  poolName: ""
   # -- Name of the REST consumer to create for the pool. Defaults to `admin` if blank.
-  consumerName: ''
+  consumerName: ""
 
   # -- Annotations to be added to the REST API server. Evaluated as a template.
   annotations: {}
@@ -473,7 +473,7 @@ restapi:
   # -- Update strategy for the REST API deployment
   updateStrategy: {}
   # -- ARSLOAD Termination Grace Period
-  terminationGracePeriodSeconds: ''
+  terminationGracePeriodSeconds: ""
   # -- Provides the ability to customize the deployment using Kubernetes annotations.
   podAnnotations: {}
 
@@ -532,7 +532,7 @@ restapi:
     # ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
     nodePorts:
       # -- Node port for the REST API (WAS) server
-      http: ''
+      http: ""
 
   # Learn about liveness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
   # Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
@@ -589,7 +589,7 @@ restapi:
     annotations: {}
     hosts:
       # -- Defines the host(s) for this Ingress.
-      - host: ''
+      - host: ""
     # -- Defines the TLS-enabled host(s) and options.
     tls: []
     #  - secretName: chart-example-tls
@@ -618,7 +618,7 @@ fts:
   # -- Update strategy for the fTS deployment
   updateStrategy: {}
   # -- FTS Termination Grace Period
-  terminationGracePeriodSeconds: ''
+  terminationGracePeriodSeconds: ""
   # -- Provides the ability to customize the deployment using Kubernetes annotations.
   podAnnotations: {}
 
@@ -672,7 +672,7 @@ fts:
     # ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
     nodePorts:
       # -- NodePort to expose for FTS
-      fts: ''
+      fts: ""
 
   # Learn about liveness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
   # Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.

@@ -26,14 +26,14 @@ spec:
       labels: {{- include "qar.labels.standard" . | nindent 8 }}
         app.kubernetes.io/component: ondemand
         {{- if .Values.podLabels }}
-        {{- include "common.tplvalues.render" ( dict "value" $.Values.podLabels "context" $ ) | nindent 8 }}
+        {{- include "common.tplvalues.render" ( dict "value" .Values.podLabels "context" $ ) | nindent 8 }}
         {{- end }}
         {{- if .Values.commonLabels }}
-        {{- include "common.tplvalues.render" ( dict "value" $.Values.commonLabels "context" $ ) | nindent 8 }}
+        {{- include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 8 }}
         {{- end }}
       {{- if .Values.podAnnotations }}
       annotations:
-        {{- include "common.tplvalues.render" ( dict "value" $.Values.podAnnotations "context" $ ) | nindent 8 }}
+        {{- include "common.tplvalues.render" ( dict "value" .Values.podAnnotations "context" $ ) | nindent 8 }}
       {{- end }}
     spec:
       serviceAccountName: {{ include "qar.serviceAccountName" . }}
@@ -91,7 +91,7 @@ spec:
         {{- end }}
         ports:
         - name: ondemand
-          containerPort: {{ .Values.containerPorts.onDemand }}
+          containerPort: {{ .Values.containerPorts.ondemand }}
         {{- if .Values.livenessProbe.enabled }}
         livenessProbe: {{- include "common.tplvalues.render" ( dict "value" (omit .Values.livenessProbe "enabled" ) "context" $ ) | nindent 10 }}
           exec:

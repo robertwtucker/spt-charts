@@ -7,10 +7,14 @@ at 63 characters to allow for the host name to fit in the DNS limit.
 {{- end -}}
 
 {{/*
-Create the default FQDN for the OnDemand headless service.
+Create the default FQDN for the OnDemand service.
 */}}
 {{- define "ondemand.svc.host" -}}
-{{- printf "%s.%s.svc.cluster.local" ( include "ondemand.svc.headless" . ) ( include "qar.namespace" . ) -}}
+{{- $serviceName := printf "%s-ondemand" (include "qar.fullname" .) | trunc 63 -}}
+{{- if eq .Values.architecture "replicated" -}}
+{{- $serviceName = include "ondemand.svc.headless" . -}}
+{{- end -}}
+{{- printf "%s.%s.svc.cluster.local" $serviceName ( include "qar.namespace" . ) -}}
 {{- end -}}
 
 {{/*

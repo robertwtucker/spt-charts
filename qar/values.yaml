@@ -257,18 +257,39 @@ service:
     annotations: {}
 
 ingress:
-  # -- Enables Ingress, a Kubernetes API object that provides external access and load balancing.
+  # -- Enables the Ingress (provides external access and load balancing)
   enabled: false
-  # -- Provide any additional annotations which may be required.
+  # -- Provide any additional annotations which may be required
+  # Example:
+  # annotations:
+  #   kubernetes.io/ingress.class: nginx
+  #   kubernetes.io/tls-acme: true
+  #   cert-manager.io/cluster-issuer: letsencrypt-staging
   annotations: {}
-  hosts:
-    # -- Defines the host(s) for this Ingress.
-    - host: ""
+  # -- List of network hosts' FQDNs
+  # Example:
+  # hosts:
+  # - ondemand.example.com
+  hosts: []
+  paths:
+    ondemand:
+      # -- Path to be matched against incoming requests (must start with a slash)
+      path: ""
+      # -- Path matching interpretation style (defaults to `ImplementationSpecific`)
+      pathType: ""
   # -- Defines the TLS-enabled host(s) and options.
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
+  tls:
+    # -- Enable TLS configuration settings
+    enabled: false
+    # -- List of network host names contained in the TLS certificate
+    # Example:
+    # hosts:
+    # - ondemand.example.com
+    hosts: []
+    # -- Secret used to terminate TLS traffic
+    # Example:
+    # secretName: ondemand.example.com-tls
+    secretName: ""
 
 persistence:
   # -- Enable OnDemand Library server data persistence using a PVC.

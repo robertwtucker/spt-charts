@@ -2,19 +2,19 @@
 Defines environment variables for the CMOD user.
 */}}
 {{- define "qar.env.user" -}}
-{{- if .Values.auth.usernameSource.useSecret }}
+{{- if .Values.auth.usernameSource.useSecret -}}
 - name: OD_USER
   valueFrom:
     secretKeyRef:
       name: {{ required "secretName is mandatory" .Values.auth.usernameSource.secretName }}
       key: {{ required "secretKey is mandatory" .Values.auth.usernameSource.secretKey }}
-{{- else }}
+{{- else -}}
 - name: OD_USER
   valueFrom:
     secretKeyRef:
       name: {{ include "qar.fullname" . }}-ondemand
       key: odUsername
-{{- end }}
+{{- end -}}
 {{- if .Values.auth.passwordSource.useSecret }}
 - name: OD_PASSWORD
   valueFrom:
@@ -28,20 +28,20 @@ Defines environment variables for the CMOD user.
       name: {{ include "qar.fullname" . }}-ondemand
       key: odPassword
 {{- end }}
-{{- if .Values.zookeeper.enabled }}
-  {{- if .Values.zookeeper.auth.usernameSource.useSecret }}
+{{- if .Values.zookeeper.enabled -}}
+  {{- if .Values.zookeeper.auth.usernameSource.useSecret -}}
 - name: ZK_USER
   valueFrom:
     secretKeyRef:
       name: {{ required "secretName is mandatory" .Values.zookeeper.auth.usernameSource.secretName }}
       key: {{ required "secretKey is mandatory" .Values.zookeeper.auth.usernameSource.secretKey }}
-  {{- else }}
+  {{- else -}}
 - name: ZK_USER
   valueFrom:
     secretKeyRef:
       name: {{ include "qar.fullname" . }}-ondemand
       key: zkUsername
-  {{- end }}
+  {{- end -}}
   {{- if .Values.zookeeper.auth.passwordSource.useSecret }}
 - name: ZK_PASSWORD
   valueFrom:
@@ -55,14 +55,14 @@ Defines environment variables for the CMOD user.
       name: {{ include "qar.fullname" . }}-ondemand
       key: zkPassword
   {{- end }}
-{{- end }}
+{{- end -}}
 {{- end -}}
 
 {{/*
 Defines environment variables for the Oracle database service.
 */}}
 {{- define "qar.env.database" -}}
-{{- if eq (upper .Values.db.engine) "ORACLE" }}
+{{- if eq (upper .Values.db.engine) "ORACLE" -}}
 - name: ORACLE_HOST
 {{- if eq .Values.oracledb.architecture "replicated" }}
   value: {{ include "qar.fullname" . }}-oracledb-headless.{{ include "qar.namespace" . }}.svc.cluster.local
@@ -99,7 +99,7 @@ Defines environment variables for the Oracle database service.
       name: {{ include "qar.fullname" . }}-ondemand
       key: dbPassword
 {{- end }}
-{{- end }}
+{{- end -}}
 {{- end -}}
 
 {{/*

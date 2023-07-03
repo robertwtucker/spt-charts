@@ -1,9 +1,9 @@
 dependencies:
 - name: common
   repository: oci://registry-1.docker.io/bitnamicharts
-  version: 2.4.0
+  version: 2.5.0
 - name: oracledb
   repository: oci://registry.sptcloud.com/charts
-  version: 0.1.2
-digest: sha256:32f8d7cb510c8f04e65d054462e48f41f6b98b0866c4fa2561ee0b370ee0e2e2
-generated: "2023-06-28T15:54:20.523432-04:00"
+  version: 0.2.0
+digest: sha256:eb0e4787d33f4c8a4621c8659bcf10933b1e7964773ffbb123462bfd48fab2b3
+generated: "2023-07-02T23:56:06.036071-04:00"

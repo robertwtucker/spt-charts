@@ -62,7 +62,7 @@ spec:
         {{- end }}
         env:
         - name: ARS_FTI_EXPORT_POLL_DELAY
-          value: {{ .Values.exportPollDelay | quote }}
+          value: {{ .Values.fts.exportPollDelay | quote }}
         {{ include "qar.env.library" . | nindent 8 }}
         {{ include "qar.env.database" . | nindent 8 }}
         {{ include "qar.env.user" . | nindent 8 }}

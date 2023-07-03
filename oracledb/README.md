@@ -2,13 +2,8 @@
 
 ![Version: 0.1.2](https://img.shields.io/badge/Version-0.1.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 21.3.0-ee](https://img.shields.io/badge/AppVersion-21.3.0--ee-informational?style=flat-square)
 
-This Helm chart was orginally adapted for use with the charts for
+This Helm chart was originally adapted for use with the charts for
 deploying Quadient's Archive and Retrieval.
-
-## Disclaimer
-
-This chart is for demo purpose only. It stores data in the container itself
-which will be lost if the pod is re-assigned or deleted.
 
 ## Prerequisites
 
@@ -29,13 +24,8 @@ to the terms of use for the images you need to use:
 
 ### Oracle Database Docker Image
 
-You may provision the database supporting the Oracle SOA suite domain schemas
-separately, and point the chart to it by providing the database url. The database
-must be accessible from the Kubernetes cluster. This is the recommended way to
-deploy this chart.
-
-If you intend on deploying the database within the kubernetes cluster (optional;
-not for production), you must agree to the terms of the Oracle database Docker image:
+If you intend on deploying the database within a kubernetes cluster you must
+agree to the terms of the Oracle database Docker image:
 
 - At [https://container-registry.oracle.com](https://container-registry.oracle.com),
   search for 'database'.
@@ -55,65 +45,117 @@ so requires the credentials to be stored in a docker-registry secret.
 kubectl create secret docker-registry image-secret -n ${namespace} --docker-server=container-registry.oracle.com --docker-username='${email}' --docker-password='${password}' --docker-email='${email}'
 ```
 
-## Values
+## Parameters
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| applicationName | string | `""` | Application name to use (prefix) for chart components. |
-| characterSet | string | `""` | The character set to use when creating the database (default: AL32UTF8) |
-| existingServiceAccount | string | `""` | Enter the name of an existing service account to use. Otherwise, one will be created by default. |
-| image.name | string | `"container-registry.oracle.com/database/express"` | Defines the URL address of the Oracle database image stored in a Docker image repository. |
-| image.pullPolicy | string | `"IfNotPresent"` | Defines the Oracle database image pull policy. \[IfNotPresent\|Always\]. |
-| image.tag | string | `""` | Overrides the image tag. Defaults to the chart's appVersion. |
-| imagePullSecrets | list | `[]` | List of image repository pull secrets Secrets must be manually created in the namespace. ref: [https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/) Example: imagePullSecrets:   - name: myRegistryKeySecretName |
-| ingress.annotations | object | `{}` | Provide any additional annotations which may be required. |
-| ingress.enabled | bool | `false` | Enables Ingress, a Kubernetes API object that provides external access and load balancing. |
-| ingress.hosts | list | `[{"host":""}]` | Defines the host(s) for this Ingress. |
-| ingress.tls | list | `[]` | Defines the TLS-enabled host(s) and options. |
-| livenessProbe.failureThreshold | int | `5` | Defines the minimum consecutive failures for the Oracle database container probe to be considered failed after having succeeded. |
-| livenessProbe.initialDelaySeconds | int | `90` | Defines the delay before the Oracle database container liveness probe is initiated. |
-| livenessProbe.periodSeconds | int | `10` | Defines how often to perform the Oracle database container probe. |
-| livenessProbe.successThreshold | int | `1` | Defines the minimum consecutive successes for the Oracle database container probe to be considered successful after having failed. |
-| livenessProbe.timeoutSeconds | int | `5` | Defines when the Oracle database container probe times out. |
-| password | string | `""` | Defines (in plain text) the password of the SYS database user. Use the 'passwordSource' variable instead to define the password using a Secret. |
-| passwordSource | object | `{"secretKey":"","secretName":"","useSecret":false}` | Use a Secret to define the password of the SYS database user. |
-| pdb | string | `""` | The Oracle database PDB name that should be used (EE/SE default: ORCLPDB1, XE preset: XEPDB1). |
-| persistence.accessModes | list | `["ReadWriteOnce"]` | PVC Access Mode for the Oracle data volume. |
-| persistence.annotations | object | `{}` | Additional annotations, as required. |
-| persistence.enabled | bool | `true` | Enable Oracle data persistence using a PVC. |
-| persistence.existingClaim | string | `""` | Name of an existing PVC to use. |
-| persistence.labels | object | `{}` | Additional labels, as required. |
-| persistence.mountPath | string | `"/opt/oracle/oradata"` | The path the volume will be mounted at. |
-| persistence.size | string | `"8Gi"` | PVC Storage Request for the Oracle data volume. |
-| persistence.storageClass | string | `""` | If defined, storageClassName: \<storageClass\> If set to "-", storageClassName: "", which disables dynamic provisioning. If undefined (the default) or set to null, no storageClassName spec is set, choosing the default provisioner. (gp2 on AWS, standard on GKE, AWS & OpenStack) |
-| podAnnotations | object | `{}` | Provides the ability to customize the deployment using Kubernetes annotations. |
-| podSecurityContext.fsGroup | int | `54321` | Learn about this setting at [https://kubernetes.io/docs/concepts/policy/pod-security-policy/#volumes-and-file-systems](https://kubernetes.io/docs/concepts/policy/pod-security-policy/#volumes-and-file-systems). |
-| podSecurityContext.runAsNonRoot | bool | `true` | Learn about this setting at [https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups](https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups). |
-| podSecurityContext.runAsUser | int | `54321` | Learn about this setting at [https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups](https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups). |
-| readinessProbe.failureThreshold | int | `5` | Defines the minimum consecutive failures for the Oracle database container probe to be considered failed after having succeeded. |
-| readinessProbe.initialDelaySeconds | int | `40` | Defines the delay before the Oracle database container readiness probe is initiated. |
-| readinessProbe.periodSeconds | int | `20` | Defines how often to perform the Oracle database container probe. |
-| readinessProbe.successThreshold | int | `1` | Defines the minimum consecutive successes for the Oracle database container probe to be considered successful after having failed |
-| readinessProbe.timeoutSeconds | int | `10` | Defines when the Oracle database container probe times out. |
-| replicaCount | int | `1` | Defines the number of Oracle database nodes to be deployed at launch. |
-| resources | object | `{}` |  |
-| role | string | `"oracledb"` | Component designation. |
-| securityContext.allowPrivilegeEscalation | bool | `false` | Learn about this setting at [https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privilege-escalation](https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privilege-escalation). |
-| securityContext.capabilities | object | `{"drop":["all"]}` | The default (recommended) configuration prohibits all Linux capabilities. |
-| securityContext.privileged | bool | `false` | Learn about this setting at [https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privileged](https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privileged). |
-| securityContext.readOnlyRootFilesystem | bool | `false` | Learn about this setting at [https://kubernetes.io/docs/concepts/policy/pod-security-policy/#volumes-and-file-systems](https://kubernetes.io/docs/concepts/policy/pod-security-policy/#volumes-and-file-systems). |
-| securityContext.runAsGroup | int | `54321` | Learn about this setting at [https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups}(https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups). |
-| securityContext.runAsUser | int | `54321` | Learn about this setting at [https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups](https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups). |
-| service.annotations | object | `{}` | Provide any additional annotations which may be required. |
-| service.nodePorts.emexpress | string | `""` | Node port for EM Express |
-| service.nodePorts.oracledb | string | `""` | Node port for the Oracle database |
-| service.type | string | `"ClusterIP"` | Defines the value for the Kubernetes service object \[ClusterIP\|LoadBalancer\]. |
-| setupConfigMap | string | `""` | Name of an existing ConfigMap containing the script(s) to use for initial database setup. A non-empty value overrides any values in  `setupScriptContent`. |
-| setupScriptContent | string | `""` | Script(s) to use for initial setup. |
-| shmVolume.enabled | bool | `false` | Enable emptyDir volume for /dev/shm for Oracle pod(s) |
-| shmVolume.sizeLimit | string | `""` | Set this to enable a size limit on the shm tmpfs. Note: the size of the tmpfs counts against container's memory limit e.g: sizeLimit: 1Gi |
-| sid | string | `""` | The Oracle database SID that should be used (EE/SE default: ORCLCDB, XE preset: XE). |
-| username | string | `"SYS"` | The username is always SYS unless using an Autonomous Database (change to `ADMIN`) |
+### Global parameters
+
+| Name                       | Description                                                                                                          | Value |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------- | ----- |
+| `global.imageRegistry`     | Global container image registry                                                                                      | `""`  |
+| `global.imagePullSecrets`  | Global registry Secrets as an array                                                                                  | `[]`  |
+| `global.storageClass`      | Global StorageClass for Persistent Volume(s)                                                                         | `""`  |
+| `global.namespaceOverride` | Override the namespace for resources deployed by the chart (can itself be overridden by the local namespaceOverride) | `""`  |
+
+### Common parameters
+
+| Name                | Description                                                                         | Value |
+| ------------------- | ----------------------------------------------------------------------------------- | ----- |
+| `nameOverride`      | String to partially override the fullname template (will maintain the release name) | `""`  |
+| `fullnameOverride`  | String to fully override the fullname template                                      | `""`  |
+| `namespaceOverride` | String to fully override the namespace                                              | `""`  |
+| `commonLabels`      | Add labels to all the deployed resources (evaluated as a template)                  | `{}`  |
+| `commonAnnotations` | Common annotations to add to all resources (evaluated as a template)                | `{}`  |
+
+### Oracle Database parameters
+
+| Name                             | Description                                                                                                                          | Value                           |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------- |
+| `image.registry`                 | Oracle Database image container registry                                                                                             | `container-registry.oracle.com` |
+| `image.repository`               | Oracle Database image repository                                                                                                     | `database/express`              |
+| `image.tag`                      | Oracle Database image tag                                                                                                            | `21.3.0-xe`                     |
+| `image.digest`                   | Oracle Database image digest in the format `sha256:aa....` (overrides `image.tag`)                                                   | `""`                            |
+| `image.pullPolicy`               | Oracle Database image pull policy                                                                                                    | `IfNotPresent`                  |
+| `image.pullSecrets`              | Specify container registry Secrets as an array                                                                                       | `[]`                            |
+| `architecture`                   | Oracle Database server architecture (`standalone` or `replicated`)                                                                   | `standalone`                    |
+| `useStatefulSet`                 | Set to `true` to use a StatefulSet instead of a Deployment (only applicable when `architecture` == `standalone`)                     | `false`                         |
+| `sid`                            | The Oracle Database SID that should be used (EE/SE default: `ORCLCDB`, XE preset: `XE`)                                              | `""`                            |
+| `pdb`                            | The Oracle Database PDB name that should be used (EE/SE default: `ORCLPDB1`, XE preset: `XEPDB1`)                                    | `""`                            |
+| `characterSet`                   | The character set to use when creating the database (default: `AL32UTF8`)                                                            | `""`                            |
+| `username`                       | The username is always `SYS` unless using an Autonomous Database (change to `ADMIN`)                                                 | `SYS`                           |
+| `password`                       | Defines (in plain text) the password of the SYS database user                                                                        | `""`                            |
+| `passwordSource.useSecret`       | Use a Secret to define the password of the SYS database user                                                                         | `false`                         |
+| `passwordSource.secretName`      | The name of the Secret containing the password                                                                                       | `""`                            |
+| `passwordSource.secretKey`       | The key of the Secret containing the password                                                                                        | `""`                            |
+| `shmVolume.enabled`              | Enable emptyDir volume for /dev/shm in Oracle Database pod(s)                                                                        | `false`                         |
+| `shmVolume.sizeLimit`            | Set to enable a size limit on the shm tmpfs                                                                                          | `""`                            |
+| `setupScripts.existingConfigMap` | Name of an existing ConfigMap containing the script(s) to initialize the server (a non-empty value overrides `setupScripts.content`) | `""`                            |
+| `setupScripts.content`           | Script content to use for initial setup                                                                                              | `""`                            |
+
+### Oracle Database StatefulSet parameters
+
+| Name                                    | Description                                                                                                                                     | Value           |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | --------------- |
+| `annotations`                           | Annotations to be added to the Oracle Database StatefulSet (evaluated as a template)                                                            | `{}`            |
+| `labels`                                | Additional labels to be added to the Oracle Database StatefulSet (evaluated as a template)                                                      | `{}`            |
+| `replicaCount`                          | Defines the number of Oracle Database nodes to be created after deployment (only when `architecture` == `replicated`)                           | `2`             |
+| `updateStrategy.type`                   | Update strategy for the Oracle Database Statefulset (applied to Deployment when `architecture` == `standalone` and `useStatefulSet` == `false`) | `RollingUpdate` |
+| `terminationGracePeriodSeconds`         | Oracle Database termination grace period                                                                                                        | `""`            |
+| `existingServiceAccount`                | Name of an existing service account to use (if blank, one will be created by default)                                                           | `""`            |
+| `podLabels`                             | Oracle Database pod labels                                                                                                                      | `{}`            |
+| `podAnnotations`                        | Oracle Database pod annotations                                                                                                                 | `{}`            |
+| `podSecurityContext.enabled`            | Enable the Oracle Database pod SecurityContext                                                                                                  | `true`          |
+| `podSecurityContext.fsGroup`            | Group ID for the volumes of the Oracle Database pod(s)                                                                                          | `54321`         |
+| `containerSecurityContext.enabled`      | Enable the Oracle Database container SecurityContext                                                                                            | `true`          |
+| `containerSecurityContext.runAsUser`    | User ID for container(s) in the Oracle Database pod(s)                                                                                          | `54321`         |
+| `containerSecurityContext.runAsNonRoot` | Prohibit the container from running under the root context (UID 0)                                                                              | `true`          |
+| `resources.limits`                      | The resources limits for Oracle Database containers                                                                                             | `{}`            |
+| `resources.requests`                    | The requested resources for Oracle Database containers                                                                                          | `{}`            |
+| `containerPorts.oracledb`               | Oracle Database container port                                                                                                                  | `1521`          |
+| `containerPorts.emexpress`              | EM Express container port                                                                                                                       | `5500`          |
+| `livenessProbe.enabled`                 | Enable the Oracle Database pod livenessProbe                                                                                                    | `true`          |
+| `livenessProbe.initialDelaySeconds`     | Initial delay before the probe is initiated                                                                                                     | `90`            |
+| `livenessProbe.periodSeconds`           | Period between probes                                                                                                                           | `10`            |
+| `livenessProbe.timeoutSeconds`          | Time after which the probe times out                                                                                                            | `5`             |
+| `livenessProbe.successThreshold`        | Number of successful probes before the container is considered available                                                                        | `1`             |
+| `livenessProbe.failureThreshold`        | Number of failed probes before the container is deemed unavailable                                                                              | `5`             |
+| `readinessProbe.enabled`                | Enable the Oracle Database pod readinessProbe                                                                                                   | `true`          |
+| `readinessProbe.initialDelaySeconds`    | Initial delay before the probe is initiated                                                                                                     | `40`            |
+| `readinessProbe.periodSeconds`          | Period between probes                                                                                                                           | `20`            |
+| `readinessProbe.timeoutSeconds`         | Time after which the probe times out                                                                                                            | `10`            |
+| `readinessProbe.successThreshold`       | Number of successful probes before the container is considered ready                                                                            | `1`             |
+| `readinessProbe.failureThreshold`       | Number of failed probes before the container is deemed unavailable                                                                              | `5`             |
+
+### Traffic exposure parameters
+
+| Name                           | Description                                                                                        | Value       |
+| ------------------------------ | -------------------------------------------------------------------------------------------------- | ----------- |
+| `service.type`                 | Defines the value for the Service object (ClusterIP/LoadBalancer/NodePort)                         | `ClusterIP` |
+| `service.ports.oracledb`       | Oracle Database service port                                                                       | `1521`      |
+| `service.ports.emexpress`      | EM Express service port                                                                            | `5500`      |
+| `service.nodePorts.oracledb`   | NodePort for the Oracle Database service                                                           | `""`        |
+| `service.nodePorts.emexpress`  | NodePort for the EM Express NodePort service                                                       | `""`        |
+| `service.annotations`          | Provide any additional service annotations which may be required                                   | `{}`        |
+| `service.headless.annotations` | Annotations for the headless service                                                               | `{}`        |
+| `ingress.enabled`              | Enables an Ingress (provides external access and load balancing)                                   | `false`     |
+| `ingress.annotations`          | Provide any additional annotations which may be required for the Ingress (evaluated as a template) | `nil`       |
+| `ingress.hosts`                | Defines the host(s) for this Ingress                                                               | `{}`        |
+| `ingress.tls`                  | Defines the TLS-enabled host(s) and options                                                        | `[]`        |
+
+### Persistence parameters
+
+| Name                                          | Description                                                                        | Value                 |
+| --------------------------------------------- | ---------------------------------------------------------------------------------- | --------------------- |
+| `persistence.enabled`                         | Enable Oracle data persistence using a PVC                                         | `true`                |
+| `persistence.existingClaim`                   | Name of an existing PVC to use (only when `architecture` == `standalone`)          | `""`                  |
+| `persistence.resourcePolicy`                  | Set to `keep` to avoid removing PVCs during a Helm delete operation                | `""`                  |
+| `persistence.mountPath`                       | The path the volume will be mounted at                                             | `/opt/oracle/oradata` |
+| `persistence.storageClass`                    | PVC Storage Class for Oracle data volume                                           | `""`                  |
+| `persistence.accessModes`                     | Persistent Volume Access Mode for the Oracle data volume                           | `["ReadWriteOnce"]`   |
+| `persistence.size`                            | PVC Storage Request for the Oracle data volume                                     | `8Gi`                 |
+| `persistence.annotations`                     | Additional annotations, as required                                                | `{}`                  |
+| `persistence.volumeClaimTemplates.selector`   | A label query over volumes to consider for binding (e.g. when using local volumes) | `[]`                  |
+| `persistence.volumeClaimTemplates.requests`   | Custom PVC requests attributes                                                     | `{}`                  |
+| `persistence.volumeClaimTemplates.dataSource` | Add a DataSource to the VolumeClaimTemplate                                        | `{}`                  |
 
 ## License
 

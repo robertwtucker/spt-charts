@@ -46,3 +46,31 @@ Create the name of the service account to use
 {{- .Values.existingServiceAccount }}
 {{- end }}
 {{- end -}}
+
+{{/*
+Return the proper registry Secret names
+*/}}
+{{- define "qar.imagePullSecrets" -}}
+{{- include "common.images.pullSecrets" (dict "images" (list .Values.image) "global" .Values.global) -}}
+{{- end -}}
+
+{{/*
+Return the proper Oracle Database image name
+*/}}
+{{- define "qar.ondemand.image" -}}
+{{- include "common.images.image" (dict "imageRoot" .Values.image "global" .Values.global) -}}
+{{- end -}}
+
+{{/*
+Return the proper Oracle Database image name
+*/}}
+{{- define "qar.restapi.image" -}}
+{{- include "common.images.image" (dict "imageRoot" .Values.restapi.image "global" .Values.global) -}}
+{{- end -}}
+
+{{/*
+Return the proper Oracle Database image name
+*/}}
+{{- define "qar.fts.image" -}}
+{{- include "common.images.image" (dict "imageRoot" .Values.fts.image "global" .Values.global) -}}
+{{- end -}}

@@ -36,23 +36,18 @@ spec:
         {{- include "common.tplvalues.render" ( dict "value" $.Values.arsload.podAnnotations "context" $ ) | nindent 8 }}
       {{- end }}
     spec:
+      {{ include "qar.imagePullSecrets" $ | nindent 6 }}
       serviceAccountName: {{ include "qar.serviceAccountName" $ }}
       {{- if $.Values.arsload.podSecurityContext.enabled }}
       securityContext: {{- omit $.Values.arsload.podSecurityContext "enabled" | toYaml | nindent 8 }}
-      {{- end }}
-      {{- if $.Values.global.imagePullSecrets }}
-      imagePullSecrets:
-      {{- range $.Values.global.imagePullSecrets }}
-      - name: {{ . }}
-      {{- end }}
       {{- end }}
       {{- if $.Values.arsload.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ $.Values.arsload.terminationGracePeriodSeconds }}
       {{- end }}
       initContainers:
       - name: stash-file-init
-        image: {{ $.Values.arsload.image.name }}:{{ $.Values.arsload.image.tag }}
-        imagePullPolicy: {{ $.Values.arsload.image.pullPolicy }}
+        image: {{ include "qar.ondemand.image" $ }}
+        imagePullPolicy: {{ $.Values.image.pullPolicy }}
         args: [/bin/sh, -c, "${QAR_HOME}/scripts/init-stash-file.sh"]
         env: {{- include "qar.env.user" $ | nindent 8 }}
         volumeMounts:
@@ -64,8 +59,8 @@ spec:
         args: ["pod", "-lapp.kubernetes.io/component=ondemand"]
       containers:
       - name: arsload-{{ .name }}
-        image: {{ $.Values.arsload.image.name }}:{{ $.Values.arsload.image.tag }}
-        imagePullPolicy: {{ $.Values.arsload.image.pullPolicy }}
+        image: {{ include "qar.ondemand.image" $ }}
+        imagePullPolicy: {{ $.Values.image.pullPolicy }}
         {{- if $.Values.arsload.containerSecurityContext.enabled }}
         securityContext: {{- omit $.Values.arsload.containerSecurityContext "enabled" | toYaml | nindent 10 }}
         {{- end }}

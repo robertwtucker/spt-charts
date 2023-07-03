@@ -64,7 +64,11 @@ Defines environment variables for the Oracle database service.
 {{- define "qar.env.database" -}}
 {{- if eq (upper .Values.db.engine) "ORACLE" }}
 - name: ORACLE_HOST
+{{- if eq .Values.oracledb.architecture "replicated" }}
+  value: {{ include "qar.fullname" . }}-oracledb-headless.{{ include "qar.namespace" . }}.svc.cluster.local
+{{- else }}
   value: {{ include "qar.fullname" . }}-oracledb.{{ include "qar.namespace" . }}.svc.cluster.local
+{{- end }}
 - name: ORACLE_PORT
   value: "1521"
 - name: ORACLE_SERVICE_NAME

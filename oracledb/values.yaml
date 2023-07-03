@@ -1,258 +1,342 @@
-# Oracle chart values
+# Oracle Database chart values
 
-# Global parameters
+## @section Global parameters
+##
 
+## @param global.imageRegistry Global container image registry
+## @param global.imagePullSecrets Global registry Secrets as an array
+## @param global.storageClass Global StorageClass for Persistent Volume(s)
+## @param global.namespaceOverride Override the namespace for resources deployed by the chart (can itself be overridden by the local namespaceOverride)
+##
 global:
-  # -- Global image registry
   imageRegistry: ""
-  # -- List of image repository pull secrets. Secrets must be manually created in the namespace.
   # ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
   # Example:
   # imagePullSecrets:
   #   - name: myRegistryKeySecretName
   imagePullSecrets: []
-  # -- StorageClass for all PersistentVolumes
   storageClass: ""
-  # -- Override the namespace for resources deployed by the chart (can itself be overridden by the local namespaceOverride).
   namespaceOverride: ""
 
-# Common parameters
+## @section Common parameters
+##
 
-# -- String to partially override the fullname template (will maintain the release name)
+## @param nameOverride String to partially override the fullname template (will maintain the release name)
+##
 nameOverride: ""
-# -- String to fully override the fullname template
+## @param fullnameOverride String to fully override the fullname template
+##
 fullnameOverride: ""
-# -- String to fully override the namespace
+## @param namespaceOverride String to fully override the namespace
+##
 namespaceOverride: ""
-# -- Add labels to all the deployed resources (sub-charts are not considered). Evaluated as a template.
+## @param commonLabels Add labels to all the deployed resources (evaluated as a template)
+##
 commonLabels: {}
-# Common annotations to add to all QAR resources (sub-charts are not considered). Evaluated as a template.
+## @param commonAnnotations Common annotations to add to all resources (evaluated as a template)
+##
 commonAnnotations: {}
 
-# Oracle Database parameters
+## @section Oracle Database parameters
+##
 
+## Oracle Database image
+## @param image.registry Oracle Database image container registry
+## @param image.repository Oracle Database image repository
+## @param image.tag Oracle Database image tag
+## @param image.digest Oracle Database image digest in the format `sha256:aa....` (overrides `image.tag`)
+## @param image.pullPolicy Oracle Database image pull policy
+## @param image.pullSecrets Specify container registry Secrets as an array
+##
 image:
-  # -- Oracle database image registry
   registry: "container-registry.oracle.com"
-  # -- Oracle database image repository
   repository: "database/express"
-  # -- Oracle database image tag (immutable tags are recommended)
   tag: "21.3.0-xe"
-  # -- OOracle database image image digest in the format `sha256:aa....``
-  # Please note this parameter, if set, will override the tag
   digest: ""
-  # -- Defines the Oracle database image pull policy. (IfNotPresent/Always).
   pullPolicy: IfNotPresent
-  # -- Oracle database image pull secrets
-  # Specify docker-registry secret names as an array
   pullSecrets: []
-# -- Defines the QAR server architecture (`standalone` or `replicated`).
+## @param architecture Oracle Database server architecture (`standalone` or `replicated`)
+##
 architecture: standalone
-# -- Set to `true` to use a StatefulSet instead of a Deployment (only applicable when `architecture=standalone`).
+## @param useStatefulSet Set to `true` to use a StatefulSet instead of a Deployment (only applicable when `architecture` == `standalone`)
+##
 useStatefulSet: false
-# -- The Oracle database SID that should be used (EE/SE default: ORCLCDB, XE preset: XE).
+## @param sid The Oracle Database SID that should be used (EE/SE default: `ORCLCDB`, XE preset: `XE`)
+##
 sid: ""
-# -- The Oracle database PDB name that should be used (EE/SE default: ORCLPDB1, XE preset: XEPDB1).
+## @param pdb The Oracle Database PDB name that should be used (EE/SE default: `ORCLPDB1`, XE preset: `XEPDB1`)
+##
 pdb: ""
-# -- The character set to use when creating the database (default: AL32UTF8)
+## @param characterSet The character set to use when creating the database (default: `AL32UTF8`)
+##
 characterSet: ""
-# -- The username is always SYS unless using an Autonomous Database (change to `ADMIN`)
+## @param username The username is always `SYS` unless using an Autonomous Database (change to `ADMIN`)
+##
 username: SYS
-# -- Defines (in plain text) the password of the SYS database user.
-# Use the 'passwordSource' variable instead to define the password using a Secret.
+## @param password Defines (in plain text) the password of the SYS database user
+## Use the 'passwordSource' value to define the password using a Secret.
+##
 password: ""
-# -- Use a Secret to define the password of the SYS database user.
+## @param passwordSource.useSecret Use a Secret to define the password of the SYS database user
+## @param passwordSource.secretName The name of the Secret containing the password
+## @param passwordSource.secretKey The key of the Secret containing the password
+##
 passwordSource:
   useSecret: false
   secretName: ""
   secretKey: ""
-
-# Start Oracle pod(s) without limitations on shm memory.
-# By default docker and containerd (and possibly other container runtimes) limit `/dev/shm` to `64M`
+## Start Oracle Database pod(s) without limitations on shared memory.
+## By default docker and containerd (and possibly other container runtimes) limit /dev/shm to 64M.
+##
 shmVolume:
-  # -- Enable emptyDir volume for /dev/shm for Oracle pod(s)
+  ## @param shmVolume.enabled Enable emptyDir volume for /dev/shm in Oracle Database pod(s)
+  ##
   enabled: false
-  # -- Set this to enable a size limit on the shm tmpfs.
-  # Note: the size of the tmpfs counts against container's memory limit
-  # e.g:
-  # sizeLimit: 1Gi
+  ## @param shmVolume.sizeLimit Set to enable a size limit on the shm tmpfs
+  ## Note: the size of the tmpfs counts against container's memory limit.
+  ## e.g:
+  ## sizeLimit: 1Gi
+  ##
   sizeLimit: ""
-
+## Configure setup scripts to initialize the Oracle Database server.
+##
 setupScripts:
-  # -- Name of an existing ConfigMap containing the script(s) to use for initial database
-  # setup. A non-empty value overrides any values in `setupScripts.content`.
+  ## @param setupScripts.existingConfigMap Name of an existing ConfigMap containing the script(s) to initialize the server (a non-empty value overrides `setupScripts.content`)
+  ##
   existingConfigMap: ""
-  # -- Script(s) content to use for initial setup.
+  ## @param setupScripts.content Script content to use for initial setup
+  ##
   content: ""
 
-# -- Annotations to be added to the Oracle database statefulset. Evaluated as a template.
+## @section Oracle Database StatefulSet parameters
+##
+
+## @param annotations Annotations to be added to the Oracle Database StatefulSet (evaluated as a template)
+##
 annotations: {}
-# -- Additional labels to be added to the Oracle database statefulset. Evaluated as a template.
+## @param labels Additional labels to be added to the Oracle Database StatefulSet (evaluated as a template)
+##
 labels: {}
-# -- Defines the number of Oracle database nodes to be created after deployment (only when `architecture=replicated`).
+## @param replicaCount Defines the number of Oracle Database nodes to be created after deployment (only when `architecture` == `replicated`)
+## Ignored when `architecture'='standalone`.
+##
 replicaCount: 2
-# -- Update strategy for the OracleDB statefulset/deployment
+## @param updateStrategy.type Update strategy for the Oracle Database Statefulset (applied to Deployment when `architecture` == `standalone` and `useStatefulSet` == `false`)
+## ref: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies
+## ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
+## Example:
+## updateStrategy:
+##  type: RollingUpdate
+##  rollingUpdate:
+##    maxSurge: 25%
+##    maxUnavailable: 25%
+##
 updateStrategy:
   type: RollingUpdate
-# -- OracleDB Termination Grace Period
+## @param terminationGracePeriodSeconds Oracle Database termination grace period
+##
 terminationGracePeriodSeconds: ""
-# -- Enter the name of an existing service account to use. Otherwise, one will be created by default.
+## @param existingServiceAccount Name of an existing service account to use (if blank, one will be created by default)
+##
 existingServiceAccount: ""
-
-# -- OracleDB pod annotations
-# ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+## @param podLabels Oracle Database pod labels
+## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+##
+podLabels: {}
+## @param podAnnotations Oracle Database pod annotations
+## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+##
 podAnnotations: {}
-
-# ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+## Oracle Database Pod SecurityContext
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+## @param podSecurityContext.enabled Enable the Oracle Database pod SecurityContext
+## @param podSecurityContext.fsGroup Group ID for the volumes of the Oracle Database pod(s)
+##
 podSecurityContext:
-  # -- Enable the Oracle database pod security context.
   enabled: true
-  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
-  runAsUser: 54321
-  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#volumes-and-file-systems.
   fsGroup: 54321
-  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
-  runAsNonRoot: true
-
+## Oracle Database container SecurityContext
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+## @param containerSecurityContext.enabled Enable the Oracle Database container SecurityContext
+## @param containerSecurityContext.runAsUser User ID for container(s) in the Oracle Database pod(s)
+## @param containerSecurityContext.runAsNonRoot Prohibit the container from running under the root context (UID 0)
+##
 containerSecurityContext:
-  # -- Enable the Oracle database container security context.
   enabled: true
-  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#volumes-and-file-systems.
-  readOnlyRootFilesystem: false
-  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privileged.
-  privileged: false
-  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privilege-escalation.
-  allowPrivilegeEscalation: false
-  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
   runAsUser: 54321
-  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
-  runAsGroup: 54321
-  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#capabilities.
-  # -- The default (recommended) configuration prohibits all Linux capabilities.
-  capabilities:
-    drop:
-      - all
-
-# Container ports
+  runAsNonRoot: true
+## It is usually recommend not to specify default resources and to leave this as a conscious
+## choice for the user. This also increases chances charts run on environments with little
+## resources, such as Minikube. If you do want to specify resources, uncomment the following
+## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+## @param resources.limits The resources limits for Oracle Database containers
+## @param resources.requests The requested resources for Oracle Database containers
+##
+resources:
+  ## Example:
+  ## limits:
+  ##   cpu: 100m
+  ##   memory: 128Mi
+  limits: {}
+  ## Example:
+  ## requests:
+  ##   cpu: 100m
+  ##   memory: 128Mi
+  requests: {}
+## Container ports
+## @param containerPorts.oracledb Oracle Database container port
+## @param containerPorts.emexpress EM Express container port
+##
 containerPorts:
-  # -- Oracle database container port
   oracledb: 1521
   emexpress: 5500
-
-# Learn about liveness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
-# Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
+## Oracle Database pod livenessProbe configuration (evaluated as a template)
+## ref https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
+## @param livenessProbe.enabled Enable the Oracle Database pod livenessProbe
+## @param livenessProbe.initialDelaySeconds Initial delay before the probe is initiated
+## @param livenessProbe.periodSeconds Period between probes
+## @param livenessProbe.timeoutSeconds Time after which the probe times out
+## @param livenessProbe.successThreshold Number of successful probes before the container is considered available
+## @param livenessProbe.failureThreshold Number of failed probes before the container is deemed unavailable
+##
 livenessProbe:
-  # -- Enable the OracleDB liveness probe.
   enabled: true
-  # -- Defines the delay before the Oracle database container liveness probe is initiated.
   initialDelaySeconds: 90
-  # -- Defines how often to perform the Oracle database container probe.
   periodSeconds: 10
-  # -- Defines when the Oracle database container probe times out.
   timeoutSeconds: 5
-  # -- Defines the minimum consecutive failures for the Oracle database container probe to be considered failed after having succeeded.
   failureThreshold: 5
-  # -- Defines the minimum consecutive successes for the Oracle database container probe to be considered successful after having failed.
   successThreshold: 1
-
-# Learn about readiness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
-# Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
+## Oracle Database pod readinessProbe configuration (evaluated as a template)
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+## @param readinessProbe.enabled Enable the Oracle Database pod readinessProbe
+## @param readinessProbe.initialDelaySeconds Initial delay before the probe is initiated
+## @param readinessProbe.periodSeconds Period between probes
+## @param readinessProbe.timeoutSeconds Time after which the probe times out
+## @param readinessProbe.successThreshold Number of successful probes before the container is considered ready
+## @param readinessProbe.failureThreshold Number of failed probes before the container is deemed unavailable
+##
 readinessProbe:
-  # -- Enable the OracleDB readiness probe.
   enabled: true
-  # -- Defines the delay before the Oracle database container readiness probe is initiated.
   initialDelaySeconds: 40
-  # -- Defines how often to perform the Oracle database container probe.
   periodSeconds: 20
-  # -- Defines when the Oracle database container probe times out.
   timeoutSeconds: 10
-  # -- Defines the minimum consecutive failures for the Oracle database container probe to be considered failed after having succeeded.
   failureThreshold: 5
-  # -- Defines the minimum consecutive successes for the Oracle database container probe to be considered successful after having failed
   successThreshold: 1
-# We usually recommend not to specify default resources and to leave this as a conscious
-# choice for the user. This also increases chances charts run on environments with little
-# resources, such as Minikube. If you do want to specify resources, uncomment the following
-# lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-resources:
-  # Example:
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  limits: {}
-  # Example:
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
-  requests: {}
 
+## @section Traffic exposure parameters
+##
+
+## Service configuration
+##
 service:
-  # -- Provide any additional annotations which may be required.
-  annotations: {}
-  # -- Defines the value for the Kubernetes service object [ClusterIP|LoadBalancer].
+  ## @param service.type Defines the value for the Service object (ClusterIP/LoadBalancer/NodePort)
+  ##
   type: ClusterIP
-  # Ports to expose on the service.
+  ## Ports to expose on the Service
+  ##
   ports:
-    # -- Oracle database service port
+    ## @param service.ports.oracledb Oracle Database service port
+    ##
     oracledb: 1521
-    # -- EM Express service port
+    ## @param service.ports.emexpress EM Express service port
+    ##
     emexpress: 5500
-  # Node ports to expose
-  # NOTE: choose port between <30000-32767>
-  # ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
+  ## NodePorts to expose
+  ## NOTE: choose port between <30000-32767>
+  ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
+  ##
   nodePorts:
-    # -- Node port for the Oracle database
+    ## @param service.nodePorts.oracledb NodePort for the Oracle Database service
+    ##
     oracledb: ""
-    # -- Node port for EM Express
+    ## @param service.nodePorts.emexpress NodePort for the EM Express NodePort service
+    ##
     emexpress: ""
+  ## @param service.annotations Provide any additional service annotations which may be required
+  ##
+  annotations: {}
   headless:
-    # -- Headless service annotations
+    ## @param service.headless.annotations Annotations for the headless service
+    ##
     annotations: {}
-
+## Ingress (external access) configuration
+##
 ingress:
-  # -- Enables Ingress, a Kubernetes API object that provides external access and load balancing.
+  ## @param ingress.enabled Enables an Ingress (provides external access and load balancing)
   enabled: false
-  # -- Provide any additional annotations which may be required.
+  ## @param ingress.annotations Provide any additional annotations which may be required for the Ingress (evaluated as a template)
+  ## Example:
+  ## annotations:
+  ## - kubernetes.io/ingress.class: nginx
+  ## - kubernetes.io/tls-acme: "true"
+  ##
   annotations:
-    {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
-  # -- Defines the host(s) for this Ingress.
-  hosts:
-    - host: ""
-  # -- Defines the TLS-enabled host(s) and options.
+  ## @param ingress.hosts Defines the host(s) for this Ingress
+  ## Example:
+  ## hosts:
+  ## - host: oracledb.example.com
+  ##
+  hosts: {}
+  ## @param ingress.tls Defines the TLS-enabled host(s) and options
+  ## Example:
+  ## tls:
+  ## - secretName: chart-example-tls
+  ## - hosts:
+  ##   - chart-example.local
+  ##
   tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
 
+## @section Persistence parameters
+##
+
+## Enable persistence using Persistent Volume Claims
+## ref: https://kubernetes.io/docs/user-guide/persistent-volumes/
+##
 persistence:
-  # -- Enable Oracle data persistence using a PVC.
+  ## @param persistence.enabled Enable Oracle data persistence using a PVC
+  ##
   enabled: true
-  # -- Name of an existing PVC to use.
+  ## @param persistence.existingClaim Name of an existing PVC to use (only when `architecture` == `standalone`)
+  ## Requires 'persistence.enabled: true'
+  ## If defined, PVC must be created manually before volume will be bound.
+  ## Ignored when 'oracledb.architecture' == 'replicated'
+  ##
   existingClaim: ""
-  # -- Set to `keep` to avoid removing PVCs during a helm delete operation.
+  ## @param persistence.resourcePolicy Set to `keep` to avoid removing PVCs during a Helm delete operation
+  ##
   resourcePolicy: ""
-  # -- The path the volume will be mounted at.
+  ## @param persistence.mountPath The path the volume will be mounted at
   mountPath: /opt/oracle/oradata
-  # -- If defined, storageClassName: <storageClass>
-  # If set to "-", storageClassName: "", which disables dynamic provisioning.
-  # If undefined (the default) or set to null, no storageClassName spec is
-  # set, choosing the default provisioner. (gp2 on AWS, standard on GKE, AWS & OpenStack)
+  ## @param persistence.storageClass PVC Storage Class for Oracle data volume
+  ## If defined, storageClassName: <storageClass>
+  ## If set to "-", storageClassName: "", which disables dynamic provisioning.
+  ## If undefined (the default) or set to null, no storageClassName spec is
+  ## set, choosing the default provisioner (gp2 on AWS, standard on GKE, AWS & OpenStack)
+  ##
   storageClass: ""
-  # -- PVC Access Mode for the Oracle data volume.
+  ## @param persistence.accessModes Persistent Volume Access Mode for the Oracle data volume
+  ##
   accessModes:
     - ReadWriteOnce
-  # -- PVC Storage Request for the Oracle data volume.
+  ## @param persistence.size PVC Storage Request for the Oracle data volume
+  ##
   size: 8Gi
-  # -- Additional annotations, as required.
+  ## @param persistence.annotations Additional annotations, as required
+  ##
   annotations: {}
+  ## Extra tuning for VolumeClaimTemplates
+  ##
   volumeClaimTemplates:
-    # -- A label query over volumes to consider for binding (e.g. when using local volumes)
-    # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#labelselector-v1-meta
+    ## @param persistence.volumeClaimTemplates.selector A label query over volumes to consider for binding (e.g. when using local volumes)
+    ## A label query over volumes to consider for binding (e.g. when using local volumes)
+    ## ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#labelselector-v1-meta
+    ##
     selector: []
-    # -- Custom PVC request attributes
-    # ref https://cloud.ibm.com/docs/containers?topic=containers-file_storage#file_dynamic_statefulse
+    ## @param persistence.volumeClaimTemplates.requests Custom PVC requests attributes
+    ## Sometime cloud providers use additional requests attributes to provision custom storage instance
+    ## ref: https://cloud.ibm.com/docs/containers?topic=containers-file_storage#file_dynamic_statefulset
+    ##
     requests: {}
-    # -- Add a dataSource to the VolumeClaimTemplate
+    ## @param persistence.volumeClaimTemplates.dataSource Add a DataSource to the VolumeClaimTemplate
+    ##
     dataSource: {}

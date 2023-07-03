@@ -35,15 +35,10 @@ spec:
         {{- include "common.tplvalues.render" ( dict "value" $.Values.restapi.podAnnotations "context" $ ) | nindent 8 }}
       {{- end }}
     spec:
+      {{ include "qar.imagePullSecrets" . | nindent 6 }}
       serviceAccountName: {{ include "qar.serviceAccountName" . }}
       {{- if .Values.restapi.podSecurityContext }}
       securityContext: {{- omit .Values.restapi.podSecurityContext "enabled" | toYaml | nindent 8 }}
-      {{- end }}
-      {{- if .Values.global.imagePullSecrets }}
-      imagePullSecrets:
-      {{- range .Values.global.imagePullSecrets }}
-      - name: {{ . }}
-      {{- end }}
       {{- end }}
       {{- if .Values.restapi.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.restapi.terminationGracePeriodSeconds }}
@@ -53,7 +48,7 @@ spec:
       {{- end }}
       initContainers:
       - name: ondemand-restapi-init
-        image: {{ .Values.restapi.image.name }}:{{ .Values.restapi.image.tag }}
+        image: {{ include "qar.restapi.image" . }}
         imagePullPolicy: {{ .Values.restapi.image.pullPolicy }}
         {{- if .Values.restapi.generateConfigSecurityContext.enabled }}
         securityContext: {{- omit .Values.restapi.generateConfigSecurityContext "enabled" | toYaml | nindent 10 }}
@@ -109,7 +104,7 @@ spec:
         args: ["pod", "-lapp.kubernetes.io/component=ondemand"]
       containers:
       - name: {{ include "qar.fullname" . }}-restapi
-        image: {{ .Values.restapi.image.name }}:{{ .Values.restapi.image.tag }}
+        image: {{ include "qar.restapi.image" . }}
         imagePullPolicy: {{ .Values.restapi.image.pullPolicy }}
         {{- if .Values.restapi.containerSecurityContext.enabled }}
         securityContext: {{- omit .Values.restapi.containerSecurityContext "enabled" | toYaml | nindent 10 }}

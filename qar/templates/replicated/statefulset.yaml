@@ -36,6 +36,7 @@ spec:
         {{- include "common.tplvalues.render" ( dict "value" .Values.podAnnotations "context" $ ) | nindent 8 }}
       {{- end }}
     spec:
+      {{ include "qar.imagePullSecrets" . | nindent 6 }}
       serviceAccountName: {{ include "qar.serviceAccountName" . }}
       {{- if .Values.podSecurityContext }}
       securityContext: {{- omit .Values.podSecurityContext "enabled" | toYaml | nindent 8 }}
@@ -51,7 +52,7 @@ spec:
       {{- end }}
       initContainers:
       - name: stash-file-init
-        image: {{ .Values.image.name }}:{{ .Values.image.tag }}
+        image: {{ include "qar.ondemand.image" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         args: [/bin/sh", -c, "${QAR_HOME}/scripts/init-stash-file.sh"]
         env: {{- include "qar.env.user" . | nindent 8 }}
@@ -60,7 +61,7 @@ spec:
           mountPath: /opt/qar/tmp
       {{- if .Values.fts.enabled }}
       - name: ondemand-fts-init
-        image: {{ .Values.fts.image.name }}:{{ .Values.fts.image.tag }}
+        image: {{ .include "qar.fts.image" . }}
         imagePullPolicy: {{ .Values.fts.image.pullPolicy }}
         args: [init]
         env:
@@ -76,7 +77,7 @@ spec:
         args: [pod, -lrole=oracledb]
       containers:
       - name: ondemand
-        image: {{ .Values.image.name }}:{{ .Values.image.tag }}
+        image: {{ include "qar.ondemand.image" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         {{- if $.Values.containerSecurityContext.enabled }}
         securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}

@@ -35,15 +35,10 @@ spec:
         {{- include "common.tplvalues.render" ( dict "value" $.Values.fts.podAnnotations "context" $ ) | nindent 8 }}
       {{- end }}
     spec:
+      {{ include "qar.imagePullSecrets" . | nindent 6 }}
       serviceAccountName: {{ include "qar.serviceAccountName" . }}
       {{- if .Values.fts.podSecurityContext }}
       securityContext: {{- omit .Values.fts.podSecurityContext "enabled" | toYaml | nindent 8 }}
-      {{- end }}
-      {{- if .Values.global.imagePullSecrets }}
-      imagePullSecrets:
-      {{- range .Values.global.imagePullSecrets }}
-      - name: {{ . }}
-      {{- end }}
       {{- end }}
       {{- if .Values.fts.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.fts.terminationGracePeriodSeconds }}
@@ -55,7 +50,7 @@ spec:
         args: [pod, -lapp.kubernetes.io/component=ondemand]
       containers:
       - name: ondemand-fts
-        image: {{ .Values.fts.image.name }}:{{ .Values.fts.image.tag }}
+        image: {{ include "qar.fts.image" . }}
         imagePullPolicy: {{ .Values.fts.image.pullPolicy }}
         {{- if .Values.fts.containerSecurityContext.enabled }}
         securityContext: {{- omit .Values.fts.containerSecurityContext "enabled" | toYaml | nindent 10 }}

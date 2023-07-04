@@ -1,763 +1,1013 @@
-# Global values for QAR
+# QAR chart values
 
+## @section Global parameters
+##
+
+## @param global.imageRegistry Global container image registry
+## @param global.imagePullSecrets Global registry Secrets as an array
+## @param global.storageClass Global StorageClass for Persistent Volume(s)
+## @param global.namespaceOverride Override the namespace for resources deployed by the chart (can itself be overridden by the local namespaceOverride)
+##
 global:
-  # -- Global image registry
   imageRegistry: ""
-  # -- List of image repository pull secrets. Secrets must be manually created in the namespace.
-  # ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
-  # Example:
-  # imagePullSecrets:
-  #   - name: myRegistryKeySecretName
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  ## Example:
+  ## global:
+  ##   imagePullSecrets:
+  ##     - name: myRegistryKeySecretName
+  ##
   imagePullSecrets: []
-  # -- Override the namespace for resources deployed by the chart (can itself be overridden by the local namespaceOverride).
   namespaceOverride: ""
-  # -- StorageClass for all PersistentVolumes
   storageClass: ""
-# Common parameters
 
-# -- String to partially override the qar.fullname template (will maintain the release name)
+## @section Common parameters
+##
+
+## @param nameOverride String to partially override the fullname template (will maintain the release name)
+##
 nameOverride: ""
-# -- String to fully override the qar.fullname template
+## @param fullnameOverride String to fully override the fullname template
+##
 fullnameOverride: ""
-# -- String to fully override the qar.namespace
+## @param namespaceOverride String to fully override the namespace
+##
 namespaceOverride: ""
-# -- Add labels to all the deployed resources (sub-charts are not considered). Evaluated as a template.
+## @param commonLabels Add labels to all the deployed resources (evaluated as a template)
+##
 commonLabels: {}
-# Common annotations to add to all QAR resources (sub-charts are not considered). Evaluated as a template.
+## @param commonAnnotations Common annotations to add to all resources (evaluated as a template)
+##
 commonAnnotations: {}
 
-# ondemand deployment configuration
+## @section OnDemand parameters
+##
+
+## OnDemand image
+## @param image.registry OnDemand image container registry
+## @param image.repository OnDemand image repository
+## @param image.tag OnDemand image tag
+## @param image.digest OnDemand image digest in the format `sha256:aa....` (overrides `image.tag`)
+## @param image.pullPolicy OnDemand image pull policy
+## @param image.pullSecrets Specify container registry Secrets as an array
+##
 image:
-  # -- OnDemand image registry
   registry: ""
-  # -- OnDemand image repository
   repository: "qar/ondemand"
-  # -- OnDemand image tab (immutable tag is recommended)
   tag: 10.5.0.5-oracle-ubi-8.8-854
-  # -- OnDemand image digest in the format `sha256:aa....` (overrides `image.tag`)
   digest: ""
-  # -- OnDemand image pull policy
   pullPolicy: IfNotPresent
-  # -- Specify container registry Secrets as an array
   pullSecrets: []
-# -- Defines the QAR server architecture (`standalone` or `replicated`).
+
+## @param architecture OnDemand server architecture (`standalone` or `replicated`)
+##
 architecture: standalone
-# -- Set to `true` to use a StatefulSet instead of a Deployment (only applicable when `architecture=standalone`).
+## @param useStatefulSet Set to `true` to use a StatefulSet instead of a Deployment (only applicable when `architecture` == `standalone`)
+##
 useStatefulSet: true
-# -- Used in the header line of the `ars.ini` file to identify the name of the CMOD instance.
+## @param odInstanceName Name used in the header line of the `ars.ini` file to identify the OnDemand instance
+##
 odInstanceName: ARCHIVE
-# -- Identifies the name of the CMOD database (will be lower-cased for database creation).
-# If not provided, the name `archive` will be used.
+## @param serverInstanceName Name of the OnDemand database (lower-cased prior to database creation)
+## If not provided, the name 'archive' will be used.
+##
 serverInstanceName: ARCHIVE
-# -- Determines whether the server program is linked to a cache-only storage manager or an
-# archive storage manager. Required on library servers. [TSM|NO_TSM|CACHE_ONLY]
+## @param storageManager Determines whether the server is linked to a cache-only or archive storage manager
+## Required on library servers. [TSM|NO_TSM|CACHE_ONLY]
+##
 storageManager: NO_TSM
+## @param trace.enabled Enables the OnDemand system trace facility
+##
 trace:
-  # -- Enables the OnDemand system trace facility
   enabled: false
+## OnDemand admin user credentials
+##
 auth:
-  # -- Defines (in plain text) the name of the CMOD admin user. If left undefined, the default user
-  # `admin` is created. Use the `auth.usernameSource` variable to define the username using an existing Secret.
+  ## @param auth.username Defines (in plain text) the name of the OnDemand admin user
+  ## If left undefined, the default user 'admin' is created. Use the 'auth.usernameSource'
+  ## variable to define the username using an existing Secret.
+  ##
   username: ""
-  # -- Uses a Secret to define the CMOD administrative user.
+  ## @param auth.usernameSource.useSecret Use a Secret to define the OnDemand admin user
+  ## @param auth.usernameSource.secretName The name of the Secret containing the user name
+  ## @param auth.usernameSource.secretKey The key of the Secret containing the user name
+  ##
   usernameSource:
     useSecret: false
     secretName: ""
     secretKey: ""
-  # -- Defines (in plain text) the password of the CMOD admin user. If left undefined, the deployment
-  # will generate a random alphanumeric password. Use the `auth.passwordSource` variable to
-  # define the password using an existing Secret.
+  ## @param auth.password Defines (in plain text) the password of the OnDemand admin user
+  ## If left undefined, the deployment will generate a random alphanumeric password.
+  ## Use the 'auth.passwordSource' variable to define the password using a Secret.
+  ##
   password: ""
-  # -- Uses a Secret to define the CMOD administrative user's password.
+  ## @param auth.passwordSource.useSecret Use a Secret to define the OnDemand admin user's password
+  ## @param auth.passwordSource.secretName The name of the Secret containing the password
+  ## @param auth.passwordSource.secretKey The key of the Secret containing the password
+  ##
   passwordSource:
     useSecret: false
     secretName: ""
     secretKey: ""
+## Database configuration
+##
 db:
-  # -- Specifies the DBMS used by the Library Server [DB2|ORACLE].
+  ## @param db.engine Specifies the DBMS used by the Library Server
+  ##
   engine: ORACLE
-  # -- Defines the Oracle TNS service name for the CMOD database. If left undefined, the
-  # lower-cased `serverInstanceName` value is used.
-  tnsServiceName: ""
-  # -- Determines the number of processes that CMOD starts on the library server to
-  # handle connections to the database. Specify a value that supports the peak number
-  # of concurrent database connections library server needs to handle.
+  ## @param db.tnsServiceName Defines the Oracle TNS service name for the OnDemand database
+  ## If left undefined, the lower-cased 'serverInstanceName' value is used.
+  ##
+  tnsServiceName: "archive"
+  ## @param db.numSubServers Determines the number of processes that OnDemand starts on the library server to handle connections to the database
+  ## Specify a value that supports the peak number of concurrent database
+  ## connections library server needs to handle.
+  ##
   numSubServers: 10
+  ## Oracle DB admin user credentials
+  ##
   auth:
-    # -- Defines (in plain text) the name of the administrative user to be created in the Oracle
-    # database(s). If left undefined, the default user `archive` is created. Use the `auth.usernameSource`
-    # variable to define the username using a Secret.
+    ## @param db.auth.username Defines (in plain text) the name of the admin user to be created in the database(s)
+    ## If left undefined, the default user 'archive' is created. Use the 'auth.usernameSource'
+    ## variable to define the username using a Secret.
+    ##
     username: ""
-    # -- Uses a Secret to define the administrative user to be created in the Oracle database(s).
+    ## @param db.auth.usernameSource.useSecret Use a Secret to define the database admin user
+    ## @param db.auth.usernameSource.secretName The name of the Secret containing the user name
+    ## @param db.auth.usernameSource.secretKey The key of the Secret containing the user name
+    ##
     usernameSource:
       useSecret: false
       secretName: ""
       secretKey: ""
-    # -- Defines (in plain text) the password of the administrative user to be created in the
-    # Oracle database(s). If left undefined, the deployment will generate a random alphanumeric
-    # password. Use the `auth.passwordSource` variable to define the password using an existing Secret.
+    ## @param db.auth.password Defines (in plain text) the database admin user's password
+    ## If left undefined, the deployment will generate a random alphanumeric password.
+    ## Use the 'auth.passwordSource' variable to define the password using a Secret.
+    ##
     password: ""
-    # -- Uses a Secret to define the password of the administrative user to be created in the
-    # Oracle database(s).
+    ## @param db.auth.passwordSource.useSecret Use a Secret to define the database admin user's password
+    ## @param db.auth.passwordSource.secretName The name of the Secret containing the password
+    ## @param db.auth.passwordSource.secretKey The key of the Secret containing the password
+    ##
     passwordSource:
       useSecret: false
       secretName: ""
       secretKey: ""
-# Zookeeper configuration
+## Zookeeper configuration
+##
 zookeeper:
-  # -- Use Zookeeper to manage locking between multiple active CMOD server
-  # server instances. This should be set to `true` when `replicaCount` > 1.
+  ## @param zookeeper.enabled Use Zookeeper to manage locking between multiple active OnDemand server instances
+  ## This should be set to `true` when `replicaCount` > 1.
+  ##
   enabled: false
-  # -- List of Zookeeper servers to use.
-  # Example:
-  # servers:
-  # - zoo1.example.com:2181
-  # - zoo2.example.com:2181
+  ## @param zookeeper.servers List of Zookeeper servers to use
+  ## Example:
+  ## servers:
+  ##   - zoo1.example.com:2181
+  ##   - zoo2.example.com:2181
+  ##
   servers: []
+  ## Zookeeper user credentials
+  ##
   auth:
-    # -- Defines (in plain text) the name of the Zookeeper user.
-    # If left undefined, the default user `admin` is used. Use the `auth.usernameSource` variable
-    # to define the username using a Secret.
+    ## @param zookeeper.auth.username Defines (in plain text) the name of the Zookeeper user
+    ## If left undefined, the default user 'admin' is used. Use the 'auth.usernameSource'
+    ## variable to define the username using a Secret.
     username: ""
-    # -- Uses a Secret to define the Zookeeper user.
+    ## @param zookeeper.auth.usernameSource.useSecret Use a Secret to define the Zookeeper user
+    ## @param zookeeper.auth.usernameSource.secretName The name of the Secret containing the user name
+    ## @param zookeeper.auth.usernameSource.secretKey The key of the Secret containing the user name
+    ##
     usernameSource:
       useSecret: false
       secretName: ""
       secretKey: ""
-    # -- Defines (in plain text) the Zookeeper user's password.
-    # If left undefined, the deployment will generate a random alphanumeric password. Use the
-    # `auth.passwordSource` variable to define the password using a Secret.
+    ## @param zookeeper.auth.password Defines (in plain text) the Zookeeper user's password
+    ## If left undefined, the deployment will generate a random alphanumeric password. Use the
+    ## 'auth.passwordSource' variable to define the password using a Secret.
     password: ""
-    # -- Uses a Secret to define the Zookeeper user's password.
+    ## @param zookeeper.auth.passwordSource.useSecret Use a Secret to define the Zookeeper user's password
+    ## @param zookeeper.auth.passwordSource.secretName The name of the Secret containing the password
+    ## @param zookeeper.auth.passwordSource.secretKey The key of the Secret containing the password
+    ##
     passwordSource:
       useSecret: false
       secretName: ""
       secretKey: ""
-
-# -- Defines whether to create a batch job to perform initial setup processing (experimental).
+## @param performInitialSetup Create a batch job to perform initial setup processing (experimental)
+##
 performInitialSetup: false
 
-# OnDemand statefulset parameters
+## OnDemand statefulset parameters
+##
 
-# -- Annotations to be added to the OnDemand statefulset. Evaluated as a template.
+## @param annotations Annotations to be added to the OnDemand statefulset (evaluated as a template)
+##
 annotations: {}
-# -- Additional labels to be added to the OnDemand statefulset. Evaluated as a template.
+## @param labels Additional labels to be added to the OnDemand statefulset (evaluated as a template)
+##
 labels: {}
-# -- Defines the number of OnDemand nodes to be created after deployment.
-replicaCount: 1
-# -- Update strategy for the OnDemand statefulset
+## @param replicaCount Defines the number of OnDemand nodes to be created (only when `architecture` == `replicated`)
+## Ignored when 'architecture'='standalone`.
+##
+replicaCount: 2
+## @param updateStrategy.type Update strategy for the OnDemand Statefulset (applied to Deployment when `architecture` == `standalone` and `useStatefulSet` == `false`)
+## ref: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies
+## ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
+## Example:
+## updateStrategy:
+##  type: RollingUpdate
+##  rollingUpdate:
+##    maxSurge: 25%
+##    maxUnavailable: 25%
+##
 updateStrategy:
   type: RollingUpdate
-# -- OnDemand Termination Grace Period
+## @param terminationGracePeriodSeconds OnDemand termination grace period
+##
 terminationGracePeriodSeconds: ""
-# -- Enter the name of an existing service account to use. Otherwise, one will be created by default.
+## @param existingServiceAccount Name of an existing service account to use (if blank, one will be created by default)
+##
 existingServiceAccount: ""
-# -- OnDemand pod labels
-# ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+## @param podLabels OnDemand pod labels
+## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+##
 podLabels: {}
-# -- OnDemand pod annotations
-# ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+## @param podAnnotations OnDemand pod annotations
+## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+##
 podAnnotations: {}
-# ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+## OnDemand pod SecurityContext
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+## @param podSecurityContext.enabled Enable the OnDemand pod SecurityContext
+## @param podSecurityContext.fsGroup Group ID for the volumes of the OnDemand pod(s)
+##
 podSecurityContext:
-  # -- Enable the OracleDB container security context.
   enabled: true
-  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
-  runAsUser: 1001
-  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#volumes-and-file-systems.
   fsGroup: 1001
-  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
-  #  runAsNonRoot: true
-# ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+## OnDemand container SecurityContext
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+## @param containerSecurityContext.enabled Enable the OnDemand container SecurityContext
+## @param containerSecurityContext.runAsUser User ID for container(s) in the OnDemand pod(s)
 containerSecurityContext:
   # -- Enable the OnDemand container security context.
   enabled: true
-  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privileged.
-  privileged: false
-  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privilege-escalation.
-  allowPrivilegeEscalation: false
   # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
   runAsUser: 1001
-  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#capabilities.
-  runAsGroup: 1001
-  # -- The default (recommended) configuration prohibits all Linux capabilities.
-  capabilities:
-    drop:
-      - all
-# Container ports
-containerPorts:
-  # -- OnDemand container port
-  ondemand: 1445
-# Learn about liveness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
-# Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
-livenessProbe:
-  # -- Enable the OnDemand liveness probe.
-  enabled: true
-  # -- Initial delay before probing liveness
-  initialDelaySeconds: 2
-  # -- Period in seconds between liveness checks
-  periodSeconds: 30
-  # -- Timeout in seconds for liveness checks
-  timeoutSeconds: 1
-  # -- Number of consecutive negative tests before declaring failure
-  failureThreshold: 3
-  # -- Number of consecutive positive tests before counting it as a success
-  successThreshold: 1
-# Learn about readiness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
-# Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
-readinessProbe:
-  # -- Enable the OnDemand readiness probe.
-  enabled: true
-  # -- Initial delay before probing readiness
-  initialDelaySeconds: 2
-  # -- Period in seconds between readiness checks
-  periodSeconds: 30
-  # -- Timeout in seconds for readiness checks
-  timeoutSeconds: 1
-  # -- Number of consecutive negative tests before declaring failure
-  failureThreshold: 3
-  # -- Number of consecutive positive tests before counting it as a success
-  successThreshold: 1
-# We usually recommend not to specify default resources and to leave this as a conscious
-# choice for the user. This also increases chances charts run on environments with little
-# resources, such as Minikube. If you do want to specify resources, uncomment the following
-# lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+## It is usually recommend not to specify default resources and to leave this as a conscious
+## choice for the user. This also increases chances charts run on environments with little
+## resources, such as Minikube. If you do want to specify resources, uncomment the following
+## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+## @param resources.limits The resources limits for OnDemand containers
+## @param resources.requests The requested resources for OnDemand containers
+##
 resources:
-  # Example:
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
+  ## Example:
+  ## limits:
+  ##   cpu: 100m
+  ##   memory: 128Mi
+  ##
   limits: {}
-  # Example:
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+  ## Example:
+  ## requests:
+  ##   cpu: 100m
+  ##   memory: 128Mi
+  ##
   requests: {}
+## Container ports
+## @param containerPorts.ondemand OnDemand container port
+##
+containerPorts:
+  ondemand: 1445
+## OnDemand pod livenessProbe configuration (evaluated as a template)
+## ref https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
+## @param livenessProbe.enabled Enable the OnDemand pod livenessProbe
+## @param livenessProbe.initialDelaySeconds Initial delay before the probe is initiated
+## @param livenessProbe.periodSeconds Period between probes
+## @param livenessProbe.timeoutSeconds Time after which the probe times out
+## @param livenessProbe.successThreshold Number of successful probes before the container is considered available
+## @param livenessProbe.failureThreshold Number of failed probes before the container is deemed unavailable
+##
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 2
+  periodSeconds: 30
+  timeoutSeconds: 1
+  failureThreshold: 3
+  successThreshold: 1
+## OnDemand pod readinessProbe configuration (evaluated as a template)
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+## @param readinessProbe.enabled Enable the OnDemand pod readinessProbe
+## @param readinessProbe.initialDelaySeconds Initial delay before the probe is initiated
+## @param readinessProbe.periodSeconds Period between probes
+## @param readinessProbe.timeoutSeconds Time after which the probe times out
+## @param readinessProbe.successThreshold Number of successful probes before the container is considered ready
+## @param readinessProbe.failureThreshold Number of failed probes before the container is deemed unavailable
+##
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 2
+  periodSeconds: 30
+  timeoutSeconds: 1
+  failureThreshold: 3
+  successThreshold: 1
 
-# -- OnDemand service port
+## @section Traffic exposure parameters
+##
+
+## OnDemand service configuration
+##
 service:
-  # -- Provide any additional annotations which may be required.
-  annotations: {}
-  # -- Defines the value for the Kubernetes service object [ClusterIP|LoadBalancer|NodePort].
+  ## @param service.type Type of Service object
+  ## One of [ClusterIP|LoadBalancer|NodePort].
+  ##
   type: ClusterIP
-  # -- Name of the service port
+  ## @param service.portName Name of the service port
+  ##
   portName: ondemand
-  # Ports to expose on the service.
+  ## Ports to expose on the Service
+  ##
   ports:
-    # -- OnDemand service port
+    ## @param service.ports.ondemand OnDemand service port
+    ##
     ondemand: 1445
-  # NodePort value to assign (`service.type`` must be `NodePort` and not deploying statefulset.)
-  # NOTE: choose port between <30000-32767>
-  # ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
+  ## NodePorts to expose
+  ## NOTE: choose port between <30000-32767>
+  ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
+  ##
   nodePorts:
-    # -- Port to bind to for NodePort service type
+    ## @param service.nodePorts.ondemand NodePort for the OnDemand service
+    ##
     ondemand: ""
-  headless:
-    # -- Headless service annotations
-    annotations: {}
-
-ingress:
-  # -- Enables the Ingress (provides external access and load balancing)
-  enabled: false
-  # -- Provide any additional annotations which may be required
-  # Example:
-  # annotations:
-  #   kubernetes.io/ingress.class: nginx
-  #   kubernetes.io/tls-acme: true
-  #   cert-manager.io/cluster-issuer: letsencrypt-staging
+  ## @param service.annotations Provide any additional service annotations which may be required
+  ##
   annotations: {}
-  # -- List of network hosts' FQDNs
-  # Example:
-  # hosts:
-  # - ondemand.example.com
+  ## Tweaks for the headless service
+  ##
+  headless:
+    ## @param service.headless.annotations Annotations for the headless service
+    ##
+    annotations: {}
+## OnDemand ingress (external access) configuration
+##
+ingress:
+  ## @param ingress.enabled Enables an Ingress (provides external access and load balancing)
+  ##
+  enabled: false
+  ## @param ingress.annotations Provide any additional annotations which may be required for the Ingress (evaluated as a template)
+  ## Example:
+  ## annotations:
+  ##   - kubernetes.io/ingress.class: nginx
+  ##   - kubernetes.io/tls-acme: "true"
+  ##   - cert-manager.io/cluster-issuer: letsencrypt-staging
+  ##
+  annotations: {}
+  ## @param ingress.hosts Defines the host(s) for this Ingress
+  ## Example:
+  ## hosts:
+  ##   - host: ondemand.example.com
+  ##
   hosts: []
+  ## Paths with backend services
+  ##
   paths:
     ondemand:
-      # -- Path to be matched against incoming requests (must start with a slash)
-      path: ""
-      # -- Path matching interpretation style (defaults to `ImplementationSpecific`)
-      pathType: ""
-  # -- Defines the TLS-enabled host(s) and options.
+      ## @param ingress.paths.ondemand.path Path to be matched against incoming OnDemand requests (must start with a slash)
+      ##
+      path: "/*"
+      ## @param ingress.paths.ondemand.pathType Path matching interpretation style
+      ##
+      pathType: "ImplementationSpecific"
+  ## Defines TLS-enabled host(s) and configuration options
+  ## @param ingress.tls.enabled Enable TLS configuration settings
+  ## @param ingress.tls.hosts List of network host names contained in the TLS certificate
+  ## @param ingress.tls.secretName Secret used to terminate TLS traffic
+  ## Example:
+  ## tls:
+  ##   hosts:
+  ##     - ondemand.example.com
+  ##   secretName: ondemand.example.com-tls
+  ##
   tls:
-    # -- Enable TLS configuration settings
     enabled: false
-    # -- List of network host names contained in the TLS certificate
-    # Example:
-    # hosts:
-    # - ondemand.example.com
     hosts: []
-    # -- Secret used to terminate TLS traffic
-    # Example:
-    # secretName: ondemand.example.com-tls
     secretName: ""
 
+## @section Persistence parameters
+##
+
+## Enable persistence using Persistent Volume Claims
+## ref: https://kubernetes.io/docs/user-guide/persistent-volumes/
+##
 persistence:
-  # -- Enable OnDemand Library server data persistence using a PVC.
+  ## @param persistence.enabled Enable Oracle data persistence using a PVC
+  ##
   enabled: true
-  # -- Name of an existing PVC to use.
+  ## @param persistence.existingClaim Name of an existing PVC to use (only when `architecture` == `standalone`)
+  ## Requires 'persistence.enabled: true'
+  ## If defined, PVC must be created manually before volume will be bound.
+  ## Ignored when 'oracledb.architecture' == 'replicated'
+  ##
   existingClaim: ""
-  # -- Set to `keep` to avoid removing PVCs during a helm delete operation.
+  ## @param persistence.resourcePolicy Set to `keep` to avoid removing PVCs during a Helm delete operation
+  ##
   resourcePolicy: ""
-  # -- The path the volume will be mounted at.
+  ## @param persistence.mountPath The path the volume will be mounted at
+  ##
   mountPath: /opt/qar/data
-  # -- If defined, storageClassName: <storageClass>
-  # If set to "-", storageClassName: "", which disables dynamic provisioning.
-  # If undefined (the default) or set to null, no storageClassName spec is
-  # set, choosing the default provisioner. (gp2 on AWS, standard on GKE, AWS & OpenStack)
+  ## @param persistence.storageClass PVC Storage Class for OnDemand data volume
+  ## If defined, storageClassName: <storageClass>
+  ## If set to "-", storageClassName: "", which disables dynamic provisioning.
+  ## If undefined (the default) or set to null, no storageClassName spec is
+  ## set, choosing the default provisioner (gp2 on AWS, standard on GKE, AWS & OpenStack)
+  ##
   storageClass: ""
-  # -- PVC Access Mode for the CMOD data volume.
+  ## @param persistence.accessModes Persistent Volume Access Mode for the OnDemand data volume
+  ##
   accessModes:
     - ReadWriteOnce
-  # -- PVC Storage Request for the CMOD data volume.
+  ## @param persistence.size PVC Storage Request for the OnDemand data volume
+  ##
   size: 8Gi
-  # -- Additional annotations, as required.
+  ## @param persistence.annotations Additional annotations, as required
+  ##
   annotations: {}
-  # Tweaks for VolumeClaimTemplates
+  ## Extra tuning for VolumeClaimTemplates
+  ##
   volumeClaimTemplates:
-    # -- A label query over volumes to consider for binding (e.g. when using local volumes)
-    # ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#labelselector-v1-meta
+    ## @param persistence.volumeClaimTemplates.selector A label query over volumes to consider for binding (e.g. when using local volumes)
+    ## A label query over volumes to consider for binding (e.g. when using local volumes)
+    ## ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#labelselector-v1-meta
+    ##
     selector: []
-    # -- Custom PVC request attributes
-    # ref https://cloud.ibm.com/docs/containers?topic=containers-file_storage#file_dynamic_statefulse
+    ## @param persistence.volumeClaimTemplates.requests Custom PVC requests attributes
+    ## Sometime cloud providers use additional requests attributes to provision custom storage instance
+    ## ref: https://cloud.ibm.com/docs/containers?topic=containers-file_storage#file_dynamic_statefulset
+    ##
     requests: {}
-    # -- Add a dataSource to the VolumeClaimTemplate
+    ## @param persistence.volumeClaimTemplates.dataSource Add a DataSource to the VolumeClaimTemplate
+    ##
     dataSource: {}
 
-# arsload deployment configuration
+## @section ARSLOAD (batch load) parameters
+##
+
 arsload:
-  # -- Defines whether to deploy an ARSLOAD server.
+  ## @param arsload.enabled Deploy one or more ARSLOAD (batch load) servers
+  ##
   enabled: false
+  ## ARSLOAD user credentials
+  ##
   auth:
-    # -- Defines (in plain text) the name of the CMOD ARSLOAD user (for batch-loading documents).
-    # If left undefined, the default user `admin` is used. Use the `auth.usernameSource` variable
-    # to define the username using a Secret.
+    ## @param arsload.auth.username Defines (in plain text) the name of the ARSLOAD user
+    ## If left undefined, the default user 'admin' is used. Use the 'auth.usernameSource'
+    ## variable to define the username using a Secret.
     username: ""
-    # -- Uses a Secret to define the CMOD ARSLOAD user.
+    ## @param arsload.auth.usernameSource.useSecret Use a Secret to define the ARSLOAD user
+    ## @param arsload.auth.usernameSource.secretName The name of the Secret containing the user name
+    ## @param arsload.auth.usernameSource.secretKey The key of the Secret containing the user name
+    ##
     usernameSource:
       useSecret: false
       secretName: ""
       secretKey: ""
-    # -- Defines (in plain text) the password of the CMOD ARSLOAD user (for batch-loading documents).
-    # If left undefined, the deployment will generate a random alphanumeric password. Use the
-    # `auth.passwordSource` variable to define the user name using an existing Secret.
+    ## @param arsload.auth.password Defines (in plain text) the ARSLOAD user's password
+    ## If left undefined, the deployment will generate a random alphanumeric password. Use the
+    ## 'auth.passwordSource' variable to define the password using a Secret.
     password: ""
-    # -- Uses a Secret to define the CMOD ARSLOAD user's password.
+    ## @param arsload.auth.passwordSource.useSecret Use a Secret to define the ARSLOAD user's password
+    ## @param arsload.auth.passwordSource.secretName The name of the Secret containing the password
+    ## @param arsload.auth.passwordSource.secretKey The key of the Secret containing the password
+    ##
     passwordSource:
       useSecret: false
       secretName: ""
       secretKey: ""
-  # -- Time interval in seconds to sleep (arsload command defaults to 600)
-  timeInterval: 600
-  # -- List of arsload deployment instances (one replica per input volume).
-  instances:
-    # - name: folder1
-    #   # -- Name of an existing PVC to use (required).
-    #   existingClaim: "folder1-pvc"
-    #   # -- The path the volume will be mounted at in the ARSLOAD container.
-    #   # Defaults to /opt/qar/data/load.
-    #   mountPath: /opt/qar/data/load
-  # -- Annotations to be added to the OnDemand statefulset. Evaluated as a template.
+  ## @param arsload.timeInterval Time interval in seconds to sleep
+  ## The arsload command itself defaults to 600.
+  ##
+  timeInterval: 300
+  ## @param arsload.instances List of arsload deployment instances (one replica per input volume).
+  ## Example:
+  ## instances:
+  ##   - name: folder1
+  ##   # Name of an existing PVC to use (required)
+  ##   existingClaim: "folder1-pvc"
+  ##   # The path the volume will be mounted at in the ARSLOAD container
+  ##   mountPath: /opt/qar/data/load
+  ##
+  instances: []
+  ## @param arsload.annotations Annotations to be added to the ARSLOAD deployment (evaluated as a template)
+  ##
   annotations: {}
-  # -- Additional labels to be added to the OnDemand statefulset. Evaluated as a template.
+  ## @param arsload.labels Additional labels to be added to the ARSLOAD deployment (evaluated as a template)
+  ##
   labels: {}
-  # -- Update strategy for the ARSLOAD deployment
+  ## @param arsload.updateStrategy.type Update strategy for the ARSLOAD deployment
+  ## ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
+  ## Example:
+  ## updateStrategy:
+  ##  type: RollingUpdate
+  ##  rollingUpdate:
+  ##    maxSurge: 25%
+  ##    maxUnavailable: 25%
+  ##
   updateStrategy:
     type: Recreate
-  # -- ARSLOAD Termination Grace Period
+  ## @param arsload.terminationGracePeriodSeconds ARSLOAD termination grace period
+  ##
   terminationGracePeriodSeconds: ""
-  # -- ARSLOAD pod labels
-  # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+  ## @param arsload.podLabels ARSLOAD pod labels
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+  ##
   podLabels: {}
-  # -- ARSLOAD pod annotations
-  # ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  ## @param arsload.podAnnotations ARSLOAD pod annotations
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  ##
   podAnnotations: {}
-  # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  ## ARSLOAD Pod SecurityContext
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  ## @param arsload.podSecurityContext.enabled Enable the ARSLOAD pod SecurityContext
+  ## @param arsload.podSecurityContext.fsGroup Group ID for the volumes of the ARSLOAD pod(s)
+  ##
   podSecurityContext:
-    # -- Enable the ARSLOAD pod security context.
     enabled: true
-    # -- ARSLOAD pod security context runAsUser.
-    # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
-    runAsUser: 1001
-    # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#volumes-and-file-systems.
     fsGroup: 1001
-    # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
-    #  runAsNonRoot: true
-  # https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  ## ARSLOAD container SecurityContext
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  ## @param arsload.containerSecurityContext.enabled Enable the ARSLOAD container SecurityContext
+  ## @param arsload.containerSecurityContext.runAsUser User ID for container(s) in the ARSLOAD pod(s)
+  ##
   containerSecurityContext:
-    # -- Enable the ARSLOAD container security context.
     enabled: true
-    # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privileged.
-    privileged: false
-    # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privilege-escalation.
-    allowPrivilegeEscalation: false
-    # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
     runAsUser: 1001
-    # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#capabilities.
-    runAsGroup: 1001
-    # -- The default (recommended) configuration prohibits all Linux capabilities.
-    capabilities:
-      drop:
-        - all
-  # Learn about liveness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
-  # Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
-  livenessProbe:
-    # -- Enable the ARSLOAD liveness probe.
-    enabled: true
-    # -- Initial delay before probing liveness
-    initialDelaySeconds: 5
-    # -- Period in seconds between liveness checks
-    periodSeconds: 30
-    # -- Timeout in seconds for liveness checks
-    timeoutSeconds: 1
-    # -- Number of consecutive negative tests before declaring failure
-    failureThreshold: 5
-    # -- Number of consecutive positive tests before counting it as a success
-    successThreshold: 1
-  # Learn about readiness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
-  # Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
-  readinessProbe:
-    # -- Enable the ARSLOAD readiness probe.
-    enabled: true
-    # -- Initial delay before probing readiness
-    initialDelaySeconds: 10
-    # -- Period in seconds between readiness checks
-    periodSeconds: 30
-    # -- Timeout in seconds for readiness checks
-    timeoutSeconds: 1
-    # -- Number of consecutive negative tests before declaring failure
-    failureThreshold: 5
-    # -- Number of consecutive positive tests before counting it as a success
-    successThreshold: 1
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  ## It is usually recommend not to specify default resources and to leave this as a conscious
+  ## choice for the user. This also increases chances charts run on environments with little
+  ## resources, such as Minikube. If you do want to specify resources, uncomment the following
+  ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  ## @param arsload.resources.limits The resources limits for ARSLOAD containers
+  ## @param arsload.resources.requests The requested resources for ARSLOAD containers
+  ##
   resources:
-    # Example:
-    # limits:
-    #   cpu: 100m
-    #   memory: 128Mi
+    ## Example:
+    ## limits:
+    ##   cpu: 100m
+    ##   memory: 128Mi
+    ##
     limits: {}
-    # Example:
-    # requests:
-    #   cpu: 100m
-    #   memory: 128Mi
+    ## Example:
+    ## requests:
+    ##   cpu: 100m
+    ##   memory: 128Mi
+    ##
     requests: {}
+  ## ARSLOAD pod livenessProbe configuration (evaluated as a template)
+  ## ref https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
+  ## @param arsload.livenessProbe.enabled Enable the ARSLOAD pod livenessProbe
+  ## @param arsload.livenessProbe.initialDelaySeconds Initial delay before the probe is initiated
+  ## @param arsload.livenessProbe.periodSeconds Period between probes
+  ## @param arsload.livenessProbe.timeoutSeconds Time after which the probe times out
+  ## @param arsload.livenessProbe.successThreshold Number of successful probes before the container is considered available
+  ## @param arsload.livenessProbe.failureThreshold Number of failed probes before the container is deemed unavailable
+  ##
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 5
+    periodSeconds: 30
+    timeoutSeconds: 1
+    failureThreshold: 5
+    successThreshold: 1
+  ## ARSLOAD pod readinessProbe configuration (evaluated as a template)
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  ## @param arsload.readinessProbe.enabled Enable the ARSLOAD pod readinessProbe
+  ## @param arsload.readinessProbe.initialDelaySeconds Initial delay before the probe is initiated
+  ## @param arsload.readinessProbe.periodSeconds Period between probes
+  ## @param arsload.readinessProbe.timeoutSeconds Time after which the probe times out
+  ## @param arsload.readinessProbe.successThreshold Number of successful probes before the container is considered ready
+  ## @param arsload.readinessProbe.failureThreshold Number of failed probes before the container is deemed unavailable
+  ##
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 10
+    periodSeconds: 30
+    timeoutSeconds: 1
+    failureThreshold: 5
+    successThreshold: 1
+
+## @section OnDemand REST API parameters
+##
 
 restapi:
-  # -- Defines whether to deploy a REST API server.
+  ## @param restapi.enabled Deploy an OnDemand REST API server
+  ##
   enabled: false
+  ## OnDemand REST API image
+  ## @param restapi.image.registry OnDemand REST API image container registry
+  ## @param restapi.image.repository OnDemand REST API image repository
+  ## @param restapi.image.tag OnDemand REST API image tag
+  ## @param restapi.image.digest OnDemand REST API image digest in the format `sha256:aa....` (overrides `image.tag`)
+  ## @param restapi.image.pullPolicy OnDemand REST API image pull policy
+  ## @param restapi.image.pullSecrets Specify container registry Secrets as an array
+  ##
   image:
-    # -- OnDemand REST API image registry
     registry: ""
-    # -- OnDemand REST API image repository
     repository: "qar/ondemand-restapi"
-    # -- OnDemand REST API image tab (immutable tag is recommended)
     tag: 10.5.0.5-liberty-23.0.0.5
-    # -- OnDemand REST API image digest in the format `sha256:aa....` (overrides `image.tag`)
     digest: ""
-    # -- OnDemand REST API image pull policy
     pullPolicy: IfNotPresent
-    # -- Specify container registry Secrets as an array
     pullSecrets: []
+  ## RESt API user credentials
+  ##
   auth:
-    # -- Defines (in plain text) the name of the CMOD user (consumer) to use when generating the REST configuration
-    # (OD access pool). If left undefined, the default user `admin` is used. Use the `auth.usernameSource`
-    # variable to define the username using a Secret.
+    ## @param restapi.auth.username Defines (in plain text) the name of the REST API user
+    ## If left undefined, the default user 'admin' is used. Use the 'auth.usernameSource'
+    ## variable to define the username using a Secret.
     username: ""
-    # -- Uses a Secret to define the CMOD REST API user (consumer) used when generating the REST configuration.
+    ## @param restapi.auth.usernameSource.useSecret Use a Secret to define the REST API user
+    ## @param restapi.auth.usernameSource.secretName The name of the Secret containing the user name
+    ## @param restapi.auth.usernameSource.secretKey The key of the Secret containing the user name
+    ##
     usernameSource:
       useSecret: false
       secretName: ""
       secretKey: ""
-    # -- Defines (in plain text) the password of the CMOD user (consumer) to use when generating the REST configuration
-    # (OD access pool). If left undefined, the deployment will generate a random alphanumeric password. Use
-    # the `auth.passwordSource` variable to define the user name using an existing Secret.
+    ## @param restapi.auth.password Defines (in plain text) the REST API user's password
+    ## If left undefined, the deployment will generate a random alphanumeric password. Use the
+    ## 'auth.passwordSource' variable to define the password using a Secret.
     password: ""
-    # -- Uses a Secret to define the CMOD REST API user's (consumer's) password.
+    ## @param restapi.auth.passwordSource.useSecret Use a Secret to define the REST API user's password
+    ## @param restapi.auth.passwordSource.secretName The name of the Secret containing the password
+    ## @param restapi.auth.passwordSource.secretKey The key of the Secret containing the password
+    ##
     passwordSource:
       useSecret: false
       secretName: ""
       secretKey: ""
-  # -- Name of the REST connection pool to create. Defaults to `odpool` if blank.
+  ## @param restapi.poolName REST API connection pool to create
+  ## Defaults to 'odpool' if blank.
+  ##
   poolName: ""
-  # -- Name of the REST consumer to create for the pool. Defaults to `admin` if blank.
+  ## @param restapi.consumerName REST API consumer to create for the pool
+  ## Defaults to `admin` if blank.
+  ##
   consumerName: ""
-
-  # -- Annotations to be added to the REST API server. Evaluated as a template.
+  ## @param restapi.annotations Annotations to be added to the REST API deployment (evaluated as a template)
+  ##
   annotations: {}
-  # -- Additional labels to be added to the REST API server. Evaluated as a template.
+  ## @param restapi.labels Additional labels to be added to the REST API deployment (evaluated as a template)
+  ##
   labels: {}
-  # -- Defines the number of REST API nodes to be created after deployment.
+  ## @param restapi.replicaCount Number of REST API nodes to be created
+  ##
   replicaCount: 1
-  # -- Update strategy for the REST API deployment
+  ## Update strategy for the REST API deployment
+  ## @param restapi.updateStrategy Update strategy for the REST API deployment
+  ## ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
+  ## Example:
+  ## updateStrategy:
+  ##   type: RollingUpdate
+  ##   rollingUpdate:
+  ##     maxSurge: 25%
+  ##     maxUnavailable: 25%
+  ##
   updateStrategy: {}
-  # -- ARSLOAD Termination Grace Period
+  ## @param restapi.terminationGracePeriodSeconds REST API termination grace period
+  ##
   terminationGracePeriodSeconds: ""
-  # -- Provides the ability to customize the deployment using Kubernetes annotations.
+  ## @param restapi.podLabels REST API pod labels
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+  ##
+  podLabels: {}
+  ## @param restapi.podAnnotations REST API pod annotations
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  ##
   podAnnotations: {}
-
-  # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  ## REST API pod SecurityContext
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  ## @param restapi.podSecurityContext.enabled Enable the REST API pod SecurityContext
+  ## @param restapi.podSecurityContext.fsGroup Group ID for the volumes of the REST API pod(s)
+  ##
   podSecurityContext:
-    # -- Enable the ARSLOAD pod security context.
     enabled: true
-    # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
-    runAsUser: 1001
-    # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#volumes-and-file-systems.
     fsGroup: 1001
-    # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
-    #  runAsNonRoot: true
-
-  # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  ## REST API initContainer SecurityContext
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  ## @param restapi.generateConfigSecurityContext.enabled Enable the REST API initContainer SecurityContext
+  ## @param restapi.generateConfigSecurityContext.runAsUser User ID for initContainer in the REST API pod(s)
+  ##
   generateConfigSecurityContext:
-    # -- Enable the ARSLOAD container security context.
     enabled: true
-    # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
     runAsUser: 0
-  # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  ## REST API container SecurityContext
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  ## @param restapi.containerSecurityContext.enabled Enable the REST API container SecurityContext
+  ## @param restapi.containerSecurityContext.runAsUser User ID for container(s) in the REST API pod(s)
+  ##
   containerSecurityContext:
-    # -- Enable the ARSLOAD container security context.
     enabled: true
-    # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privileged.
-    privileged: false
-    # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privilege-escalation.
-    allowPrivilegeEscalation: false
-    # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
     runAsUser: 1001
-    # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#capabilities.
-    runAsGroup: 1001
-    # -- The default (recommended) configuration prohibits all Linux capabilities.
-    capabilities:
-      drop:
-        - all
-
-  # Container ports
-  containerPorts:
-    # -- REST API (WAS) container port
-    http: 9080
-
-  service:
-    # -- Provide any additional annotations which may be required.
-    annotations: {}
-    # -- Defines the value for the Kubernetes service object [ClusterIP|LoadBalancer|NodePort].
-    type: ClusterIP
-    # -- Name of the service port
-    portName: http
-    # Ports to expose on the service
-    ports:
-      # -- REST API (WAS) service port
-      http: 9080
-    # NodePort value to assign (.service.type must be `NodePort`).
-    # NOTE: choose port between <30000-32767>
-    # ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
-    nodePorts:
-      # -- Node port for the REST API (WAS) server
-      http: ""
-
-  # Learn about liveness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
-  # Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
-  livenessProbe:
-    # -- Enable the REST API server liveness probe
-    enabled: true
-    # -- Initial delay before probing liveness
-    initialDelaySeconds: 5
-    # -- Period in seconds between liveness checks
-    periodSeconds: 30
-    # -- Timeout in seconds for liveness checks
-    timeoutSeconds: 1
-    # -- Number of consecutive negative tests before declaring failure
-    failureThreshold: 5
-    # -- Number of consecutive positive tests before counting it as a success
-    successThreshold: 1
-
-  # Learn about readiness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
-  # Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
-  readinessProbe:
-    # -- Enable the REST API server readiness probe
-    enabled: true
-    # -- Initial delay before probing readiness
-    initialDelaySeconds: 10
-    # -- Period in seconds between readiness checks
-    periodSeconds: 30
-    # -- Timeout in seconds for readiness checks
-    timeoutSeconds: 1
-    # -- Number of consecutive negative tests before declaring failure
-    failureThreshold: 5
-    # -- Number of consecutive positive tests before counting it as a success
-    successThreshold: 1
-
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  ## It is usually recommend not to specify default resources and to leave this as a conscious
+  ## choice for the user. This also increases chances charts run on environments with little
+  ## resources, such as Minikube. If you do want to specify resources, uncomment the following
+  ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  ## @param restapi.resources.limits The resources limits for REST API containers
+  ## @param restapi.resources.requests The requested resources for REST API containers
+  ##
   resources:
-    # Example:
-    # limits:
-    #   cpu: 100m
-    #   memory: 128Mi
+    ## Example:
+    ## limits:
+    ##   cpu: 100m
+    ##   memory: 128Mi
+    ##
     limits: {}
-    # Example:
-    # requests:
-    #   cpu: 100m
-    #   memory: 128Mi
+    ## Example:
+    ## requests:
+    ##   cpu: 100m
+    ##   memory: 128Mi
+    ##
     requests: {}
-
-  ingress:
-    # -- Enables Ingress, a Kubernetes API object that provides external access and load balancing.
-    enabled: false
-    # -- Provide any additional annotations which may be required.
+  ## REST API pod livenessProbe configuration (evaluated as a template)
+  ## ref https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
+  ## @param restapi.livenessProbe.enabled Enable the REST API pod livenessProbe
+  ## @param restapi.livenessProbe.initialDelaySeconds Initial delay before the probe is initiated
+  ## @param restapi.livenessProbe.periodSeconds Period between probes
+  ## @param restapi.livenessProbe.timeoutSeconds Time after which the probe times out
+  ## @param restapi.livenessProbe.successThreshold Number of successful probes before the container is considered available
+  ## @param restapi.livenessProbe.failureThreshold Number of failed probes before the container is deemed unavailable
+  ##
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 5
+    periodSeconds: 30
+    timeoutSeconds: 1
+    failureThreshold: 5
+    successThreshold: 1
+  ## REST API pod readinessProbe configuration (evaluated as a template)
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  ## @param restapi.readinessProbe.enabled Enable the REST API pod readinessProbe
+  ## @param restapi.readinessProbe.initialDelaySeconds Initial delay before the probe is initiated
+  ## @param restapi.readinessProbe.periodSeconds Period between probes
+  ## @param restapi.readinessProbe.timeoutSeconds Time after which the probe times out
+  ## @param restapi.readinessProbe.successThreshold Number of successful probes before the container is considered ready
+  ## @param restapi.readinessProbe.failureThreshold Number of failed probes before the container is deemed unavailable
+  ##
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 10
+    periodSeconds: 30
+    timeoutSeconds: 1
+    failureThreshold: 5
+    successThreshold: 1
+  ## Container ports
+  ## @param restapi.containerPorts.http REST API container port
+  ##
+  containerPorts:
+    http: 9080
+  ## REST API service configuration
+  ##
+  service:
+    ## @param restapi.service.type Type of Service object
+    ## One of [ClusterIP|LoadBalancer|NodePort].
+    ##
+    type: ClusterIP
+    ## @param restapi.service.portName Name of the service port
+    ##
+    portName: http
+    ## Ports to expose on the Service
+    ##
+    ports:
+      ## @param restapi.service.ports.http REST API service port
+      ##
+      http: 9080
+    ## NodePorts to expose
+    ## NOTE: choose port between <30000-32767>
+    ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
+    ##
+    nodePorts:
+      ## @param restapi.service.nodePorts.http NodePort for the REST API service
+      ##
+      http: ""
+    ## @param restapi.service.annotations Provide any additional service annotations which may be required
+    ##
     annotations: {}
-    hosts:
-      # -- Defines the host(s) for this Ingress.
-      - host: ""
-    # -- Defines the TLS-enabled host(s) and options.
-    tls: []
-    #  - secretName: chart-example-tls
-    #    hosts:
-    #      - chart-example.local
+  ## REST API ingress configuration
+  ##
+  ingress:
+    ## @param restapi.ingress.enabled Enables an Ingress (provides external access and load balancing)
+    ##
+    enabled: false
+    ## @param restapi.ingress.annotations Provide any additional annotations which may be required for the Ingress (evaluated as a template)
+    ## Example:
+    ## annotations:
+    ##   - kubernetes.io/ingress.class: nginx
+    ##   - kubernetes.io/tls-acme: "true"
+    ##   - cert-manager.io/cluster-issuer: letsencrypt-staging
+    ##
+    annotations: {}
+    ## @param restapi.ingress.hosts Defines the host(s) for this Ingress
+    ## Example:
+    ## hosts:
+    ##   - host: ondemand.example.com
+    ##
+    hosts: []
+    ## Paths with backend services
+    ##
+    paths:
+      restapi:
+        ## @param restapi.ingress.paths.restapi.path Path to be matched against incoming REST API requests (must start with a slash)
+        ##
+        path: "/*"
+        ## @param restapi.ingress.paths.restapi.pathType Path matching interpretation style
+        ##
+        pathType: "ImplementationSpecific"
+    ## Defines TLS-enabled host(s) and configuration options
+    ## @param restapi.ingress.tls.enabled Enable TLS configuration settings
+    ## @param restapi.ingress.tls.hosts List of network host names contained in the TLS certificate
+    ## @param restapi.ingress.tls.secretName Secret used to terminate TLS traffic
+    ## Example:
+    ## tls:
+    ##   hosts:
+    ##     - restapi.example.com
+    ##   secretName: restapi.example.com-tls
+    ##
+    tls:
+      enabled: false
+      hosts: []
+      secretName: ""
+
+## @section Full-Text Search (FTS) parameters
+##
 
 fts:
-  # -- Defines whether to enable Full-Text Search.
+  ## @param fts.enabled Deploy an FTS server
+  ##
   enabled: false
+  ## OnDemand FTS image
+  ## @param fts.image.registry OnDemand FTS image container registry
+  ## @param fts.image.repository OnDemand FTS image repository
+  ## @param fts.image.tag OnDemand FTS image tag
+  ## @param fts.image.digest OnDemand FTS image digest in the format `sha256:aa....` (overrides `image.tag`)
+  ## @param fts.image.pullPolicy OnDemand FTS image pull policy
+  ## @param fts.image.pullSecrets Specify container registry Secrets as an array
+  ##
   image:
-    # -- OnDemand Full Text Search image registry
     registry: ""
-    # -- OnDemand Full Text Search image repository
     repository: "qar/ondemand-fts"
-    # -- OnDemand Full Text Search image tab (immutable tag is recommended)
     tag: 10.5.0.5-ubi-8.8-854
-    # -- OnDemand Full Text Search image digest in the format `sha256:aa....` (overrides `image.tag`)
     digest: ""
-    # -- OnDemand Full Text Search image pull policy
     pullPolicy: IfNotPresent
-    # -- Specify container registry Secrets as an array
     pullSecrets: []
-  # -- Full-text index export process polling/sleep interval (in seconds)
+  ## @param fts.exportPollDelay Full-text index export process polling/sleep interval (in seconds)
+  ##
   exportPollDelay: 180
-
-  # -- Annotations to be added to the FTS server. Evaluated as a template.
+  ## @param fts.annotations Annotations to be added to the FTS deployment (evaluated as a template)
+  ##
   annotations: {}
-  # -- Additional labels to be added to the FTS server. Evaluated as a template.
+  ## @param fts.labels Additional labels to be added to the FTS deployment (evaluated as a template)
+  ##
   labels: {}
-  # -- Defines the number of FTS nodes to be created after deployment.
+  ## @param fts.replicaCount Number of FTS nodes to be created
+  ##
   replicaCount: 1
-  # -- Update strategy for the fTS deployment
+  ## Update strategy for the FTS deployment
+  ## @param fts.updateStrategy Update strategy for the FTS deployment
+  ## ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
+  ## Example:
+  ## updateStrategy:
+  ##   type: RollingUpdate
+  ##   rollingUpdate:
+  ##     maxSurge: 25%
+  ##     maxUnavailable: 25%
+  ##
   updateStrategy: {}
-  # -- FTS Termination Grace Period
+  ## @param fts.terminationGracePeriodSeconds FTS termination grace period
+  ##
   terminationGracePeriodSeconds: ""
-  # -- Provides the ability to customize the deployment using Kubernetes annotations.
+  ## @param fts.podLabels FTS pod labels
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+  ##
+  podLabels: {}
+  ## @param fts.podAnnotations FTS pod annotations
+  ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+  ##
   podAnnotations: {}
-
-  # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  ## FTS pod SecurityContext
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+  ## @param fts.podSecurityContext.enabled Enable the FTS pod SecurityContext
+  ## @param fts.podSecurityContext.fsGroup Group ID for the volumes of the Fts pod(s)
+  ##
   podSecurityContext:
-    # -- Enable the FTS pod security context.
     enabled: true
-    # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
-    runAsUser: 1001
-    # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#volumes-and-file-systems.
     fsGroup: 1001
-    # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
-    #  runAsNonRoot: true
-
-  # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  ## FTS container SecurityContext
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  ## @param fts.containerSecurityContext.enabled Enable the FTS container SecurityContext
+  ## @param fts.containerSecurityContext.runAsUser User ID for container(s) in the FTS pod(s)
+  ##
   containerSecurityContext:
-    # -- Enable the FTS container security context.
     enabled: true
-    # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privileged.
-    privileged: false
-    # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privilege-escalation.
-    allowPrivilegeEscalation: false
-    # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
     runAsUser: 1001
-    # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#capabilities.
-    runAsGroup: 1001
-    # -- The default (recommended) configuration prohibits all Linux capabilities.
-    capabilities:
-      drop:
-        - all
-
-  # Container ports
-  containerPorts:
-    # -- fTS container port
-    fts: 9081
-
-  # FTS service parameters
-  service:
-    # -- Provide any additional annotations which may be required.
-    annotations: {}
-    # -- Defines the value for the Kubernetes service object [ClusterIP|LoadBalancer|NodePort].
-    type: ClusterIP
-    # -- Name of the service port
-    portName: fts
-    # Ports to expose on the service
-    ports:
-      # -- FTS service port
-      fts: 9081
-    # NodePort value to assign (.service.type must be `NodePort`).
-    # NOTE: choose port between <30000-32767>
-    # ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
-    nodePorts:
-      # -- NodePort to expose for FTS
-      fts: ""
-
-  # Learn about liveness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
-  # Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
-  livenessProbe:
-    # -- Enable the FTS server liveness probe
-    enabled: true
-    # -- Initial delay before probing liveness
-    initialDelaySeconds: 5
-    # -- Period in seconds between liveness checks
-    periodSeconds: 30
-    # -- Timeout in seconds for liveness checks
-    timeoutSeconds: 1
-    # -- Number of consecutive negative tests before declaring failure
-    failureThreshold: 5
-    # -- Number of consecutive positive tests before counting it as a success
-    successThreshold: 1
-
-  # Learn about readiness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
-  # Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
-  readinessProbe:
-    # -- Enable the FTS server readiness probe
-    enabled: true
-    # -- Initial delay before probing readiness
-    initialDelaySeconds: 10
-    # -- Period in seconds between readiness checks
-    periodSeconds: 30
-    # -- Timeout in seconds for readiness checks
-    timeoutSeconds: 1
-    # -- Number of consecutive negative tests before declaring failure
-    failureThreshold: 5
-    # -- Number of consecutive positive tests before counting it as a success
-    successThreshold: 1
-
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  ## It is usually recommend not to specify default resources and to leave this as a conscious
+  ## choice for the user. This also increases chances charts run on environments with little
+  ## resources, such as Minikube. If you do want to specify resources, uncomment the following
+  ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  ## @param fts.resources.limits The resources limits for FTS containers
+  ## @param fts.resources.requests The requested resources for FTS containers
+  ##
   resources:
-    # Example:
-    # limits:
-    #   cpu: 100m
-    #   memory: 128Mi
+    ## Example:
+    ## limits:
+    ##   cpu: 100m
+    ##   memory: 128Mi
+    ##
     limits: {}
-    # Example:
-    # requests:
-    #   cpu: 100m
-    #   memory: 128Mi
+    ## Example:
+    ## requests:
+    ##   cpu: 100m
+    ##   memory: 128Mi
+    ##
     requests: {}
+  ## FTS pod livenessProbe configuration (evaluated as a template)
+  ## ref https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
+  ## @param fts.livenessProbe.enabled Enable the FTS pod livenessProbe
+  ## @param fts.livenessProbe.initialDelaySeconds Initial delay before the probe is initiated
+  ## @param fts.livenessProbe.periodSeconds Period between probes
+  ## @param fts.livenessProbe.timeoutSeconds Time after which the probe times out
+  ## @param fts.livenessProbe.successThreshold Number of successful probes before the container is considered available
+  ## @param fts.livenessProbe.failureThreshold Number of failed probes before the container is deemed unavailable
+  ##
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 5
+    periodSeconds: 30
+    timeoutSeconds: 1
+    failureThreshold: 5
+    successThreshold: 1
+  ## fTS pod readinessProbe configuration (evaluated as a template)
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  ## @param fts.readinessProbe.enabled Enable the FTS pod readinessProbe
+  ## @param fts.readinessProbe.initialDelaySeconds Initial delay before the probe is initiated
+  ## @param fts.readinessProbe.periodSeconds Period between probes
+  ## @param fts.readinessProbe.timeoutSeconds Time after which the probe times out
+  ## @param fts.readinessProbe.successThreshold Number of successful probes before the container is considered ready
+  ## @param fts.readinessProbe.failureThreshold Number of failed probes before the container is deemed unavailable
+  ##
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 10
+    periodSeconds: 30
+    timeoutSeconds: 1
+    failureThreshold: 5
+    successThreshold: 1
+  ## Container ports
+  ## @param fts.containerPorts.fts FTS container port
+  ##
+  containerPorts:
+    fts: 9081
+  ## FTS service configuration
+  ##
+  service:
+    ## @param fts.service.type Type of Service object
+    ## One of [ClusterIP|LoadBalancer|NodePort].
+    ##
+    type: ClusterIP
+    ## @param fts.service.portName Name of the service port
+    ##
+    portName: fts
+    ## Ports to expose on the Service
+    ##
+    ports:
+      ## @param fts.service.ports.fts FTS service port
+      ##
+      fts: 9081
+    ## NodePorts to expose
+    ## NOTE: choose port between <30000-32767>
+    ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
+    ##
+    nodePorts:
+      ## @param fts.service.nodePorts.fts NodePort for the FTS service
+      ##
+      fts: ""
+    ## @param fts.service.annotations Provide any additional service annotations which may be required
+    ##
+    annotations: {}
+
+## @section Content Navigator parameters (*Not Implemented Yet*)
+##
 
 navigator:
-  # -- Defines whether to deploy a Content Navigator server. [Not Implemented Yet]
+  ## @param navigator.enabled Deploy a Content Navigator server
   enabled: false
 
-# Learn about k8s-wait-for at https://github.com/groundnuty/k8s-wait-for
+## @section k8s-wait-for parameters
+##
+
+## ref: https://github.com/groundnuty/k8s-wait-for
+## @param wait.image.name k8s-wait-for image name
+## @param wait.image.tag k8s-wait-for image tag
+## @param wait.image.pullPolicy k8s-wait-for image pull policy
+##
 wait:
   image:
-    # -- Defines the name of the k8s-wait-for image stored in a container repository.
     name: ghcr.io/groundnuty/k8s-wait-for
-    # -- Specifies the version tag to use.
     tag: no-root-v2.0
-    # -- Specifies the pull policy to use.
     pullPolicy: IfNotPresent

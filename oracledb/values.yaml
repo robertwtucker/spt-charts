@@ -274,17 +274,34 @@ ingress:
   ## @param ingress.hosts Defines the host(s) for this Ingress
   ## Example:
   ## hosts:
-  ## - host: oracledb.example.com
+  ##   - host: oracledb.example.com
   ##
-  hosts: {}
-  ## @param ingress.tls Defines the TLS-enabled host(s) and options
+  hosts: []
+  paths:
+    oracledb:
+      ## @param ingress.paths.oracledb.path Path to be matched against incoming Oracle Database requests (must start with a slash)
+      path: "/db/*"
+      ## @param ingress.paths.oracledb.pathType Path matching interpretation style
+      pathType: "ImplementationSpecific"
+    emexpress:
+      ## @param ingress.paths.emexpress.path Path to be matched against incoming EM Express requests (must start with a slash)
+      path: "/em/*"
+      ## @param ingress.paths.emexpress.pathType Path matching interpretation style
+      pathType: "ImplementationSpecific"
+  ## Defines TLS-enabled host(s) and configuration options
+  ## @param ingress.tls.enabled Enable TLS configuration settings
+  ## @param ingress.tls.hosts List of network host names contained in the TLS certificate
+  ## @param ingress.tls.secretName Secret used to terminate TLS traffic
   ## Example:
   ## tls:
-  ## - secretName: chart-example-tls
-  ## - hosts:
-  ##   - chart-example.local
+  ##   hosts:
+  ##     - oracledb.example.com
+  ##   secretName: oracledb.example.com-tls
   ##
-  tls: []
+  tls:
+    enabled: false
+    hosts: []
+    secretName: ""
 
 ## @section Persistence parameters
 ##

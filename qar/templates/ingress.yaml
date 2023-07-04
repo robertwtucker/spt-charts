@@ -37,10 +37,10 @@ spec:
     - host: {{ . | quote }}
       http:
         paths:
-          - path: {{ $.Values.ingress.paths.ondemand.path | default "/*" | quote }}
-            pathType: {{ $.Values.ingress.paths.ondemand.pathType | default "ImplementationSpecific" | quote }}
+          - path: {{ $.Values.ingress.paths.ondemand.path }}
+            pathType: {{ $.Values.ingress.paths.ondemand.pathType }}
             backend:
-              serviceName: {{ include "qar.fullname" $ }}-ondemand
+              serviceName: {{ include "ondemand.svc.name" $ }}
               servicePort: {{ $.Values.service.ports.ondemand }}
     {{- end }}
   {{- end }}

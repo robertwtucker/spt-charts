@@ -127,19 +127,25 @@ kubectl create secret docker-registry image-secret -n ${namespace} --docker-serv
 
 ### Traffic exposure parameters
 
-| Name                           | Description                                                                                        | Value       |
-| ------------------------------ | -------------------------------------------------------------------------------------------------- | ----------- |
-| `service.type`                 | Defines the value for the Service object (ClusterIP/LoadBalancer/NodePort)                         | `ClusterIP` |
-| `service.ports.oracledb`       | Oracle Database service port                                                                       | `1521`      |
-| `service.ports.emexpress`      | EM Express service port                                                                            | `5500`      |
-| `service.nodePorts.oracledb`   | NodePort for the Oracle Database service                                                           | `""`        |
-| `service.nodePorts.emexpress`  | NodePort for the EM Express NodePort service                                                       | `""`        |
-| `service.annotations`          | Provide any additional service annotations which may be required                                   | `{}`        |
-| `service.headless.annotations` | Annotations for the headless service                                                               | `{}`        |
-| `ingress.enabled`              | Enables an Ingress (provides external access and load balancing)                                   | `false`     |
-| `ingress.annotations`          | Provide any additional annotations which may be required for the Ingress (evaluated as a template) | `nil`       |
-| `ingress.hosts`                | Defines the host(s) for this Ingress                                                               | `{}`        |
-| `ingress.tls`                  | Defines the TLS-enabled host(s) and options                                                        | `[]`        |
+| Name                               | Description                                                                                        | Value                    |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------ |
+| `service.type`                     | Defines the value for the Service object (ClusterIP/LoadBalancer/NodePort)                         | `ClusterIP`              |
+| `service.ports.oracledb`           | Oracle Database service port                                                                       | `1521`                   |
+| `service.ports.emexpress`          | EM Express service port                                                                            | `5500`                   |
+| `service.nodePorts.oracledb`       | NodePort for the Oracle Database service                                                           | `""`                     |
+| `service.nodePorts.emexpress`      | NodePort for the EM Express NodePort service                                                       | `""`                     |
+| `service.annotations`              | Provide any additional service annotations which may be required                                   | `{}`                     |
+| `service.headless.annotations`     | Annotations for the headless service                                                               | `{}`                     |
+| `ingress.enabled`                  | Enables an Ingress (provides external access and load balancing)                                   | `false`                  |
+| `ingress.annotations`              | Provide any additional annotations which may be required for the Ingress (evaluated as a template) | `nil`                    |
+| `ingress.hosts`                    | Defines the host(s) for this Ingress                                                               | `[]`                     |
+| `ingress.paths.oracledb.path`      | Path to be matched against incoming Oracle Database requests (must start with a slash)             | `/db/*`                  |
+| `ingress.paths.oracledb.pathType`  | Path matching interpretation style                                                                 | `ImplementationSpecific` |
+| `ingress.paths.emexpress.path`     | Path to be matched against incoming EM Express requests (must start with a slash)                  | `/em/*`                  |
+| `ingress.paths.emexpress.pathType` | Path matching interpretation style                                                                 | `ImplementationSpecific` |
+| `ingress.tls.enabled`              | Enable TLS configuration settings                                                                  | `false`                  |
+| `ingress.tls.hosts`                | List of network host names contained in the TLS certificate                                        | `[]`                     |
+| `ingress.tls.secretName`           | Secret used to terminate TLS traffic                                                               | `""`                     |
 
 ### Persistence parameters
 

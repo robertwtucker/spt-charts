@@ -19,23 +19,29 @@ metadata:
   {{- end }}
   {{- end }}
 spec:
-  {{- if .Values.restapi.ingress.tls }}
+  {{- if .Values.restapi.ingress.tls.enabled }}
   tls:
-  {{- range .Values.restapi.ingress.tls }}
-  - hosts:
-    {{- range .hosts }}
-    - {{ . | quote }}
+    {{- if .Values.restapi.ingress.tls.hosts }}
+    - hosts:
+      {{- range .}}
+      - {{ . | quote }}
+      {{- end }}
     {{- end }}
-    secretName: {{ .secretName }}
-  {{- end }}
+    {{- if .Values.ingress.tls.secretName }}
+      secretName: {{ .Values.ingress.tls.secretName }}
+    {{- end }}
   {{- end }}
   rules:
-  - host: {{ .Values.restapi.ingress.host }}
-    http:
-      paths:
-        - path: /*
-          pathType: ImplementationSpecific
-          backend:
-            serviceName: {{ include "qar.fullname" . }}-restapi
-            servicePort: {{ .Values.restapi.service.ports.http }}
+  {{- if .Values.ingress.hosts}}
+    {{- range .Values.ingress.hosts }}
+    - host: {{ . | quote }}
+      http:
+        paths:
+          - path: {{ $.Values.restapi.ingress.paths.http.path }}
+            pathType: {{ $.Values.restapi.ingress.paths.http.pathType }}
+            backend:
+              serviceName: {{ include "qar.fullname" $ }}-restapi
+              servicePort: {{ $.Values.restapi.service.ports.http }}
+    {{- end }}
+  {{- end }}
 {{- end -}}

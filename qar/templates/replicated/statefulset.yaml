@@ -61,7 +61,7 @@ spec:
           mountPath: /opt/qar/tmp
       {{- if .Values.fts.enabled }}
       - name: ondemand-fts-init
-        image: {{ .include "qar.fts.image" . }}
+        image: {{ include "qar.fts.image" . }}
         imagePullPolicy: {{ .Values.fts.image.pullPolicy }}
         args: [init]
         env:

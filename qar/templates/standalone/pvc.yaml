@@ -23,9 +23,9 @@ metadata:
   {{- end }}
 spec:
   accessModes:
-  {{- range .Values.persistence.accessModes }}
-    - {{ . | quote }}
-  {{- end }}
+    {{- range .Values.persistence.accessModes }}
+      - {{ . | quote }}
+    {{- end }}
   resources:
     requests:
       storage: {{ .Values.persistence.size | quote }}

@@ -26,9 +26,9 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-  - name: {{ $.Values.service.portName | quote }}
-    port: {{ $.Values.service.ports.ondemand | default 1445 }}
-    targetPort: ondemand
+    - name: {{ $.Values.service.portName | quote }}
+      port: {{ $.Values.service.ports.ondemand | default 1445 }}
+      targetPort: ondemand
   selector: {{- include "qar.labels.matchLabels" $ | nindent 4 }}
     app.kubernetes.io/component: ondemand
     statefulset.kubernetes.io/pod-name: {{ $targetPod }}

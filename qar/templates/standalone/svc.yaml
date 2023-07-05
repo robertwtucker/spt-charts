@@ -21,14 +21,14 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   ports:
-  - name: {{ .Values.service.portName | quote }}
-    port: {{ .Values.service.ports.ondemand | default 1445 }}
-    targetPort: ondemand
-    {{- if and (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) .Values.service.nodePorts.ondemand }}
-    nodePort: {{ .Values.service.nodePorts.ondemand }}
-    {{- else if eq .Values.service.type "ClusterIP" }}
-    nodePort: null
-    {{- end }}
+    - name: {{ .Values.service.portName | quote }}
+      port: {{ .Values.service.ports.ondemand | default 1445 }}
+      targetPort: ondemand
+      {{- if and (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) .Values.service.nodePorts.ondemand }}
+      nodePort: {{ .Values.service.nodePorts.ondemand }}
+      {{- else if eq .Values.service.type "ClusterIP" }}
+      nodePort: null
+      {{- end }}
   selector: {{- include "qar.labels.matchLabels" . | nindent 4 }}
     app.kubernetes.io/component: ondemand
 {{- end -}}

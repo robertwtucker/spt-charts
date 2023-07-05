@@ -21,14 +21,14 @@ metadata:
 spec:
   type: {{ .Values.fts.service.type }}
   ports:
-  - name: {{ .Values.fts.service.portName | quote }}
-    port: {{ .Values.fts.service.ports.fts | default 8191 }}
-    targetPort: fts
-    {{- if and (or (eq .Values.fts.service.type "NodePort") (eq .Values.fts.service.type "LoadBalancer")) (not (empty .Values.service.fts.nodePorts.fts)) }}
-    nodePort: {{ .Values.fts.service.nodePorts.fts }}
-    {{- else if eq .Values.fts.service.type "ClusterIP" }}
-    nodePort: null
-    {{- end }}
+    - name: {{ .Values.fts.service.portName | quote }}
+      port: {{ .Values.fts.service.ports.fts | default 8191 }}
+      targetPort: fts
+      {{- if and (or (eq .Values.fts.service.type "NodePort") (eq .Values.fts.service.type "LoadBalancer")) (not (empty .Values.service.fts.nodePorts.fts)) }}
+      nodePort: {{ .Values.fts.service.nodePorts.fts }}
+      {{- else if eq .Values.fts.service.type "ClusterIP" }}
+      nodePort: null
+      {{- end }}
   selector:
     {{ include "qar.labels.matchLabels" . | nindent 4 }}
     app.kubernetes.io/component: ondemand-fts

@@ -1,6 +1,6 @@
 # Oracle Database Helm Chart
 
-![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 21.3.0-ee](https://img.shields.io/badge/AppVersion-21.3.0--ee-informational?style=flat-square)
+![Version: 0.2.1](https://img.shields.io/badge/Version-0.2.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 21.3.0-ee](https://img.shields.io/badge/AppVersion-21.3.0--ee-informational?style=flat-square)
 
 This Helm chart was originally adapted for use with the charts for
 deploying Quadient's Archive and Retrieval.
@@ -44,6 +44,12 @@ so requires the credentials to be stored in a docker-registry secret.
 ```bash
 kubectl create secret docker-registry image-secret -n ${namespace} --docker-server=container-registry.oracle.com --docker-username='${email}' --docker-password='${password}' --docker-email='${email}'
 ```
+
+## Chart Dependencies
+
+| Repository | Name | Version |
+| ---------- | ---- | ------- |
+| oci://registry-1.docker.io/bitnamicharts | [bitnami/common](https://github.com/bitnami/charts/tree/main/bitnami/common) | 2.x.x |
 
 ## Parameters
 

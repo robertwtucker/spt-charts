@@ -263,12 +263,13 @@ service:
 ##
 ingress:
   ## @param ingress.enabled Enables an Ingress (provides external access and load balancing)
+  ##
   enabled: false
   ## @param ingress.annotations Provide any additional annotations which may be required for the Ingress (evaluated as a template)
   ## Example:
   ## annotations:
-  ## - kubernetes.io/ingress.class: nginx
-  ## - kubernetes.io/tls-acme: "true"
+  ##   - kubernetes.io/ingress.class: nginx
+  ##   - kubernetes.io/tls-acme: "true"
   ##
   annotations:
   ## @param ingress.hosts Defines the host(s) for this Ingress
@@ -280,13 +281,17 @@ ingress:
   paths:
     oracledb:
       ## @param ingress.paths.oracledb.path Path to be matched against incoming Oracle Database requests (must start with a slash)
+      ##
       path: "/db/*"
       ## @param ingress.paths.oracledb.pathType Path matching interpretation style
+      ##
       pathType: "ImplementationSpecific"
     emexpress:
       ## @param ingress.paths.emexpress.path Path to be matched against incoming EM Express requests (must start with a slash)
+      ##
       path: "/em/*"
       ## @param ingress.paths.emexpress.pathType Path matching interpretation style
+      ##
       pathType: "ImplementationSpecific"
   ## Defines TLS-enabled host(s) and configuration options
   ## @param ingress.tls.enabled Enable TLS configuration settings
@@ -323,6 +328,7 @@ persistence:
   ##
   resourcePolicy: ""
   ## @param persistence.mountPath The path the volume will be mounted at
+  ##
   mountPath: /opt/oracle/oradata
   ## @param persistence.storageClass PVC Storage Class for Oracle data volume
   ## If defined, storageClassName: <storageClass>

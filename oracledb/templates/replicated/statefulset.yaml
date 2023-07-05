@@ -55,116 +55,118 @@ spec:
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       {{- end }}
       containers:
-      - name: oracledb
-        image: {{ include "oracledb.image" . }}
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-        {{- if .Values.containerSecurityContext.enabled }}
-        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
-        {{- end }}
-        env:
-        {{- if not (empty .Values.sid) }}
-        - name: ORACLE_SID
-          value: {{ .Values.sid }}
-        {{- end }}
-        {{- if not (empty .Values.pdb) }}
-        - name: ORACLE_PDB
-          value: {{ .Values.pdb }}
-        {{- end }}
-        {{- if not (empty .Values.characterSet) }}
-        - name: ORACLE_CHARACTERSET
-          value: {{ .Values.characterSet }}
-        {{- end }}
-        {{- if .Values.passwordSource.useSecret }}
-        - name: ORACLE_PWD
-          valueFrom:
-            secretKeyRef:
-              name: {{ required "secretName is mandatory" .Values.passwordSource.secretName }}
-              key: {{ required "secretKey is mandatory" .Values.passwordSource.secretKey }}
-        {{- else }}
-        - name: ORACLE_PWD
-          valueFrom:
-            secretKeyRef:
-              name: {{ include "oracledb.fullname" . }}
-              key: password
-        {{- end }}
-        ports:
         - name: oracledb
-          containerPort: {{ .Values.containerPorts.oracledb }}
-        - name: emexpress
-          containerPort: {{ .Values.containerPorts.emexpress }}
-        {{- if .Values.livenessProbe.enabled }}
-        livenessProbe: {{- include "common.tplvalues.render" ( dict "value" (omit .Values.livenessProbe "enabled" ) "context" $ ) | nindent 10 }}
-          tcpSocket:
-            port: {{ .Values.containerPorts.oracledb }}
-        {{- end }}
-        {{- if .Values.readinessProbe.enabled }}
-        readinessProbe: {{- include "common.tplvalues.render" ( dict "value" (omit .Values.readinessProbe "enabled" ) "context" $ ) | nindent 10 }}
-          exec:
-            command: [/bin/sh, -c, "if [ -f $ORACLE_BASE/checkDBLockStatus.sh ]; then $ORACLE_BASE/checkDBLockStatus.sh; else $ORACLE_BASE/checkDBStatus.sh; fi"]
-        {{- end }}
-        {{- if .Values.resources }}
-        resources: {{- toYaml .Values.resources | nindent 10 }}
-        {{- end }}
-        volumeMounts:
-        - name: data
-          mountPath: {{ .Values.persistence.mountPath | quote }}
-        {{- if .Values.shmVolume.enabled }}
-        - name: dshm
-          mountPath: /dev/shm
-        {{- end }}
-        {{- if or .Values.setupContent .Values.setupConfigMap }}
-        - name: setup
-          mountPath: /opt/oracle/scripts/setup
-        {{- end }}
+          image: {{ include "oracledb.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          env:
+            {{- if not (empty .Values.sid) }}
+            - name: ORACLE_SID
+              value: {{ .Values.sid }}
+            {{- end }}
+            {{- if not (empty .Values.pdb) }}
+            - name: ORACLE_PDB
+              value: {{ .Values.pdb }}
+            {{- end }}
+            {{- if not (empty .Values.characterSet) }}
+            - name: ORACLE_CHARACTERSET
+              value: {{ .Values.characterSet }}
+            {{- end }}
+            {{- if .Values.passwordSource.useSecret }}
+            - name: ORACLE_PWD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ required "secretName is mandatory" .Values.passwordSource.secretName }}
+                  key: {{ required "secretKey is mandatory" .Values.passwordSource.secretKey }}
+            {{- else }}
+            - name: ORACLE_PWD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "oracledb.fullname" . }}
+                  key: password
+            {{- end }}
+          ports:
+            - name: oracledb
+              containerPort: {{ .Values.containerPorts.oracledb }}
+            - name: emexpress
+              containerPort: {{ .Values.containerPorts.emexpress }}
+          {{- if .Values.livenessProbe.enabled }}
+          livenessProbe: {{- include "common.tplvalues.render" ( dict "value" (omit .Values.livenessProbe "enabled" ) "context" $ ) | nindent 12 }}
+            tcpSocket:
+              port: {{ .Values.containerPorts.oracledb }}
+          {{- end }}
+          {{- if .Values.readinessProbe.enabled }}
+          readinessProbe: {{- include "common.tplvalues.render" ( dict "value" (omit .Values.readinessProbe "enabled" ) "context" $ ) | nindent 12 }}
+            exec:
+              command: [/bin/sh, -c, "if [ -f $ORACLE_BASE/checkDBLockStatus.sh ]; then $ORACLE_BASE/checkDBLockStatus.sh; else $ORACLE_BASE/checkDBStatus.sh; fi"]
+          {{- end }}
+          {{- if .Values.resources }}
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: data
+              mountPath: {{ .Values.persistence.mountPath | quote }}
+            {{- if .Values.shmVolume.enabled }}
+            - name: dshm
+              mountPath: /dev/shm
+            {{- end }}
+            {{- if or .Values.setupContent .Values.setupConfigMap }}
+            - name: setup
+              mountPath: /opt/oracle/scripts/setup
+            {{- end }}
       {{- if not .Values.persistence.enabled }}
       volumes:
       {{- end }}
-      {{- if .Values.shmVolume.enabled }}
-      - name: dshm
-        emptyDir:
-          medium: Memory
-        {{- if .Values.shmVolume.sizeLimit }}
-          sizeLimit: {{ .Values.shmVolume.sizeLimit }}
+        {{- if .Values.shmVolume.enabled }}
+        - name: dshm
+          emptyDir:
+            medium: Memory
+          {{- if .Values.shmVolume.sizeLimit }}
+            sizeLimit: {{ .Values.shmVolume.sizeLimit }}
+          {{- end}}
         {{- end}}
-      {{- end}}
-      {{- if or .Values.setupScripts.existingConfigMap .Values.setupScripts.content }}
-      {{- if .Values.setupScripts.existingConfigMap }}
-      - name: setup
-        configMap:
-          name: {{ .Values.setupScripts.existingConfigMap }}
-      {{- else if .Values.setupScripts.content }}
-      - name: setup
-        configMap:
-          name: {{ include "oracledb.fullname" . }}-setup
-      {{- end }}
-      {{- end }}
+        {{- if or .Values.setupScripts.existingConfigMap .Values.setupScripts.content }}
+        {{- if .Values.setupScripts.existingConfigMap }}
+        - name: setup
+          configMap:
+            name: {{ .Values.setupScripts.existingConfigMap }}
+        {{- else if .Values.setupScripts.content }}
+        - name: setup
+          configMap:
+            name: {{ include "oracledb.fullname" . }}-setup
+        {{- end }}
+        {{- end }}
   {{- if not .Values.persistence.enabled }}
-      - name: data
-        emptyDir: {}
+        - name: data
+          emptyDir: {}
   {{- else }}
   volumeClaimTemplates:
-  - metadata:
-      name: data
-      {{- if .Values.persistence.annotations }}
-      annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.persistence.annotations "context" $ ) | nindent 8 }}
-      {{- end }}
-    spec:
-      accessModes:
-      {{- range .Values.persistence.accessModes }}
-      - {{ . | quote }}
-      {{- end }}
-      resources:
-        requests:
-          storage: {{ .Values.persistence.size }}
-          {{- if .Values.persistence.volumeClaimTemplates.requests }}
-          {{- include "common.tplvalues.render" ( dict "value" .Values.persistence.volumeClaimTemplates.requests "context" $ ) | nindent 12 }}
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: data
+        {{- if .Values.persistence.annotations }}
+        annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.persistence.annotations "context" $ ) | nindent 10 }}
+        {{- end }}
+      spec:
+        accessModes:
+          {{- range .Values.persistence.accessModes }}
+          - {{ . | quote }}
           {{- end }}
-      {{- if .Values.persistence.volumeClaimTemplates.dataSource }}
-      dataSource: {{- include "common.tplvalues.render" ( dict "value" .Values.persistence.volumeClaimTemplates.dataSource "context" $ ) | nindent 10 }}
-      {{- end }}
-      {{- if .Values.persistence.volumeClaimTemplates.selector }}
-      selector: {{- include "common.tplvalues.render" ( dict "value" .Values.persistence.volumeClaimTemplates.selector "context" $ ) | nindent 10 }}
-      {{- end }}
-      {{ include "common.storage.class" ( dict "persistence" .Values.persistence "global" .Values.global ) }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.size }}
+            {{- if .Values.persistence.volumeClaimTemplates.requests }}
+            {{- include "common.tplvalues.render" ( dict "value" .Values.persistence.volumeClaimTemplates.requests "context" $ ) | nindent 12 }}
+            {{- end }}
+        {{- if .Values.persistence.volumeClaimTemplates.dataSource }}
+        dataSource: {{- include "common.tplvalues.render" ( dict "value" .Values.persistence.volumeClaimTemplates.dataSource "context" $ ) | nindent 10 }}
+        {{- end }}
+        {{- if .Values.persistence.volumeClaimTemplates.selector }}
+        selector: {{- include "common.tplvalues.render" ( dict "value" .Values.persistence.volumeClaimTemplates.selector "context" $ ) | nindent 10 }}
+        {{- end }}
+        {{ include "common.storage.class" ( dict "persistence" .Values.persistence "global" .Values.global ) }}
   {{- end }}
 {{- end -}}

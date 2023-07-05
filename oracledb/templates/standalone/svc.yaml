@@ -21,22 +21,22 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   ports:
-  - name: oracledb
-    port: {{ .Values.service.ports.oracledb }}
-    targetPort: oracledb
-    {{- if and (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) (not (empty .Values.service.nodePorts.oracledb)) }}
-    nodePort: {{ .Values.service.nodePorts.oracledb }}
-    {{- else if eq .Values.service.type "ClusterIP" }}
-    nodePort: null
-    {{- end }}
-  - name: emexpress
-    port: {{ .Values.service.ports.emexpress }}
-    targetPort: emexpress
-    {{- if and (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) (not (empty .Values.service.nodePorts.emexpress)) }}
-    nodePort: {{ .Values.service.nodePorts.emexpress }}
-    {{- else if eq .Values.service.type "ClusterIP" }}
-    nodePort: null
-    {{- end }}
+    - name: oracledb
+      port: {{ .Values.service.ports.oracledb }}
+      targetPort: oracledb
+      {{- if and (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) (not (empty .Values.service.nodePorts.oracledb)) }}
+      nodePort: {{ .Values.service.nodePorts.oracledb }}
+      {{- else if eq .Values.service.type "ClusterIP" }}
+      nodePort: null
+      {{- end }}
+    - name: emexpress
+      port: {{ .Values.service.ports.emexpress }}
+      targetPort: emexpress
+      {{- if and (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) (not (empty .Values.service.nodePorts.emexpress)) }}
+      nodePort: {{ .Values.service.nodePorts.emexpress }}
+      {{- else if eq .Values.service.type "ClusterIP" }}
+      nodePort: null
+      {{- end }}
   selector:
     {{ include "oracledb.labels.matchLabels" . | nindent 4 }}
     app.kubernetes.io/component: ondemand

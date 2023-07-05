@@ -25,12 +25,12 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-  - name: oracledb
-    port: {{ $.Values.service.ports.oracledb | default 1521 }}
-    targetPort: oracledb
-  - name: emexpress
-    port: {{ $.Values.service.ports.emexpress | default 5500 }}
-    targetPort: emexpress
+    - name: oracledb
+      port: {{ $.Values.service.ports.oracledb | default 1521 }}
+      targetPort: oracledb
+    - name: emexpress
+      port: {{ $.Values.service.ports.emexpress | default 5500 }}
+      targetPort: emexpress
   selector: {{- include "oracledb.labels.matchLabels" $ | nindent 4 }}
     app.kubernetes.io/component: oracledb
     statefulset.kubernetes.io/pod-name: {{ $targetPod }}

@@ -1,6 +1,5 @@
 {{- if not (eq .Values.architecture "replicated") -}}
 apiVersion: {{ if .Values.useStatefulSet }}{{ include "common.capabilities.statefulset.apiVersion" . }}{{- else }}{{ include "common.capabilities.deployment.apiVersion" . }}{{- end }}
-# kind: {{ if .Values.useStatefulSet }} StatefulSet {{- else }} Deployment {{- end }}
 kind: {{ ternary "StatefulSet" "Deployment" .Values.useStatefulSet }}
 metadata:
   name: {{ include "qar.fullname" . }}-ondemand
@@ -53,106 +52,116 @@ spec:
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       {{- end }}
       initContainers:
-      - name: stash-file-init
-        image: {{ include "qar.ondemand.image" . }}
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-        args: [/bin/sh, -c, "${QAR_HOME}/scripts/init-stash-file.sh"]
-        env: {{- include "qar.env.user" . | nindent 8 }}
-        volumeMounts:
-        - name: work
-          mountPath: /opt/qar/tmp
-      {{- if .Values.fts.enabled }}
-      - name: ondemand-fts-init
-        image: {{ include "qar.fts.image" . }}
-        imagePullPolicy: {{ .Values.fts.image.pullPolicy }}
-        args: [init]
-        env:
-        - name: CONFIG_NAME
-          value: {{ include "qar.fullname" . }}-fts
-        volumeMounts:
-          - name: work
-            mountPath: /opt/qar/tmp
-      {{- end }}
-      - name: wait-for-dbms
-        image: {{ .Values.wait.image.name }}:{{ .Values.wait.image.tag }}
-        imagePullPolicy: {{ .Values.wait.image.pullPolicy }}
-        args: [pod, -lrole=oracledb]
+        - name: stash-file-init
+          image: {{ include "qar.ondemand.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - /bin/sh
+            - -c
+            - "${QAR_HOME}/scripts/init-stash-file.sh"
+          env: {{- include "qar.env.user" . | nindent 12 }}
+          volumeMounts:
+            - name: work
+              mountPath: /opt/qar/tmp
+        {{- if .Values.fts.enabled }}
+        - name: ondemand-fts-init
+          image: {{ include "qar.fts.image" . }}
+          imagePullPolicy: {{ .Values.fts.image.pullPolicy }}
+          args:
+            - init
+          env:
+            - name: CONFIG_NAME
+              value: {{ include "qar.fullname" . }}-fts
+          volumeMounts:
+            - name: work
+              mountPath: /opt/qar/tmp
+        {{- end }}
+        - name: wait-for-dbms
+          image: {{ .Values.wait.image.name }}:{{ .Values.wait.image.tag }}
+          imagePullPolicy: {{ .Values.wait.image.pullPolicy }}
+          args:
+            - pod
+            - -lrole=oracledb
       containers:
-      - name: ondemand
-        image: {{ include "qar.ondemand.image" . }}
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-        {{- if .Values.containerSecurityContext.enabled }}
-        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
-        {{- end }}
-        args: [start, library]
-        env:
-        {{- include "qar.env.library" . | nindent 8 }}
-        {{- include "qar.env.database" . | nindent 8 }}
-        {{- if .Values.zookeeper.enabled }}
-        - name: ZOOKEEPER_SERVER_LIST
-          value: {{ include "zookeeper.servers" . | quote }}
-        {{- end }}
-        ports:
         - name: ondemand
-          containerPort: {{ .Values.containerPorts.onDemand }}
-        {{- if .Values.livenessProbe.enabled }}
-        livenessProbe: {{- include "common.tplvalues.render" ( dict "value" (omit .Values.livenessProbe "enabled" ) "context" $ ) | nindent 10 }}
-          exec:
-            command: [ps, -p, 1]
-        {{- end }}
-        {{- if .Values.readinessProbe.enabled }}
-        readinessProbe: {{- include "common.tplvalues.render" ( dict "value" (omit .Values.readinessProbe "enabled" ) "context" $ ) | nindent 10 }}
-          exec:
-            command: [/bin/sh, -c, "${OD_HOME}/bin/arssockd -h ${OD_INSTANCE_NAME} -P | grep -q Okay"]
-        {{- end }}
-        {{- if .Values.resources }}
-        resources: {{- toYaml .Values.resources | nindent 10 }}
-        {{- end }}
-        volumeMounts:
-        - name: work
-          mountPath: /opt/qar/tmp
-        - name: fti-config
-          mountPath: /opt/qar/config/fti
-        - name: data
-          mountPath: /opt/qar/data
+          image: {{ include "qar.ondemand.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          args:
+            - start
+            - library
+          env:
+            {{- include "qar.env.library" . | nindent 12 }}
+            {{- include "qar.env.database" . | nindent 12 }}
+            {{- if .Values.zookeeper.enabled }}
+            - name: ZOOKEEPER_SERVER_LIST
+              value: {{ include "zookeeper.servers" . | quote }}
+            {{- end }}
+          ports:
+            - name: ondemand
+              containerPort: {{ .Values.containerPorts.onDemand }}
+          {{- if .Values.livenessProbe.enabled }}
+          livenessProbe: {{- include "common.tplvalues.render" ( dict "value" (omit .Values.livenessProbe "enabled" ) "context" $ ) | nindent 12 }}
+            exec:
+              command: [ps, -p, 1]
+          {{- end }}
+          {{- if .Values.readinessProbe.enabled }}
+          readinessProbe: {{- include "common.tplvalues.render" ( dict "value" (omit .Values.readinessProbe "enabled" ) "context" $ ) | nindent 12 }}
+            exec:
+              command: [/bin/sh, -c, "${OD_HOME}/bin/arssockd -h ${OD_INSTANCE_NAME} -P | grep -q Okay"]
+          {{- end }}
+          {{- if .Values.resources }}
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: work
+              mountPath: /opt/qar/tmp
+            - name: fti-config
+              mountPath: /opt/qar/config/fti
+            - name: data
+              mountPath: /opt/qar/data
       volumes:
-      - name: work
-        emptyDir: {}
-      - name: fti-config
-        configMap:
-          name: {{ include "qar.fullname" . }}-fts
-          items:
-          - key: token
-            path: fts.token
+        - name: work
+          emptyDir: {}
+        - name: fti-config
+          configMap:
+            name: {{ include "qar.fullname" . }}-fts
+            items:
+              - key: token
+                path: fts.token
   {{- if not .Values.persistence.enabled }}
-      - name: data
-        emptyDir: {}
+        - name: data
+          emptyDir: {}
   {{- else if .Values.persistence.existingClaim }}
-      - name: data
-        persistentVolumeClaim:
-          claimName: {{ printf "%s" (tpl .Values.persistence.existingClaim .) }}
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ printf "%s" (tpl .Values.persistence.existingClaim .) }}
   {{- else if not .Values.useStatefulSet }}
-      - name: data
-        persistentVolumeClaim:
-          claimName: {{ printf "%s-ondemand" (include "qar.fullname" .) }}
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ printf "%s-ondemand" (include "qar.fullname" .) }}
   {{- else }}
   volumeClaimTemplates:
-  - metadata:
-      name: data
-      {{- if .Values.persistence.annotations }}
-      annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.persistence.annotations "context" $ ) | nindent 8 }}
-      {{- end }}
-    spec:
-      accessModes:
-      {{- range .Values.persistence.accessModes }}
-      - {{ . | quote }}
-      {{- end }}
-      resources:
-        requests:
-          storage: {{ .Values.persistence.size | quote }}
-      {{- if .Values.persistence.volumeClaimTemplates.selector }}
-      selector: {{- include "common.tplvalues.render" (dict "value" .Values.persistence.volumeClaimTemplates.selector "context" $) | nindent 8 }}
-      {{- end }}
-      {{ include "common.storage.class" (dict "persistence" .Values.persistence "global" .Values.global) }}
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: data
+        {{- if .Values.persistence.annotations }}
+        annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.persistence.annotations "context" $ ) | nindent 10 }}
+        {{- end }}
+      spec:
+        accessModes:
+          {{- range .Values.persistence.accessModes }}
+          - {{ . | quote }}
+          {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.size | quote }}
+        {{- if .Values.persistence.volumeClaimTemplates.selector }}
+        selector: {{- include "common.tplvalues.render" (dict "value" .Values.persistence.volumeClaimTemplates.selector "context" $) | nindent 10 }}
+        {{- end }}
+        {{ include "common.storage.class" (dict "persistence" .Values.persistence "global" .Values.global) }}
   {{- end }}
 {{- end -}}

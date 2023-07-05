@@ -1,7 +1,6 @@
 {{- $odDatabaseName := lower .Values.serverInstanceName -}}
 {{- $odUsername := "" -}}
 {{- if .Values.auth.usernameSource.useSecret -}}
-# {{- $odUserSecret := lookup "v1" "Secret" "" .Values.auth.usernameSource.secretName -}}
 {{- $odUserKey := .Values.auth.usernameSource.secretKey -}}
 ((- $odUsername = (lookup "v1" "Secret" "" .Values.auth.usernameSource.secretName).data.$odUserKey -))
 {{- else -}}
@@ -9,7 +8,6 @@
 {{- end -}}
 {{- $odPassword := "" -}}
 {{- if.Values.auth.passwordSource.useSecret -}}
-# {{- $odPasswordSecret := lookup "v1" "Secret" "" .Values.auth.passwordSource.secretName -}}
 {{- $odPasswordKey := .Values.auth.passwordSource.secretKey -}}
 ((- $odPassword = (lookup "v1" "Secret" "" .Values.auth.passwordSource.secretName).data.$odPasswordKey -))
 {{- else -}}

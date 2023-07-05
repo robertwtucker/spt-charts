@@ -44,43 +44,45 @@ spec:
       terminationGracePeriodSeconds: {{ .Values.fts.terminationGracePeriodSeconds }}
       {{- end }}
       initContainers:
-      - name: wait-for-ondemand
-        image: {{ .Values.wait.image.name }}:{{ .Values.wait.image.tag }}
-        imagePullPolicy: {{ .Values.wait.image.pullPolicy }}
-        args: [pod, -lapp.kubernetes.io/component=ondemand]
+        - name: wait-for-ondemand
+          image: {{ .Values.wait.image.name }}:{{ .Values.wait.image.tag }}
+          imagePullPolicy: {{ .Values.wait.image.pullPolicy }}
+          args:
+            - pod
+            - -lapp.kubernetes.io/component=ondemand
       containers:
-      - name: ondemand-fts
-        image: {{ include "qar.fts.image" . }}
-        imagePullPolicy: {{ .Values.fts.image.pullPolicy }}
-        {{- if .Values.fts.containerSecurityContext.enabled }}
-        securityContext: {{- omit .Values.fts.containerSecurityContext "enabled" | toYaml | nindent 10 }}
-        {{- end }}
-        env:
-        - name: ARS_FTI_EXPORT_POLL_DELAY
-          value: {{ .Values.fts.exportPollDelay | quote }}
-        {{ include "qar.env.library" . | nindent 8 }}
-        {{ include "qar.env.database" . | nindent 8 }}
-        {{ include "qar.env.user" . | nindent 8 }}
-        ports:
-          - name: fts
-            containerPort: {{ .Values.fts.containerPorts.fts }}
-        {{- if .Values.fts.livenessProbe.enabled }}
-        livenessProbe: {{- include "common.tplvalues.render" ( dict "value" (omit .Values.fts.livenessProbe "enabled" ) "context" $ ) | nindent 10 }}
-          exec:
-            command: [ps, -p, 1]
-        {{- end }}
-        {{- if .Values.fts.readinessProbe.enabled }}
-        readinessProbe: {{- include "common.tplvalues.render" ( dict "value" (omit .Values.fts.readinessProbe "enabled" ) "context" $ ) | nindent 10 }}
-          tcpSocket:
-            port: {{ .Values.fts.containerPorts.fts }}
-        {{- end }}
-        {{- if .Values.fts.resources }}
-        resources: {{- toYaml .Values.fts.resources | nindent 10 }}
-        {{- end }}
-        volumeMounts:
-          - name: work
-            mountPath: /opt/qar/tmp
+        - name: ondemand-fts
+          image: {{ include "qar.fts.image" . }}
+          imagePullPolicy: {{ .Values.fts.image.pullPolicy }}
+          {{- if .Values.fts.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.fts.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          env:
+            - name: ARS_FTI_EXPORT_POLL_DELAY
+              value: {{ .Values.fts.exportPollDelay | quote }}
+            {{ include "qar.env.library" . | nindent 12 }}
+            {{ include "qar.env.database" . | nindent 12 }}
+            {{ include "qar.env.user" . | nindent 12 }}
+          ports:
+            - name: fts
+              containerPort: {{ .Values.fts.containerPorts.fts }}
+          {{- if .Values.fts.livenessProbe.enabled }}
+          livenessProbe: {{- include "common.tplvalues.render" ( dict "value" (omit .Values.fts.livenessProbe "enabled" ) "context" $ ) | nindent 12 }}
+            exec:
+              command: [ps, -p, 1]
+          {{- end }}
+          {{- if .Values.fts.readinessProbe.enabled }}
+          readinessProbe: {{- include "common.tplvalues.render" ( dict "value" (omit .Values.fts.readinessProbe "enabled" ) "context" $ ) | nindent 12 }}
+            tcpSocket:
+              port: {{ .Values.fts.containerPorts.fts }}
+          {{- end }}
+          {{- if .Values.fts.resources }}
+          resources: {{- toYaml .Values.fts.resources | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: work
+              mountPath: /opt/qar/tmp
       volumes:
-      - name: work
-        emptyDir: {}
+        - name: work
+          emptyDir: {}
 {{- end -}}

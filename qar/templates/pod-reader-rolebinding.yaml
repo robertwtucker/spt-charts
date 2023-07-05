@@ -16,10 +16,10 @@ roleRef:
   kind: Role
   name: {{ include "qar.fullname" . }}-pod-reader
 subjects:
-- kind: ServiceAccount
-{{- if empty .Values.global.existingServiceAccount }}
-  name: {{ include "qar.fullname" . }}
-{{- else }}
-  name: {{ .Values.global.existingServiceAccount }}
-{{- end }}
-  namespace: {{ include "qar.namespace" . | quote }}
+  - kind: ServiceAccount
+    {{- if empty .Values.global.existingServiceAccount }}
+    name: {{ include "qar.fullname" . }}
+    {{- else }}
+    name: {{ .Values.global.existingServiceAccount }}
+    {{- end }}
+    namespace: {{ include "qar.namespace" . | quote }}

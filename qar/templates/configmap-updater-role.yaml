@@ -12,6 +12,9 @@ metadata:
   annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
   {{- end }}
 rules:
-- apiGroups: [""]
-  resources: [configmaps]
-  verbs:  [patch]
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - patch

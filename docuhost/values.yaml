@@ -1,207 +1,243 @@
+## DocuHost chart values
 ##
-# DocuHost configuration parameters
+
+## @section Document Host (DocuHost) parameters
 ##
+
 # DocuHost image
+## @param image.repository DocuHost image repository
+## @param image.tag DocuHost image tag
+## @param image.pullPolicy DocuHost image pull policy
+## @param imagePullSecrets Specify container registry Secrets as an array
+##
 image:
-  # -- DocuHost image repository
   repository: registry.sptcloud.com/spt/docuhost
-  # -- Override tag specified by `appVersion` in the chart file
   tag: ""
-  # -- DocuHost image pull policy
   pullPolicy: IfNotPresent
-# -- List of image repository pull secrets
-# Secrets must be manually created in the namespace.
-# ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
-# Example:
-# imagePullSecrets:
-#   - name: myRegistryKeySecretName
+## List of image repository pull secrets
+## Secrets must be manually created in the namespace.
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+## Example:
+## imagePullSecrets:
+##   - name: myRegistryKeySecretName
+##
 imagePullSecrets: []
-# App configuration
+## @param app.url Fully-qualified URL to the `documents` resource (gets prepend to document ID)
+##
 app:
-  # -- Fully-qualified URL to the documents resource (gets prepend to document ID)
   url: http://localhost/v1/documents
-# Server configuration
+## @param server.port Port to listen on (must match containerPort)
+## @param server.timeout Time (in seconds) to wait before initiating shutdown or terminating read/write ops
+##
 server:
-  # -- Port to listen on (must match containerPort)
   port: 8080
-  # -- Time (in seconds) to wait before initiating shutdown or terminating read/write ops
   timeout: 20
-# Database configuration
+## @param db.prefix Database prefix (identifies standard connection format for URI creation)
+## @param db.username Database user's name
+## @param db.password Database user's password
+## @param db.host Database host name
+## @param db.port Database port
+## @param db.name Database name
+## @param db.timeout Database connection timeout (seconds)
+##
 db:
-  # -- Database prefix (identifies standard connection format for URI creation)
   prefix: mongodb
-  # -- Database user
   username: ""
-  # -- Database password
   password: ""
-  # -- Database host
   host: localhost
-  # -- Database port
   port: 27017
-  # -- Database name
   name: docuhost
-  # -- Database connection timeout (seconds)
   timeout: 10
-# Log configuration
+## @param log.debug Use debug log settings
+## @param log.format Log output format (text/json)
+##
 log:
-  # -- Use debug log settings
   debug: false
-  # -- Log output format [text|json]
   format: text
-# Short Link generation service configuration
+## @param shortlink.apikey API Key to use for authorization
+## @param shortlink.domain Domain name to use for short links
+##
 shortlink:
-  # -- API Key to use for authorization
   apikey: ""
-  # -- Domain name to use for short links
   domain: tiny.one
-# -- Partially override the name used for chart objects
+## @param nameOverride Partially override the name used for chart objects
+##
 nameOverride: ""
-# -- Fully override the name used for chart objects
+## @param fullnameOverride Fully override the name used for chart objects
+##
 fullnameOverride: ""
-# -- Name of a pre-existing configmap to use (one will be created by default)
+## @param existingConfigMap Name of a pre-existing configmap to use (if blank, one will be created by default)
+##
 existingConfigMap: ""
-# -- Name of a pre-existing secret to use (one will be created by default)
+## @param existingSecret Name of a pre-existing secret to use (if blank, one will be created by default)
+##
 existingSecret: ""
 
+## @section DocuHost deployment paramaters
 ##
-# DocuHost deployment resource paramaters
-##
-# -- Number of DocuHost containers to deploy
-replicaCount: 1
-# DocuHost service account parameters
-serviceAccount:
-  # -- Enable service account creation (will use `default` if false)
-  create: false
-  # -- Annotations to use with the service account
-  annotations: {}
-  # -- Force the name used for the service account
-  name: ""
-# -- DocuHost container port
-containerPort: 8080
-# DocuHost container resource requirements
-# ref: https://kubernetes.io/docs/user-guide/compute-resources/
-resources:
-  # -- Resource limits for the DocuHost container
-  limits: {}
-  # -- Requested resources for the DocuHost container
-  requests:
-    memory: 256Mi
-    cpu: 100m
-# -- Annotations for DocuHost pods
-podAnnotations: {}
-# -- Configure DocuHost pod security context
-# ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
-podSecurityContext:
-  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
-  runAsUser: 11000
-  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#volumes-and-file-systems.
-  fsGroup: 11000
-  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
-  runAsNonRoot: true
-# -- Configure security context
-# ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
-securityContext:
-  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privileged.
-  privileged: false
-  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#privilege-escalation.
-  allowPrivilegeEscalation: false
-  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups.
-  runAsUser: 11000
-  # -- ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#capabilities.
-  # -- The default (recommended) configuration prohibits all Linux capabilities.
-  capabilities:
-    drop:
-      - all
-# -- Node labels for pod assignment
-#ref: https://kubernetes.io/docs/user-guide/node-selection/
-nodeSelector: {}
-# -- Tolerations for pod assignment
-# ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-tolerations: []
-# -- Affinity for pod assignment
-# ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
-# NOTE: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when set
-affinity: {}
-# Liveness probe settings
-livenessProbe:
-  # -- Initial delay before probing liveness
-  initialDelaySeconds: 2
-  # -- Period in seconds between liveness checks
-  periodSeconds: 10
-  # -- Timeout in seconds for liveness checks
-  timeoutSeconds: 1
-  # -- Number of consecutive negative tests before declaring failure
-  failureThreshold: 3
-  # -- Number of consecutive positive tests before counting it as a success
-  successThreshold: 1
-# Readiness probe settings
-readinessProbe:
-  # -- Initial delay before probing readiness
-  initialDelaySeconds: 2
-  # -- Period in seconds between readiness checks
-  periodSeconds: 30
-  # -- Timeout in seconds for readiness checks
-  timeoutSeconds: 1
-  # -- Number of consecutive negative tests before declaring failure
-  failureThreshold: 3
-  # -- Number of consecutive positive tests before counting it as a success
-  successThreshold: 1
-# Autoscaling parameters
-autoscaling:
-  # -- Enable auto-scaling for DocuHost
-  enabled: false
-  # -- Minimum number of replicas to deploy
-  minReplicas: 1
-  # -- Maximum number of replicas that can be deployed
-  maxReplicas: 100
-  # -- Target CPU utilization (percent) for each replica
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
 
+## @param replicaCount Number of DocuHost containers to deploy
 ##
-# Service resource parameters for DocuHost
-# ref: https://kubernetes.io/docs/concepts/services-networking/service/
+replicaCount: 1
+## @param serviceAccount.create Enable service account creation (otherwise, the `default` account will be used)
+## @param serviceAccount.annotations Annotations to use with the service account
+## @param serviceAccount.name Specify the name used for the service account
+##
+serviceAccount:
+  create: false
+  annotations: {}
+  name: ""
+## @param podAnnotations Annotations for DocuHost pods
+##
+podAnnotations: {}
+## DocuHost pod SecurityContext
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+## @param podSecurityContext.fsGroup Group ID for the volumes of the DocuHost pod(s)
+##
+podSecurityContext:
+  fsGroup: 11000
+## Docuhost container SecurityContext
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+## @param securityContext.runAsUser User ID for container(s) in the Docuhost pod(s)
+##
+securityContext:
+  runAsUser: 11000
+## It is usually recommend not to specify default resources and to leave this as a conscious
+## choice for the user. This also increases chances charts run on environments with little
+## resources, such as Minikube. If you do want to specify resources, uncomment the following
+## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+## @param resources.limits The resources limits for DocuHost containers
+## @param resources.requests The requested resources for DocuHost containers
+##
+resources:
+  ## Example:
+  ## limits:
+  ##   cpu: 100m
+  ##   memory: 128Mi
+  ##
+  limits: {}
+  ## Example:
+  ## requests:
+  ##   cpu: 100m
+  ##   memory: 128Mi
+  ##
+  requests: {}
+## @param nodeSelector Node labels for pod assignment
+## ref: https://kubernetes.io/docs/user-guide/node-selection/
+##
+nodeSelector: {}
+## @param tolerations Tolerations for pod assignment
+## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+##
+tolerations: []
+## @param affinity Affinity for pod assignment
+## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+## NOTE: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when set
+##
+affinity: {}
+## @param containerPort DocuHost container port
+##
+containerPort: 8080
+## DocuHost pod livenessProbe configuration
+## ref https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
+## @param livenessProbe.initialDelaySeconds Initial delay before the probe is initiated
+## @param livenessProbe.periodSeconds Period between probes
+## @param livenessProbe.timeoutSeconds Time after which the probe times out
+## @param livenessProbe.failureThreshold Number of failed probes before the container is deemed unavailable
+## @param livenessProbe.successThreshold Number of successful probes before the container is considered available
+##
+livenessProbe:
+  initialDelaySeconds: 2
+  periodSeconds: 10
+  timeoutSeconds: 1
+  failureThreshold: 3
+  successThreshold: 1
+## DocuHost pod readinessProbe configuration
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+## @param readinessProbe.initialDelaySeconds Initial delay before the probe is initiated
+## @param readinessProbe.periodSeconds Period between probes
+## @param readinessProbe.timeoutSeconds Time after which the probe times out
+## @param readinessProbe.failureThreshold Number of failed probes before the container is deemed unavailable
+## @param readinessProbe.successThreshold Number of successful probes before the container is considered ready
+##
+readinessProbe:
+  initialDelaySeconds: 2
+  periodSeconds: 30
+  timeoutSeconds: 1
+  failureThreshold: 3
+  successThreshold: 1
+## Autoscaling parameters
+## @param autoscaling.enabled Enable auto-scaling for DocuHost
+## @param autoscaling.minReplicas Minimum number of replicas to deploy
+## @param autoscaling.maxReplicas Maximum number of replicas that can be deployed
+## @param autoscaling.targetCPUUtilizationPercentage Target CPU utilization (percent) for each replica
+## @param autoscaling.targetMemoryUtilizationPercentage Target memory utilization (percent) for each replica
+##
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+## @section Traffic exposure parameters
+##
+
+## DocuHost service configuration
 ##
 service:
-  # -- Type of service to create
+  ## @param service.type Type of service to create
   type: ClusterIP
-  # -- DocuHost server port
+  ## @param service.port DocuHost server port
   port: 8080
-  # -- Nodeport to expose (type must be NodePort or LoadBalancer)
+  ## @param service.nodeport Nodeport to expose (type must be NodePort or LoadBalancer)
   nodeport: ""
 
-##
-# Ingress resource parameters for DocuHost
-# ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
+## Docuhost ingress configuration
 ##
 ingress:
-  # -- Enable ingress record generation for Hello
+  ## @param ingress.enabled Enable ingress record generation for Hello
+  ##
   enabled: false
-  # -- Ingress path type
+  ## @param ingress.pathType Ingress path type
+  ##
   pathType: ImplementationSpecific
-  # -- Force Ingress API version (automatically detected if not set)
+  ## @param ingress.apiVersion Force Ingress API version (automatically detected if not set)
+  ##
   apiVersion: ""
-  # -- Default host for the ingress record
+  ## @param ingress.hostname Default host for the ingress record
+  ##
   hostname: docuhost.local
-  # -- Default path for the ingress record
-  # NOTE: You may need to set this to '/*' in order to use this with ALB ingress controllers
+  ## @param ingress.path Default path for the ingress record
+  ## NOTE: You may need to set this to '/*' in order to use this with ALB ingress controllers
+  ##
   path: /
-  # -- Additional annotations for the Ingress resource. To enable certificate autogeneration, place cert-manager annotations here.
-  # For a full list of possible ingress annotations, please see
-  # ref: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/nginx-configuration/annotations.md
-  # Use this parameter to set the required annotations for cert-manager, see
-  # ref: https://cert-manager.io/docs/usage/ingress/#supported-annotations
-  #
-  # e.g:
-  # annotations:
-  #   kubernetes.io/ingress.class: nginx
-  #   cert-manager.io/cluster-issuer: cluster-issuer-name
+  ## @param ingress.annotations Default/additional annotations for the ingress record
+  ## To enable certificate autogeneration, place cert-manager annotations here.
+  ## For a full list of possible ingress annotations, please see
+  ## ref: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/nginx-configuration/annotations.md
+  ## Use this parameter to set the required annotations for cert-manager, see
+  ## ref: https://cert-manager.io/docs/usage/ingress/#supported-annotations
+  ##
+  ## e.g:
+  ## annotations:
+  ##   kubernetes.io/ingress.class: nginx
+  ##   cert-manager.io/cluster-issuer: cluster-issuer-name
+  ##
   annotations: {}
-  # -- Enable TLS configuration for the host defined at `ingress.hostname` parameter
-  # TLS certificates will be retrieved from a TLS secret with name: `{{- printf "%s-tls" .Values.ingress.hostname }}`
+  ## @param ingress.tls Enable TLS configuration for the host defined by the `ingress.hostname` parameter
+  ## TLS certificates will be retrieved from a TLS secret with name: `{{- printf "%s-tls" .Values.ingress.hostname }}`
+  ##
   tls: false
 
-# ref: https://github.com/groundnuty/k8s-wait-for
+## @section k8s-wait-for parameters
+##
+
+## ref: https://github.com/groundnuty/k8s-wait-for
+## @param wait.image.name k8s-wait-for image name
+## @param wait.image.tag k8s-wait-for image tag
+## @param wait.image.pullPolicy k8s-wait-for image pull policy
+##
 wait:
   image:
     # -- k8s-wait-for image name

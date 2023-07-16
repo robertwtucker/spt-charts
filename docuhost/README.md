@@ -1,11 +1,13 @@
 # Document Host
 
-![Version: 0.1.19](https://img.shields.io/badge/Version-0.1.19-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.3.12](https://img.shields.io/badge/AppVersion-0.3.12-informational?style=flat-square)
+![Version badge](https://img.shields.io/badge/dynamic/yaml?url=https%3A%2F%2Fraw.githubusercontent.com%2Frobertwtucker%2Fspt-charts%2Fmaster%2Fdocuhost%2FChart.yaml&query=%24.version&label=Version)
+![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
+![AppVersion badge](https://img.shields.io/badge/dynamic/yaml?url=https%3A%2F%2Fraw.githubusercontent.com%2Frobertwtucker%2Fspt-charts%2Fmaster%2Fdocuhost%2FChart.yaml&query=%24.appVersion&label=AppVersion&link=https%3A%2F%2Fgithub.com%2Frobertwtucker%2Fdocument-host)
 
 ## TL;DR
 
 ```console
-$ helm install test-release ./docuhost
+helm install test-release ./docuhost
 ```
 
 ## Introduction
@@ -24,8 +26,8 @@ generated link.
 To install the chart with the release name `dev-release`:
 
 ```console
-$ cd charts
-$ helm install dev-release ./docuhost
+cd charts
+helm install dev-release ./docuhost
 ```
 
 These commands deploy Docuhost on the [Kubernetes](https://kubernetes.io)
@@ -37,7 +39,7 @@ lists the parameters that can be configured during installation.
 To uninstall/delete the `dev-release` deployment:
 
 ```console
-$ helm uninstall dev-release
+helm uninstall dev-release
 ```
 
 The command removes all the Kubernetes components associated with the chart and
@@ -55,3 +57,12 @@ deletes the release.
 | autoscaling.targetCPUUtilizationPercentage | int    | `80`                              | Target CPU utilization (percent) for each replica                                                                                                                                                                               |
 | containerPort                              | int    | `8080`                            | DocuHost container port                                                                                                                                                                                                         |
 | db.host                                    | string | `"localhost"`                     | Database host                                                                                                                                                                                                                   |
+
+## License
+
+Copyright (c) 2022 Quadient Group AG and distributed under the MIT License. See `LICENSE` for more information.
+
+## Acknowledgements
+
+- [Helm](https://helm.sh)
+- [Bitnami](https://bitnami.com/)

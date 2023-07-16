@@ -4,8 +4,8 @@ kind: ConfigMap
 metadata:
   name: {{ printf "%s-configuration" (include "docuhost.fullname" .) }}
   namespace: {{ .Release.Namespace | quote }}
-  labels:
-    {{- include "docuhost.labels" . | nindent 4 }}
+  labels: {{- include "docuhost.labels" . | nindent 4 }}
+    app.kubernetes.io/component: docuhost
 data:
   app-url: {{ required "A value for 'app.url' is required." .Values.app.url | quote }}
   db-prefix: {{ required "A value for 'db.prefix' is required." .Values.db.prefix | quote }}

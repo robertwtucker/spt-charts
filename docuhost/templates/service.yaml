@@ -3,6 +3,7 @@ kind: Service
 metadata:
   name: {{ include "docuhost.fullname" . }}
   labels: {{- include "docuhost.labels" . | nindent 4 }}
+    app.kubernetes.io/component: docuhost
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -16,3 +17,4 @@ spec:
       {{- end }}
       name: http
   selector: {{- include "docuhost.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: docuhost

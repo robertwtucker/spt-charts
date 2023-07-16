@@ -2,38 +2,46 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "docuhost.fullname" . }}
-  labels:
-    {{- include "docuhost.labels" . | nindent 4 }}
+  labels: {{- include "docuhost.labels" . | nindent 4 }}
+    app.kubernetes.io/component: docuhost
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
-    matchLabels:
-      {{- include "docuhost.selectorLabels" . | nindent 6 }}
+    matchLabels: {{- include "docuhost.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: docuhost
   strategy:
     type: Recreate
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
-      annotations:
-        {{- toYaml . | nindent 8 }}
+      {{- if .Values.podAnnotations }}
+      annotations: {{ .Values.podAnnotations | toYaml | nindent 8 }}
       {{- end }}
-      labels:
-        {{- include "docuhost.selectorLabels" . | nindent 8 }}
+      labels: {{- include "docuhost.labels" . | nindent 8 }}
+        app.kubernetes.io/component: docuhost
     spec:
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
+      {{- if .Values.imagePullSecrets }}
+      imagePullSecrets: {{- .Values.imagePullSecrets | toYaml | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "docuhost.serviceAccountName" . }}
-      securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- if .Values.podSecurityContext }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- end }}
+      initContainers:
+        - name: wait-for-db
+          image: {{ .Values.wait.image.name }}:{{ .Values.wait.image.tag }}
+          imagePullPolicy: {{ .Values.wait.image.pullPolicy }}
+          args:
+            - pod
+            - -lapp.kubernetes.io/component=mongodb
+            - -lapp.kubernetes.io/instance={{ .Release.Name }}
       containers:
-        - name: {{ .Chart.Name }}
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        - name: docuhost
+          {{- if .Values.securityContext }}
+          securityContext: {{- .Values.securityContext | toYaml | nindent 12 }}
+          {{- end }}
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             {{- include "docuhost.env.database" . | nindent 12 }}
@@ -93,17 +101,15 @@ spec:
             timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
             failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
             successThreshold: {{ .Values.readinessProbe.successThreshold }}
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
+          {{- if .Values.resources }}
+          resources: {{- .Values.resources | toYaml | nindent 12 }}
+          {{- end }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector: {{- .Values.nodeSelector | toYaml | nindent 8 }}
       {{- end }}
-      {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
+      {{- if .Values.affinity }}
+      affinity: {{- .Values.affinity | toYaml | nindent 8 }}
       {{- end }}
-      {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
+      {{- if .Values.tolerations }}
+      tolerations: {{- .Values.tolerations | toYaml | nindent 8 }}
       {{- end }}

@@ -10,4 +10,4 @@ dependencies:
 description: A Helm chart for Kubernetes
 name: qar
 type: application
-version: 0.2.6
+version: 0.2.7

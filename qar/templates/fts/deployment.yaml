@@ -69,7 +69,7 @@ spec:
           {{- if .Values.fts.livenessProbe.enabled }}
           livenessProbe: {{- include "common.tplvalues.render" ( dict "value" (omit .Values.fts.livenessProbe "enabled" ) "context" $ ) | nindent 12 }}
             exec:
-              command: [ps, -p, 1]
+              command: [ps, -p, "1"]
           {{- end }}
           {{- if .Values.fts.readinessProbe.enabled }}
           readinessProbe: {{- include "common.tplvalues.render" ( dict "value" (omit .Values.fts.readinessProbe "enabled" ) "context" $ ) | nindent 12 }}

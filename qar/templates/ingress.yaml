@@ -40,8 +40,10 @@ spec:
           - path: {{ $.Values.ingress.paths.ondemand.path }}
             pathType: {{ $.Values.ingress.paths.ondemand.pathType }}
             backend:
-              serviceName: {{ include "ondemand.svc.name" $ }}
-              servicePort: {{ $.Values.service.ports.ondemand }}
+              service:
+                name: {{ include "ondemand.svc.name" $ }}
+                port:
+                  number: {{ $.Values.service.ports.ondemand }}
     {{- end }}
   {{- end }}
 {{- end }}

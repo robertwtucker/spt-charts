@@ -51,7 +51,7 @@ spec:
           image: {{ include "qar.restapi.image" . }}
           imagePullPolicy: {{ .Values.restapi.image.pullPolicy }}
           {{- if .Values.restapi.generateConfigSecurityContext.enabled }}
-          securityContext: {{- omit .Values.restapi.generateConfigSecurityContext "enabled" | toYaml | nindent 10 }}
+          securityContext: {{- omit .Values.restapi.generateConfigSecurityContext "enabled" | toYaml | nindent 12 }}
           {{- end }}
           args:
             - /bin/sh

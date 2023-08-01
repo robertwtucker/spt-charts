@@ -611,7 +611,7 @@ restapi:
   image:
     registry: ""
     repository: "qar/ondemand-restapi"
-    tag: 10.5.0.5-liberty-23.0.0.5
+    tag: 10.5.0.5-liberty-23.0.0.7
     digest: ""
     pullPolicy: IfNotPresent
     pullSecrets: []

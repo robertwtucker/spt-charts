@@ -81,7 +81,7 @@ spec:
           imagePullPolicy: {{ .Values.wait.image.pullPolicy }}
           args:
             - pod
-            - -lrole=oracledb
+            - -lapp.kubernetes.io/component=oracledb
       containers:
         - name: ondemand
           image: {{ include "qar.ondemand.image" . }}

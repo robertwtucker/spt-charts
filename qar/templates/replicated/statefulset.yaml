@@ -74,7 +74,7 @@ spec:
           imagePullPolicy: {{ .Values.wait.image.pullPolicy }}
           args:
             - pod
-            - -lrole=oracledb
+            - -lapp.kubernetes.io/component=oracledb
       containers:
         - name: ondemand
           image: {{ include "qar.ondemand.image" . }}
@@ -82,7 +82,9 @@ spec:
           {{- if $.Values.containerSecurityContext.enabled }}
           securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
           {{- end }}
-          args: [start, library]
+          args:
+            - start
+            - library
           env:
             {{- include "qar.env.library" . | nindent 12 }}
             {{- include "qar.env.database" . | nindent 12 }}
@@ -96,7 +98,7 @@ spec:
           {{- if .Values.livenessProbe.enabled }}
           livenessProbe: {{- include "common.tplvalues.render" ( dict "value" (omit .Values.livenessProbe "enabled" ) "context" $ ) | nindent 12 }}
             exec:
-              command: [ps, -p, 1]
+              command: [ps, -p, "1"]
           {{- end }}
           {{- if .Values.readinessProbe.enabled }}
           readinessProbe: {{- include "common.tplvalues.render" ( dict "value" (omit .Values.readinessProbe "enabled" ) "context" $ ) | nindent 12 }}

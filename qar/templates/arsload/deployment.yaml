@@ -61,7 +61,7 @@ spec:
           imagePullPolicy: {{$.Values.wait.image.pullPolicy }}
           args:
             - pod
-            - lapp.kubernetes.io/component=ondemand
+            - -lapp.kubernetes.io/component=ondemand
       containers:
         - name: arsload-{{ .name }}
           image: {{ include "qar.ondemand.image" $ }}

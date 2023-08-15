@@ -118,19 +118,23 @@ spec:
           volumeMounts:
             - name: work
               mountPath: /opt/qar/tmp
+            {{- if .Values.fts.enabled }}
             - name: fti-config
               mountPath: /opt/qar/config/fti
+            {{- end }}
             - name: data
               mountPath: /opt/qar/data
       volumes:
         - name: work
           emptyDir: {}
+        {{- if .Values.fts.enabled }}
         - name: fti-config
           configMap:
             name: {{ include "qar.fullname" . }}-fts
             items:
               - key: token
                 path: fts.token
+        {{- end }}
   {{- if not .Values.persistence.enabled }}
         - name: data
           emptyDir: {}

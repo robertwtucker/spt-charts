@@ -45,27 +45,30 @@ To get the authentication details, execute the following commands:
 {{- else }}
   The QAR administrative user's password is managed externally.
 {{- end }}
-{{- if not .Values.restapi.auth.usernameSource.useSecret }}
+{{- if .Values.restapi.enabled }}
+  {{- if not .Values.restapi.auth.usernameSource.useSecret }}
   export QAR_REST_USER=$(kubectl get secret --namespace {{ include "qar.namespace" . }} {{ include "qar.fullname" . }}-restapi -o jsonpath="{.data.restUsername}" | base64 --decode)
-{{- else }}
+  {{- else }}
   The QAR REST API user's name is managed externally.
-{{- end }}
-{{- if not .Values.restapi.auth.passwordSource.useSecret }}
+  {{- end }}
+  {{- if not .Values.restapi.auth.passwordSource.useSecret }}
   export QAR_REST_PASSWORD=$(kubectl get secret --namespace {{ include "qar.namespace" . }} {{ include "qar.fullname" . }}-restapi -o jsonpath="{.data.restPassword}" | base64 --decode)
-{{- else }}
+  {{- else }}
   The QAR REST API user's password is managed externally.
+  {{- end }}
 {{- end }}
-{{- if not .Values.arsload.auth.usernameSource.useSecret }}
+{{- if .Values.arsload.enabled }}
+  {{- if not .Values.arsload.auth.usernameSource.useSecret }}
   export QAR_ARLOAD_USER=$(kubectl get secret --namespace {{ include "qar.namespace" . }} {{ include "qar.fullname" . }}-arsload -o jsonpath="{.data.loadUsername}" | base64 --decode)
-{{- else }}
+  {{- else }}
   The QAR ARSLOAD user's name is managed externally.
-{{- end }}
-{{- if not .Values.arsload.auth.passwordSource.useSecret }}
+  {{- end }}
+  {{- if not .Values.arsload.auth.passwordSource.useSecret }}
   export QAR_ARSLOAD_PASSWORD=$(kubectl get secret --namespace {{ include "qar.namespace" . }} {{ include "qar.fullname" . }}-arsload -o jsonpath="{.data.loadPassword}" | base64 --decode)
-{{- else }}
+  {{- else }}
   The QAR ARSLOAD user's password is managed externally.
+  {{- end }}
 {{- end }}
-
 {{- if .Values.restapi.enabled }}
 
 ** REST API Credentials **

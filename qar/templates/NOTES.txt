@@ -78,7 +78,7 @@ To get the pool credentials for accessing the REST API, execute the following co
 
 ** Port Forwarding **
 To connect to your applications execute the following commands:
-  $ kubectl port-forward --namespace {{ include "qar.namespace" . }} svc/{{ .Values.oracledb.fullnameOverride }}-oracledb 1521:1521
+  $ kubectl port-forward --namespace {{ include "qar.namespace" . }} svc/{{ include "qar.fullname" . }}-oracledb 1521:1521
   $ kubectl port-forward --namespace {{ include "qar.namespace" . }} svc/{{ include "qar.fullname" . }}-ondemand {{ .Values.service.ports.ondemand | default 1445 }}:{{ .Values.service.ports.ondemand | default 1445 }}
 {{- if .Values.restapi.enabled }}
   $ kubectl port-forward --namespace {{ include "qar.namespace" . }} svc/{{ include "qar.fullname" . }}-restapi {{ .Values.restapi.service.ports.http | default 9080 }}:{{ .Values.restapi.service.ports.http | default 9080 }}

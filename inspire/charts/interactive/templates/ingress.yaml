@@ -4,14 +4,14 @@ kind: Ingress
 metadata:
   name: {{ include "inspire.applicationName" . }}-interactive
   annotations:
-    kubernetes.io/ingress.class: {{ .Values.ingress.className | quote }}
     {{- if .Values.ingress.tls.enabled | and .Values.ingress.tls.clusterIssuer }}
     cert-manager.io/cluster-issuer: {{ .Values.ingress.tls.clusterIssuer | quote }}
     {{- end }}
     {{- with .Values.ingress.annotations }}
-      {{- toYaml . | nindent 6 }}
+      {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
+  ingressClassName: {{ .Values.ingress.className | quote }}
   {{- if .Values.ingress.tls.enabled }}
   tls:
   - hosts:

@@ -1,6 +1,6 @@
 # icm
 
-![Version: 2.0.0](https://img.shields.io/badge/Version-2.0.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 16.0](https://img.shields.io/badge/AppVersion-16.0-informational?style=flat-square)
+![Version: 2.3.0](https://img.shields.io/badge/Version-2.3.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 16.4](https://img.shields.io/badge/AppVersion-16.4-informational?style=flat-square)
 
 Inspire Content Manager
 
@@ -42,7 +42,7 @@ Inspire Content Manager
 | ingress.path                             | string | `nil`                                                                                                         | A path mapping that corresponds to the ICM backend. If left blank, the path defaults to `/icm/*`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | ingress.tls.enabled | bool | `true` | Enables HTTPS for ICM. TLS must be enabled for 'externalAccess' to work. |
 | ingress.tls.secretName | string | `nil` | The functionality of the 'secretName' parameter differs based on how you intend to provide a Kubernetes secret that stores the required certificate: 1) If you create a Kubernetes TLS secret that stores the required certificate manually by yourself, enter the name of the secret in the 'secretName' parameter.    To learn about Kubernetes TLS secrets, see Kubernetes documentation at https://kubernetes.io/docs/concepts/configuration/secret/#tls-secrets. 2) If you intend to use the 'clusterIssuer' parameter to provide the required certificate, use the 'secretName' parameter to define a custom name for a secret that will be created by the cluster issuer. |
-| ingress.tls.clusterIssuer | string | `nil` | Allows you to defines the name of a cluster-issuer to be used for creating the certificate secret. For more information about cluster issuer setup, see one of the following documentations based on which platform you use to deploy Inspire: AKS (Application Gateway Kubernetes Ingress): https://azure.github.io/application-gateway-kubernetes-ingress/how-tos/lets-encrypt/#certificate-issuance-with-letsencryptorg EKS (NGINX Ingress): https://cert-manager.io/docs/tutorials/acme/ingress/ |
+| ingress.tls.clusterIssuer | string | `nil` | Allows you to define the name of a cluster-issuer to be used for creating the certificate secret. For more information about cluster issuer setup, see one of the following documentations based on which platform you use to deploy Inspire: AKS (Application Gateway Kubernetes Ingress): https://azure.github.io/application-gateway-kubernetes-ingress/how-tos/lets-encrypt/#certificate-issuance-with-letsencryptorg EKS (NGINX Ingress): https://cert-manager.io/docs/tutorials/acme/ingress/ |
 | useEveryStartupSettings | bool | `false` | Enables or disables the use of the onEveryStartupSettings object. |
 | onEveryStartupSettings | object | `{"packageImportExport":{},"passwordAccountPolicy":{}}` | An object whose structure is the same as the structure of the initialServerSettings object. The object's settings are applied every time ICM starts. |
 | useInitialServerSettings | bool | `true` | Enables or disables the use of the initialServerSettings object. |
@@ -77,4 +77,5 @@ Inspire Content Manager
 | service.annotations | object | `{}` | Provide any additional annotations which may be required. |
 | service.type | string | `"ClusterIP"` | Defines the value for the service Kubernetes object. It is recommended to keep the default value because it makes ICM accessible only from within the Kubernetes cluster. The LoadBalancer value makes ICM accessible from the Internet. This should only be used for testing purposes. [ClusterIP/LoadBalancer] |
 | deployment.annotations | object | `{}` | Provides the ability to customize ICM's deployment using Kubernetes annotations. |
+| podLabels | object | `{}` | Additional labels for ICM pods |
 

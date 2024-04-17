@@ -12,7 +12,7 @@ metadata:
 spec:
   ports:
     - name: {{ include "inspire.applicationName" . }}-icm-port
-      port: {{ .Values.global.icm.portOverride | default 30353 }}
+      port: {{ include "inspire.env.icm.port" . }}
       targetPort: 30353
 {{- if .Values.externalAccess.enabled }}
     - name: {{ include "inspire.applicationName" . }}-icm-http

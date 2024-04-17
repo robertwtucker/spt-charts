@@ -1,0 +1,13 @@
+{{- if .Values.global.automation.enabled | and (.Values.workingDirectory.existingClaim | not) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "inspire.applicationName" . }}-automation-working-dir
+spec:
+  storageClassName: {{ .Values.workingDirectory.storageClass }}
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: {{ .Values.workingDirectory.size }}
+{{- end }}

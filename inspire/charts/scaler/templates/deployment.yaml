@@ -42,6 +42,11 @@ spec:
         {{- end }}
       labels:
         {{- include "inspire.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- range $key, $value := . }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+        {{- end }}
       name: {{ include "inspire.applicationName" . }}-scaler-template
     spec:
 {{- if .Values.existingServiceAccount }}
@@ -156,15 +161,16 @@ spec:
           value: {{ .Values.customEncryption.enabled | quote }}
           {{- $firstEncryptionKey := (first .Values.customEncryption.keys) }}
           {{- if and .Values.customEncryption.enabled $firstEncryptionKey }}
-          {{- $customEncryptionPointer := dict "value" $firstEncryptionKey.key "source" $firstEncryptionKey.keySource "secretKey" "customEncryptionKeys" "mountPath" "/opt/Quadient/secrets" "envFileName" "CUSTOM_ENCRYPTION_KEYS_DIR" "mountAll" true  -}}
+          {{- $customEncryptionPointer := dict "source" $firstEncryptionKey.keySource "mountPath" "/opt/Quadient/secrets/customEncryptionKeys" "envFileName" "CUSTOM_ENCRYPTION_KEYS_DIR" "mountAll" true -}}
           {{- include "inspire.secret.asFilePointer" $customEncryptionPointer | nindent 8 }}
           {{- end }}
         - name: ICM_TRUSTED_DOMAINS_FILE
           value: /opt/Quadient/trustedDomains/icmTrustedDomains
         volumeMounts:
-          {{- include "inspire.secret.asMount" (dict "value" .Values.db.pass "source" .Values.db.passSource "mountPath" "/mnt/secret") | nindent 10 }}
-          {{- include "inspire.secret.asMount" (dict "value" .Values.db.user "source" .Values.db.userSource "mountPath" "/mnt/secret") | nindent 10 }}
-          {{- include "inspire.secret.asMount" (dict "value" .Values.db.connectionString "source" .Values.db.connectionStringSource "mountPath" "/mnt/secret") | nindent 10 }}
+          {{- if .Values.useLibExtSidecar }}
+          - name: lib-ext-sidecar
+            mountPath: /opt/InspireScalerInstaller/lib-ext
+          {{- end }}
           - name: scaler-temp
             mountPath: /opt/Quadient/Inspire-Scaler/temp
           - name: scaler-icm-cache
@@ -180,7 +186,7 @@ spec:
           - name: scaler-installer-temp
             mountPath: "/opt/InspireScalerInstaller/temp/"
           {{- if and .Values.customEncryption.enabled $firstEncryptionKey }}
-          {{- $customEncryptionPointer := dict "value" $firstEncryptionKey.key "source" $firstEncryptionKey.keySource "secretName" "custom-encryption-keys" "mountPath" "/opt/Quadient/secrets/customEncryptionKeys" "mountSecret" true "withoutSubpath" true -}}
+          {{- $customEncryptionPointer := dict "source" $firstEncryptionKey.keySource "volumeName" "custom-encryption-keys" "mountPath" "/opt/Quadient/secrets/customEncryptionKeys" "withoutSubpath" true -}}
           {{- include "inspire.secret.asMount" $customEncryptionPointer | nindent 10 }}
           {{- end }}
           - name: icm-trusted-domains
@@ -232,7 +238,7 @@ spec:
         - name: USE_CUSTOM_ENCRYPTION
           value: {{ .Values.customEncryption.enabled | quote }}
         {{- if and .Values.customEncryption.enabled $firstEncryptionKey }}
-        {{- $customEncryptionPointer := dict "value" $firstEncryptionKey.key "source" $firstEncryptionKey.keySource "secretKey" "customEncryptionKeys" "mountPath" "/opt/Quadient/secrets" "envFileName" "CUSTOM_ENCRYPTION_KEYS_DIR" "mountAll" true -}}
+        {{- $customEncryptionPointer := dict "source" $firstEncryptionKey.keySource "mountPath" "/opt/Quadient/secrets/customEncryptionKeys" "envFileName" "CUSTOM_ENCRYPTION_KEYS_DIR" "mountAll" true -}}
         {{- include "inspire.secret.asFilePointer" $customEncryptionPointer | nindent 8 }}
         {{- end }}
         - name: ICM_TRUSTED_DOMAINS_FILE
@@ -263,9 +269,6 @@ spec:
           - name: lib-ext-sidecar
             mountPath: /opt/Quadient/Inspire-Scaler/lib-ext
           {{- end }}
-          {{- include "inspire.secret.asMount" (dict "value" .Values.db.pass "source" .Values.db.passSource "mountPath" "/mnt/secret") | nindent 10 }}
-          {{- include "inspire.secret.asMount" (dict "value" .Values.db.user "source" .Values.db.userSource "mountPath" "/mnt/secret") | nindent 10 }}
-          {{- include "inspire.secret.asMount" (dict "value" .Values.db.connectionString "source" .Values.db.connectionStringSource "mountPath" "/mnt/secret") | nindent 10 }}
           - name: local-storage
             mountPath: /opt/localStorage
           - name: shared-storage
@@ -274,6 +277,8 @@ spec:
             mountPath: /opt/Quadient/Inspire-Scaler/temp
           - name: scaler-icm-cache
             mountPath: /opt/Quadient/Inspire-Scaler/icm/internal
+          - name: scaler-icm-external-cache
+            mountPath: /opt/Quadient/Inspire-Scaler/icm/external
           - name: scaler-tmp
             mountPath: /tmp
           - name: scaler-chimenix
@@ -282,14 +287,18 @@ spec:
             mountPath: /opt/Quadient/Inspire-Scaler/internals/runtime
           - name: scaler-config-dir
             mountPath: /opt/Quadient/Inspire-Scaler/config
+          {{- if or .Values.customLoggerConfigContent .Values.customLoggerConfigCM }}
+          - name: scaler-custom-logger-config
+            mountPath: /opt/Quadient/Inspire-Scaler/config/additional-custom-logger
+          {{- end }}
           {{- if and .Values.customEncryption.enabled $firstEncryptionKey }}
-          {{- $customEncryptionPointer := dict "value" $firstEncryptionKey.key "source" $firstEncryptionKey.keySource "secretName" "custom-encryption-keys" "mountPath" "/opt/Quadient/secrets/customEncryptionKeys" "mountSecret" true "withoutSubpath" true -}}
+          {{- $customEncryptionPointer := dict "source" $firstEncryptionKey.keySource "volumeName" "custom-encryption-keys" "mountPath" "/opt/Quadient/secrets/customEncryptionKeys" "withoutSubpath" true -}}
           {{- include "inspire.secret.asMount" $customEncryptionPointer | nindent 10 }}
           {{- end }}
           - name: icm-trusted-domains
             mountPath: /opt/Quadient/trustedDomains
           {{- if .Values.authentication.saml2.enabled }}
-          {{- $samlKeystorePointer := dict "value" $.Values.authentication.saml2.keystore "source" $.Values.authentication.saml2.keystoreSource "secretName" "saml-keystore-file" "secretKey" "keystore" "mountPath" "/opt/Quadient/secrets/saml" "mountSecret" true "withoutSubpath" false }}
+          {{- $samlKeystorePointer := dict "source" $.Values.authentication.saml2.keystoreSource "volumeName" "saml-keystore-file" "secretKey" "keystore" "mountPath" "/opt/Quadient/secrets/saml" "withoutSubpath" false }}
           {{- include "inspire.secret.asMount" $samlKeystorePointer | nindent 10 }}
           {{- end }}
 {{- if .Values.additionalStorage.enabled }}
@@ -309,9 +318,9 @@ spec:
         {{- end }}
         {{- end }}
           {{- include "inspire.env.license" . | nindent 8 }}
-          {{- include "inspire.secret.asFilePointer" (dict "value" .Values.global.scaler.passOverride "source" .Values.global.scaler.passOverrideSource "envName" "SCALER_PASS" "envFileName" "SCALER_PASS_FILE" "mountPath" "/opt/Quadient/secrets/scaler" "secretKey" "pass") | nindent 8 }}
+          {{- include "inspire.secret.asFilePointer" (dict "source" .Values.global.scaler.passOverrideSource "envFileName" "SCALER_PASS_FILE" "mountPath" "/opt/Quadient/secrets/scaler" "secretKey" "pass") | nindent 8 }}
         - name: CX_PARAMS
-          value: {{ printf "-icmaddress %s -icmuser %s -icmpasswordpath %s" (include "inspire.env.icm.host" .) (include "inspire.scaler.env.icm.user" .) "$(SCALER_PASS_FILE)" }}
+          value: {{ printf "-icmaddress %s -icmuser %s -icmpasswordpath %s" (printf "%s:%s" ( include "inspire.env.icm.host" . ) ( include "inspire.env.icm.port" . )) (include "inspire.scaler.env.icm.user" .) "$(SCALER_PASS_FILE)" }}
         - name: THREAD_COUNT
           value: {{ .Values.ips.threadcount | quote}}
         - name: ADD_PARAMS
@@ -360,7 +369,7 @@ spec:
         - name: ips-config-volume
           mountPath: /opt/Quadient/Designer/InspireProductionServer.config
           subPath: InspireProductionServer.config
-          {{- include "inspire.secret.asMount" (dict "value" .Values.global.scaler.passOverride "source" .Values.global.scaler.passOverrideSource "secretName" "icm-scaler-password" "secretKey" "pass" "mountPath" "/opt/Quadient/secrets/scaler" "mountSecret" true ) | nindent 8 }}
+          {{- include "inspire.secret.asMount" (dict "source" .Values.global.scaler.passOverrideSource "volumeName" "icm-scaler-password" "secretKey" "pass" "mountPath" "/opt/Quadient/secrets/scaler" "withoutSubpath" false ) | nindent 8 }}
 {{- if .Values.additionalStorage.enabled }}
         - name: additional-storage
           mountPath: {{ .Values.additionalStorage.mountPath }}
@@ -389,6 +398,7 @@ spec:
           {{- include "scaler.env.icm" . | nindent 8 }}
         - name: ICM_PASSWORD
           value: $(ICM_PASS)
+          {{- include "scaler.env.sen" . | nindent 8 }}
         - name: SERVER_PORT
           value: "30900"
         - name: SEN_MAX_PARALLEL_BATCH_COUNT
@@ -397,55 +407,8 @@ spec:
           value: {{ .Values.sen.retentionPeriodInDays | quote }}
         - name: JDK_JAVA_OPTIONS
           value: {{ .Values.sen.addJvmArguments | quote }}
-        - name: SEN_AUTHORIZATION_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: {{ include "inspire.applicationName" . }}-scaler-authorization-token
-              key: senAuthorizationToken
-        - name: SCALER_USER
-          value: {{ .Values.global.sen.userOverride | default "sen" | quote }}
-        - name: SCALER_PASSWORD
-          valueFrom:
-            secretKeyRef:
-{{- if .Values.global.sen.passOverrideSource.useSecret }}
-              name: {{ .Values.global.sen.passOverrideSource.secretName }}
-              key: {{ .Values.global.sen.passOverrideSource.secretKey }}
-{{- else }}
-              name: {{ include "inspire.applicationName" . }}-scaler-sen
-              key: pass
-{{- end }}
-        - name: DB_USERNAME
-          valueFrom:
-            secretKeyRef:
-{{- if .Values.sen.db.userSource.useSecret }}
-              name: {{ required "SecretName is mandatory" .Values.sen.db.userSource.secretName }}
-              key: {{ required "SecretKey is mandatory" .Values.sen.db.userSource.secretKey }}
-{{- else }}
-              name: {{ include "inspire.applicationName" . }}-scaler-sen-database
-              key: dbUser
-{{- end }}
-        - name: DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-{{- if .Values.sen.db.passSource.useSecret }}
-              name: {{ required "SecretName is mandatory" .Values.sen.db.passSource.secretName }}
-              key: {{ required "SecretKey is mandatory" .Values.sen.db.passSource.secretKey }}
-{{- else }}
-              name: {{ include "inspire.applicationName" . }}-scaler-sen-database
-              key: dbPass
-{{- end }}
         - name: ICM_TRUSTED_DOMAIN
           value: {{ .Values.sen.icmTrustedDomain | quote }}
-        - name: DB_JDBC_URL
-          valueFrom:
-            secretKeyRef:
-{{- if .Values.sen.db.connectionStringSource.useSecret}}
-              name: {{ required "SecretName is mandatory" .Values.sen.db.connectionStringSource.secretName }}
-              key: {{ required "SecretKey is mandatory" .Values.sen.db.connectionStringSource.secretKey }}
-{{- else }}
-              name: {{ include "inspire.applicationName" . }}-scaler-sen-database
-              key: dbConnectionString
-{{- end }}
         - name: SCALER_PORT
           value: "30600"
         - name: SCALER_HTTPS
@@ -487,6 +450,10 @@ spec:
           mountPath: /tmp
         - name: sen-icm-cache
           mountPath: /opt/Quadient/Scenario-Engine/icm/internal
+        {{- if or .Values.sen.customLoggerConfigContent .Values.sen.customLoggerConfigCM }}
+        - name: sen-custom-logger-config
+          mountPath: /opt/Quadient/Scenario-Engine/config/custom-logger
+        {{- end }}
 {{- end }}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
@@ -546,9 +513,16 @@ spec:
         emptyDir: {}
       - name: sen-temp
         emptyDir: {}
+      {{- if or .Values.sen.customLoggerConfigContent .Values.sen.customLoggerConfigCM }}
+      - name: sen-custom-logger-config
+        configMap:
+          name: {{ include "getSenCustomLoggerConfigCM" . }}
+      {{- end }}
       - name: scaler-temp
         emptyDir: {}
       - name: scaler-icm-cache
+        emptyDir: {}
+      - name: scaler-icm-external-cache
         emptyDir: {}
       - name: scaler-tmp
         emptyDir: {}
@@ -560,6 +534,11 @@ spec:
         emptyDir: {}
       - name: scaler-installer-temp
         emptyDir: {}
+      {{- if or .Values.customLoggerConfigContent .Values.customLoggerConfigCM }}
+      - name: scaler-custom-logger-config
+        configMap:
+          name: {{ include "getCustomLoggerConfigCM" . }}
+      {{- end }}
       - name: ips-config-volume
         configMap:
           name: {{ include "inspire.applicationName" . }}-scaler-ips-config

@@ -2,11 +2,14 @@
 
 Minimal application versions deployable by this Helm chart release:
 
-| Product     | FMAP version | GA version |
-|-------------|:------------:|:----------:|
-| Scaler, SEN |  16.0 FMAP   |  15.0 SP2  |
-| ICM, IPS    |  16.0 FMAP   |  15.0 SP4  |
-| Interactive |  16.0 FMAP   |  15.0 GA   |
+| Product     | FMAP version |       GA version       |
+|-------------|:------------:|:----------------------:|
+| Scaler, SEN |  16.4 FMAP   |   15.0 SP2, 16.0 GA    |
+| ICM, IPS    |  16.4 FMAP   |   15.0 SP4, 16.0 GA    |
+| Interactive |  16.4 FMAP   | 15.0.667.0 HF, 16.0 GA |
+| Automation  |  16.4 FMAP   |     16.0.607.0-HF      |
+
+**IMPORTANT**: Deploying the R15 version of Inspire Flex using Google Kubernetes Engine (GKE) is not supported.
 
 ## Upgrading
 

@@ -43,6 +43,6 @@ Definition of environment variables of database
 {{- include "inspire.secret.asEnv" ($dbUserDefinition) -}}
 {{- include "inspire.secret.asEnv" ($dbPassDefinition) -}}
 {{- end }}
-{{- $connectionStringDefinition := dict "value" .Values.db.connectionString "source" .Values.db.connectionStringSource "secretKey" "dbConnectionString" "mountPath" "/opt/Quadient/secret" "envName" "DB_CONNECTION_STRING" "envFileName" "DB_CONNECTION_STRING_FILE" -}}
+{{- $connectionStringDefinition := dict "source" .Values.db.connectionStringSource "secretKey" "dbConnectionString" "mountPath" "/opt/Quadient/secret" "envFileName" "DB_CONNECTION_STRING_FILE" -}}
 {{- include "inspire.secret.asFilePointer" $connectionStringDefinition }}
 {{- end }}

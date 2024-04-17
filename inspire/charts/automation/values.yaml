@@ -1,0 +1,300 @@
+image:
+  # -- Defines the URL address of the Automation image stored in a Docker image repository.
+  name: ""
+  # -- Defines a specific version of the Automation image to be deployed.
+  tag: ""
+  # -- Defines the Automation image pull policy. [IfNotPresent/Always]
+  pullPolicy: IfNotPresent
+
+# -- Defines an array of volumes to be mounted to the Automation pod.
+# For example, you may need to mount a Container Storage Interface (CSI) volume to pass Secrets to Kubernetes from an external secret management system (e.g. AWS Secrets Manager).
+volumes: []
+# The following commented object is an example of a CSI volume:
+# - name: my-csi-storage
+#   csi:
+#     driver: secrets-store.csi.k8s.io
+#     readOnly: true
+#     volumeAttributes:
+#       secretProviderClass: "my-secret-provider"
+
+# -- Creates an Init Container that will mount the given volumes to the application pod.
+# It also instructs the CSI driver to create Kubernetes Secrets from Secrets stored in external storage (e.g. AWS Secrets Manager).
+# It uses the 'SecretProviderClass' definition to manage the Secret synchronization.
+activateVolumes:
+  # -- Defines whether or not to create the Init Container.
+  enabled: false
+  # -- Defines an array of volumes to be mounted.
+  volumes:
+    - name: my-csi-storage
+
+# -- Specifies the server custom name.
+iaServerName: automation
+# -- Specifies the maximum amount of Inspire Automation´s heap memory.
+maxJavaHeap: 4096M
+# -- Specifies (in seconds) the retention time for user action logs. Every 500th time a log is recorded, old logs are deleted.
+actionLogRetentionPeriod: 2419200
+# -- Specifies (in seconds) the retention time for log4pa logs. Every 500th time a log is recorded, old logs are deleted.
+log4paRetentionPeriod: 2419200
+# -- Specifies (in seconds) the default time to keep successfully completed jobs.
+deltaTimeAfterCompletion: 1800
+# -- Specifies (in seconds) the default time to keep completed jobs with errors.
+retentionPeriodAfterError: 3600
+# -- Available since the 16.0 SP1 version (except for the 16.2 version) of Automation.
+# Specifies if the Inspire Automation server should output logs to console in JSON format.
+logAsJson: true
+# -- Available since the 16.0 SP1 version (except for the 16.2 version) of Automation.
+# Specifies custom logger configuration for the Inspire Automation server to use.
+customLoggerConfigContent: ""
+
+db:
+  # -- Defines the hostname of the server that runs the database.
+  host: ""
+  # -- Defines the port of the server that runs the database.
+  port: ""
+  # -- Defines (in plain text) the username of the database user.
+  # Use the 'userSource' variable instead if you wish to define the username using a Secret.
+  user: ""
+  # -- Uses a Secret to define the username of the database user.
+  userSource:
+    useSecret: false
+    secretName: ""
+    secretKey: ""
+  # -- Defines (in plain text) the password of the database user.
+  # Use the 'passSource' variable instead if you wish to define the password using a Secret.
+  pass: ""
+  # -- Uses a Secret to define the password of the database user.
+  passSource:
+    useSecret: false
+    secretName: ""
+    secretKey: ""
+  # -- Specifies the driver class name for the database connection.
+  driverClass: ""
+  # -- Specifies the path to JDBC driver.
+  driver: ""
+  # -- Defines the name of an existing database that will be used.
+  name: ""
+  # -- Defines the type of your database. [Oracle Thin/MySQL/MSSQL/PostgreSQL]
+  type: ""
+  # -- Specifies a custom database connection string. Do not include the user credentials in the connection string.
+  connectionURL: ""
+
+# -- Specifies the method of assigning user security to the deployed Inspire Automation server. The only possible value is "icm".
+securityStorageType: "icm"
+# -- Specifies the name of the ICM group to be used for the administrator role in Inspire Automation.
+securityIcmAdministratorGroup: ""
+
+# -- Defines how long (in seconds) Kubernetes should wait before shutting down the pod.
+shutdownTimeout: 90
+
+# -- A custom service account that runs the Automation pod.
+# Also, you may need to create a service account when passing Secrets to Kubernetes from an external secret management system.
+# In such a case, the service account must have the permissions to access the external system (e.g. AWS Secrets Manager).
+existingServiceAccount: ""
+
+# -- Internal parameter
+role: automation
+
+workingDirectory:
+  # -- Defines the name of the storage class that you have prepared as a prerequisite.
+  # Optional if an existing claim is used.
+  storageClass: ""
+  # -- Defines the size (in gigabytes) the storage will be created with.
+  size: 15Gi
+  # -- Defines the name of an existing persistent volume claim.
+  existingClaim: ""
+
+ips:
+  # -- Defines whether or not to create Ips pod
+  enabled: true
+  # -- Defines the number of IPS images (i.e. nodes) to be deployed at launch.
+  ipsCount: 1
+  image:
+    # -- Defines the URL address of the IPS image stored in a Docker image repository.
+    name: ""
+    # -- Defines a specific version of the IPS image to be deployed.
+    tag: ""
+    # -- Defines the IPS image pull policy. [IfNotPresent/Always]
+    pullPolicy: IfNotPresent
+  # -- Defines the number of processing threads to assign to Automation's IPS.
+  threadcount: 4
+  # -- Allows you to specify custom environment variables for the IPS container.
+  customEnvs: {}
+  # -- Defines optional IPS commands for running as an application.
+  addParams: ""
+  # -- Defines a configuration to be created in the inspireproductionserver.config file.
+  # For example: <AllowedDirectories>/opt/localStorage;/opt/sharedFolder;icm://</AllowedDirectories><ForbidLocalWebRequests>1</ForbidLocalWebRequests>
+  configFileContent: ""
+  # -- Internal parameter
+  role: ips
+  # -- Schedule an IPS pod on the same node as Automation pod for better performance.
+  automationPodAffinity: true
+
+  resources:
+    requests:
+      # -- Specifies the number of CPUs that a container requests within its Kubernetes pod. Kubernetes uses CPU requests to find a machine that best fits the container.
+      # It defines a minimum number of CPUs that the container may consume. If there is no contention for CPU, it may use as many CPUs as is available on the machine.
+      # If there is CPU contention on the machine, CPU requests provide a relative weight across all containers on the system for how much CPU time the container may use.
+      cpu: 2
+      # -- Specifies the amount of memory required for a container to run. Even though each container is able to consume as much memory on the machine as possible,
+      # this parameter improves placement of pods in the cluster. Kubernetes then takes available memory into account prior to binding your pod to a machine.
+      memory: 3Gi
+    limits:
+      # -- Defines the number of CPUs that an IPS container is limited to use within its Kubernetes pod.
+      # CPU limits are used to control the maximum number of CPUs that the container may use independent of contention on the machine.
+      # If a container attempts to use more than the specified limit, the system will throttle the container.
+      # This allows your container to have a consistent level of service independent of the number of pods on the machine.
+      cpu: 2
+      # -- Defines the amount of memory an IPS container is limited to use. If the container exceeds the specified memory limit, it will be terminated
+      # and potentially restarted depending on the container restart policy.
+      memory: 3Gi
+  podSecurityContext:
+    # -- Learn about this setting at https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod.
+    runAsUser: 1001
+    # -- Learn about this setting at https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod.
+    fsGroup: 1001
+    # -- Learn about this setting at https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod.
+    runAsNonRoot: true
+    # -- Learn about this setting at https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-seccomp-profile-for-a-container.
+    seccompProfile:
+      type: RuntimeDefault
+  securityContext:
+    # -- Learn about this setting at https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container.
+    readOnlyRootFilesystem: true
+    # -- Learn about this setting at https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container.
+    privileged: false
+    # -- Learn about this setting at https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container.
+    allowPrivilegeEscalation: false
+    # -- Learn about this setting at https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container.
+    runAsUser: 1001
+    # -- Learn about this setting at https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container.
+    runAsGroup: 1001
+    # -- Learn about this setting at https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-capabilities-for-a-container.
+    # The default (recommended) configuration prohibits all Linux capabilities.
+    capabilities:
+      drop:
+        - ALL
+  # -- Learn about liveness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
+  # Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
+  livenessProbe:
+    # -- Defines the delay before the IPS container liveness probe is initiated.
+    initialDelaySeconds: 120
+    # -- Defines how often to perform the IPS container probe.
+    periodSeconds: 5
+    # -- Defines when the IPS container probe times out.
+    timeoutSeconds: 5
+    # -- Defines the minimum consecutive failures for the  container probe to be considered failed after having succeeded.
+    failureThreshold: 5
+    # -- Defines the minimum consecutive successes for the IPS container probe to be considered successful after having failed.
+    successThreshold: 1
+  # -- Learn about readiness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
+  # Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
+  readinessProbe:
+    # -- Defines the delay before the IPS container readiness probe is initiated.
+    initialDelaySeconds: 30
+    # -- Defines how often to perform the IPS container probe.
+    periodSeconds: 10
+    # -- Defines when the IPS container probe times out.
+    timeoutSeconds: 5
+    # -- Defines the minimum consecutive failures for the IPS container probe to be considered failed after having succeeded.
+    failureThreshold: 3
+    # -- Defines the minimum consecutive successes for the IPS container probe to be considered successful after having failed
+    successThreshold: 1
+  service:
+    # -- Provide any additional annotations which may be required.
+    annotations: {}
+  statefulset:
+    # -- Provides the ability to customize IPS's deployment using Kubernetes annotations.
+    annotations: {}
+  # -- Additional labels for IPS pods
+  podLabels: {}
+
+podSecurityContext:
+  # -- Learn about this setting at https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod.
+  runAsUser: 1001
+  # -- Learn about this setting at https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod.
+  fsGroup: 1001
+  # -- Learn about this setting at https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod.
+  runAsNonRoot: true
+  # -- Learn about this setting at https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-seccomp-profile-for-a-container.
+  seccompProfile:
+    type: RuntimeDefault
+securityContext:
+  # -- Learn about this setting at https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container.
+  readOnlyRootFilesystem: true
+  # -- Learn about this setting at https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container.
+  privileged: false
+  # -- Learn about this setting at https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container.
+  allowPrivilegeEscalation: false
+  # -- Learn about this setting at https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container.
+  runAsUser: 1001
+  # -- Learn about this setting at https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container.
+  runAsGroup: 1001
+  # -- Learn about this setting at https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-capabilities-for-a-container.
+  # The default (recommended) configuration prohibits all Linux capabilities.
+  capabilities:
+    drop:
+      - ALL
+
+# -- Learn about liveness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
+# Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
+livenessProbe:
+  # -- Defines the delay before the Automation container liveness probe is initiated.
+  initialDelaySeconds: 120
+  # -- Defines how often to perform the Automation container probe.
+  periodSeconds: 5
+  # -- Defines when the Automation container probe times out.
+  timeoutSeconds: 5
+  # -- Defines the minimum consecutive failures for the  container probe to be considered failed after having succeeded.
+  failureThreshold: 5
+  # -- Defines the minimum consecutive successes for the Automation container probe to be considered successful after having failed.
+  successThreshold: 1
+# -- Learn about readiness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
+# Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
+readinessProbe:
+  # -- Defines the delay before the Automation container readiness probe is initiated.
+  initialDelaySeconds: 30
+  # -- Defines how often to perform the Automation container probe.
+  periodSeconds: 10
+  # -- Defines when the Automation container probe times out.
+  timeoutSeconds: 5
+  # -- Defines the minimum consecutive failures for the Automation container probe to be considered failed after having succeeded.
+  failureThreshold: 3
+  # -- Defines the minimum consecutive successes for the Automation container probe to be considered successful after having failed
+  successThreshold: 1
+
+# -- Allows you to specify custom environment variables for the Automation container.
+customEnvs: {}
+
+resources:
+  requests:
+    # -- Specifies the number of CPUs that a container requests within its Kubernetes pod. Kubernetes uses CPU requests to find a machine that best fits the container.
+    # It defines a minimum number of CPUs that the container may consume. If there is no contention for CPU, it may use as many CPUs as is available on the machine.
+    # If there is CPU contention on the machine, CPU requests provide a relative weight across all containers on the system for how much CPU time the container may use.
+    cpu: 2
+    # -- Specifies the amount of memory required for a container to run. Even though each container is able to consume as much memory on the machine as possible,
+    # this parameter improves placement of pods in the cluster. Kubernetes then takes available memory into account prior to binding your pod to a machine.
+    memory: 3Gi
+  limits:
+    # -- Defines the number of CPUs that an Automation container is limited to use within its Kubernetes pod.
+    # CPU limits are used to control the maximum number of CPUs that the container may use independent of contention on the machine.
+    # If a container attempts to use more than the specified limit, the system will throttle the container.
+    # This allows your container to have a consistent level of service independent of the number of pods on the machine.
+    cpu: 2
+    # -- Defines the amount of memory an Automation container is limited to use. If the container exceeds the specified memory limit, it will be terminated
+    # and potentially restarted depending on the container restart policy.
+    memory: 3Gi
+
+service:
+  # -- Provide any additional annotations which may be required.
+  annotations: {}
+  # -- Defines the value for the service Kubernetes object.
+  # It is recommended to keep the default value because it makes Automation accessible only from within the Kubernetes cluster.
+  # The LoadBalancer value makes Automation accessible from the Internet. This should only be used for testing purposes. [ClusterIP/LoadBalancer]
+  type: ClusterIP
+
+deployment:
+  # -- Provides the ability to customize Automation's deployment using Kubernetes annotations.
+  annotations: {}
+
+# -- Additional labels for Automation pods
+podLabels: {}

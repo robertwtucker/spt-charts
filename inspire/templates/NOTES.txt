@@ -4,12 +4,24 @@ Your release is called '{{ .Release.Name }}'.
 ** Wait for the chart to be deployed. **
 
 Your deployed applications can be accessed on the following DNS names from within your cluster
-  ICM: {{ include "inspire.applicationName" . }}-icm.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.global.icm.portOverride | default 30353 }}
+  ICM: {{ include "inspire.applicationName" . }}-icm.{{ .Release.Namespace }}.svc.cluster.local:{{ (include "inspire.env.icm.port" .) }}
 {{- if .Values.global.interactive.enabled }}
   Interactive: {{ include "inspire.applicationName" . }}-interactive.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.global.interactive.portOverride | default 30701 }}
 {{- end }}
 {{- if .Values.global.scaler.enabled }}
   Scaler: {{ include "inspire.applicationName" . }}-scaler.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.global.scaler.portOverride | default 30600 }}
+{{- end }}
+{{- if .Values.global.automation.enabled }}
+  {{ $serverPort := .Values.global.automation.portOverride | default 10140 }}
+  Automation server: {{ include "inspire.applicationName" . }}-automation.{{ .Release.Namespace }}.svc.cluster.local:{{ $serverPort }}
+  Automation client: {{ include "inspire.applicationName" . }}-automation.{{ .Release.Namespace }}.svc.cluster.local:{{ add $serverPort 1 }}
+  {{- if .Values.automation.ips.enabled }}
+  {{- $ipsCount := .Values.automation.ips.ipsCount | int | default 1 }}
+  {{- $appName := include "inspire.applicationName" . }}
+  {{- range $index := until $ipsCount }}
+    IPS-{{ $index }}: {{ $appName }}-ips-{{ $index }}.{{ $appName }}-ips.{{ $.Release.Namespace }}.svc.cluster.local:30354
+  {{- end }}
+  {{- end }}
 {{- end }}
 
 ** Secrets **
@@ -29,10 +41,18 @@ To get the authentication details, execute the following commands:
 {{- end }}
 {{- if .Values.global.scaler.enabled }}
   export SCALER_USER={{ .Values.global.scaler.userOverride | default "scaler" | quote }}
-  {{- if eq (include "inspire.secret.isDelegated" .Values.global.interactive.passOverrideSource) "false" }}
+  {{- if eq (include "inspire.secret.isDelegated" .Values.global.scaler.passOverrideSource) "false" }}
   export SCALER_PASSWORD=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "inspire.applicationName" . }}-scaler-icm -o jsonpath="{.data.pass}" | base64 --decode)
   {{- else }}
   Scaler password is managed externally.
+  {{- end }}
+{{- end }}
+{{- if .Values.global.automation.enabled }}
+  export AUTOMATION_USER={{ .Values.global.automation.userOverride | default "automation" | quote }}
+  {{- if eq (include "inspire.secret.isDelegated" .Values.global.automation.passOverrideSource) "false" }}
+  export AUTOMATION_PASSWORD=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ include "inspire.applicationName" . }}-automation-icm -o jsonpath="{.data.pass}" | base64 --decode)
+  {{- else }}
+  Automation password is managed externally.
   {{- end }}
 {{- end }}
 
@@ -49,10 +69,15 @@ Monitor this pod until the import job is completed. You can delete the pod after
 
 ** Port Forwarding **
 To connect to your applications execute the following commands:
-  $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "inspire.applicationName" . }}-icm {{ .Values.global.icm.portOverride | default 30353 }}:{{ .Values.global.icm.portOverride | default 30353 }}
+  $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "inspire.applicationName" . }}-icm {{ (include "inspire.env.icm.port" .) }}:{{ (include "inspire.env.icm.port" .) }}
 {{- if .Values.global.interactive.enabled }}
   $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "inspire.applicationName" . }}-interactive {{ .Values.global.interactive.portOverride | default 30701 }}:{{ .Values.global.interactive.portOverride | default 30701 }}
 {{- end }}
 {{- if .Values.global.scaler.enabled }}
   $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "inspire.applicationName" . }}-scaler {{ .Values.global.scaler.portOverride | default 30600 }}:{{ .Values.global.scaler.portOverride | default 30600 }}
+{{- end }}
+{{- if .Values.global.automation.enabled }}
+  {{- $serverPort := .Values.global.automation.portOverride | default 10140 }}
+  $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "inspire.applicationName" . }}-automation {{ $serverPort }}:{{ $serverPort }}
+  $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "inspire.applicationName" . }}-automation {{ add $serverPort 1 }}:{{ add $serverPort 1 }}
 {{- end }}

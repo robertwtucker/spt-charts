@@ -37,6 +37,23 @@
         }
       }
 {{- end }}
+{{- if .Values.global.automation.enabled }}
+      ,{
+        "userName": {{ .Values.global.automation.userOverride | default "automation" | quote }},
+        "userPasswordPath": "$(AUTOMATION_PASS_FILE)",
+        "accessRights": {
+          "admin": {
+            "rightStatus": "allow"
+          },
+          "allowImpersonate": {
+            "rightStatus": "allow"
+          },
+          "serverExportImport": {
+            "rightStatus": "allow"
+          }
+        }
+      }
+{{- end }}
 {{- if .Values.global.sen.enabled }}
       ,{
         "userName": {{ .Values.global.sen.userOverride | default "sen" | quote }},

@@ -6,13 +6,13 @@ Definition of environment variables of database
 {{- if eq "postgresql" (.Values.db.type | trim | lower) }}
 POSTGRESQL
 {{- else if eq "mssql" (.Values.db.type | trim | lower) }}
-MS_SQL_SERVER
+MSSQL
 {{- else if eq "microsoftsql" (.Values.db.type | trim | lower) }}
-MS_SQL_SERVER
+MSSQL
 {{- else if eq "oracle" (.Values.db.type | trim | lower) }}
 ORACLE
-{{- else if eq "db2" (.Values.db.type | trim | lower) }}
-DB2
+{{- else if eq "hsqldb" (.Values.db.type | trim | lower) }}
+HSQLDB
 {{- else }}
 {{- end }}
 {{- end }}
@@ -20,7 +20,7 @@ DB2
 {{- define "interactive.env.database" -}}
 {{- $applicationName := include "inspire.applicationName" . -}}
 {{- $dbPassDefinition := dict "value" .Values.db.pass "source" .Values.db.passSource "secretName" (printf "%s-interactive-database" $applicationName) "secretKey" "dbPass" "envName" "DB_PASS" "envOnly" true -}}
-{{- $dbUserDefinition := dict "value" .Values.db.pass "source" .Values.db.userSource "secretName" (printf "%s-interactive-database" $applicationName) "secretKey" "dbUser" "envName" "DB_USER" "envOnly" true -}}
+{{- $dbUserDefinition := dict "value" .Values.db.user "source" .Values.db.userSource "secretName" (printf "%s-interactive-database" $applicationName) "secretKey" "dbUser" "envName" "DB_USER" "envOnly" true -}}
 - name: DB_TYPE
   value: {{ required "Interactive database type is not valid" (include "getInteractiveDbType" . | trim) }}
 - name: DB_HOST

@@ -1,0 +1,166 @@
+{{- if and .Values.global.automation.enabled .Values.ips.enabled }}
+  {{- include "inspire.secret.check" (dict "value" .Values.global.icm.adminPassOverride "source" .Values.global.icm.adminPassOverrideSource) }}
+  {{- include "inspire.secret.check" (dict "value" .Values.global.license.server "source" .Values.global.license.serverSource) }}
+  {{- include "inspire.secret.check" (dict "value" .Values.global.license.server2 "source" .Values.global.license.server2Source) }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "inspire.applicationName" . }}-ips
+  labels:
+    {{- include "inspire.labels.ips" . | nindent 4 }}
+spec:
+  podManagementPolicy: Parallel
+  replicas: {{ .Values.ips.ipsCount }}
+  selector:
+    matchLabels:
+      {{- include "inspire.labels.ips" . | nindent 6 }}
+  serviceName: {{ include "inspire.applicationName" . }}-ips
+  template:
+    metadata:
+      {{- with .Values.ips.statefulset.annotations }}
+      annotations:
+        {{- range $key, $value := . }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
+      {{- end }}
+      labels:
+        {{- include "inspire.labels.ips" . | nindent 8 }}
+        {{- with .Values.ips.podLabels }}
+        {{- range $key, $value := . }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+        {{- end }}
+      name: {{ include "inspire.applicationName" . }}-ips-template
+    spec:
+{{- if .Values.existingServiceAccount }}
+      serviceAccountName: {{ .Values.existingServiceAccount }}
+{{- end }}
+      securityContext:
+        {{- toYaml .Values.ips.podSecurityContext | nindent 8 }}
+      affinity:
+        {{- if .Values.ips.automationPodAffinity }}
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: role
+                    operator: In
+                    values:
+                      - {{ .Values.role }}
+              topologyKey: "kubernetes.io/hostname"
+         {{- end }}
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    {{- include "inspire.labels.ips" . | nindent 20 }}
+                topologyKey: "kubernetes.io/hostname"
+      {{- if .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+      {{- range .Values.global.imagePullSecrets }}
+        - name: {{ . }}
+      {{- end }}
+      {{- end }}
+      initContainers:
+      - name: {{ include "inspire.applicationName" . }}-ips-icm-wait
+        image: "{{ .Values.ips.image.name }}:{{ .Values.ips.image.tag }}"
+        imagePullPolicy: {{ .Values.ips.image.pullPolicy }}
+        securityContext: {{- toYaml .Values.securityContext | nindent 10 }}
+        env:
+        - name: ICM_HOST
+          value: {{ (include "inspire.env.icm.host" .) }}
+        - name: ICM_PORT
+          value: {{ (include "inspire.env.icm.port" .) | quote }}
+        command: [ 'sh', '-c', 'for i in {1..150}; do if $(timeout 4 bash -c "cat < /dev/null > /dev/tcp/$ICM_HOST/$ICM_PORT"); then echo OK && exit 0; else echo ICM not available yet; fi; done; echo ICM service availability timed-out && exit 1' ]
+      containers:
+      - name: {{ include "inspire.applicationName" . }}-ips
+        image: "{{ .Values.ips.image.name }}:{{ .Values.ips.image.tag }}"
+        imagePullPolicy: {{ .Values.ips.image.pullPolicy }}
+        securityContext:
+        {{- toYaml .Values.ips.securityContext | nindent 10 }}
+        env:
+        {{- with .Values.ips.customEnvs }}
+        {{- range $key, $value := . }}
+        - name: {{ $key }}
+          value: {{ $value | quote }}
+        {{- end }}
+        {{- end }}
+          {{- include "inspire.env.license" . | nindent 8 }}
+          {{- include "inspire.secret.asFilePointer" (dict "source" .Values.global.automation.passOverrideSource "envFileName" "AUTOMATION_PASS_FILE" "mountPath" "/opt/Quadient/secrets/automation" "secretKey" "pass") | nindent 8 }}
+        - name: CX_PARAMS
+          value: {{ printf "-icmaddress %s -icmuser %s -icmpasswordpath %s" (printf "%s:%s" ( include "inspire.env.icm.host" . ) ( include "inspire.env.icm.port" . )) (include "inspire.automation.env.icm.user" . ) "$(AUTOMATION_PASS_FILE)" }}
+        - name: THREAD_COUNT
+          value: {{ .Values.ips.threadcount | quote }}
+        - name: ADD_PARAMS
+          value: "-waitingtime 15 {{ .Values.ips.addParams }}"
+        ports:
+          - containerPort: 30354
+            protocol: TCP
+        livenessProbe:
+          tcpSocket:
+            port: 30354
+          initialDelaySeconds: {{ .Values.ips.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.ips.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.ips.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.ips.livenessProbe.failureThreshold }}
+          successThreshold: {{ .Values.ips.livenessProbe.successThreshold }}
+        readinessProbe:
+          exec:
+            command:
+              - "/opt/Quadient/Designer/InspirePSCLI"
+              - "-api"
+              - "ping"
+          initialDelaySeconds: {{ .Values.ips.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.ips.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.ips.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.ips.readinessProbe.failureThreshold }}
+          successThreshold: {{ .Values.ips.readinessProbe.successThreshold }}
+        resources:
+          {{- toYaml .Values.ips.resources | nindent 10 }}
+        volumeMounts:
+          - name: ips-tmp
+            mountPath: /tmp
+          - name: ips-chimenix
+            mountPath: /etc/Chimenix
+          - name: local-storage
+            mountPath: /opt/localStorage
+          - name: ips-home
+            mountPath: /home/quadient/.quadient
+          - name: ips-data
+            mountPath: /opt/Quadient/Inspire-Designer-data/ips
+          - name: ips-icmcache
+            mountPath: /opt/Quadient/Inspire-Designer-data/ips-icmcache
+          - name: ips-config-volume
+            mountPath: /opt/Quadient/Designer/InspireProductionServer.config
+            subPath: InspireProductionServer.config
+            {{- include "inspire.secret.asMount" (dict "source" .Values.global.automation.passOverrideSource "volumeName" "icm-automation-password" "secretKey" "pass" "mountPath" "/opt/Quadient/secrets/automation" "withoutSubpath" false) | nindent 10 }}
+        terminationMessagePath: /dev/termination-log
+        lifecycle:
+          preStop:
+            exec:
+              command: [ "/bin/sh", "-c", "while curl --insecure localhost:30610/healthcheck > /dev/null 2>&1 ; do sleep 3; done" ]
+      restartPolicy: Always
+      dnsPolicy: ClusterFirst
+      volumes:
+      {{- $volumeCandidates := list }}
+      {{- $applicationName := (include "inspire.applicationName" .) }}
+      {{- $volumeCandidates = append $volumeCandidates (dict "value" .Values.global.automation.passOverride "source" .Values.global.automation.passOverrideSource "volumeName" "icm-automation-password" "secretName" (printf "%s-automation-icm" $applicationName) )}}
+      {{- include "inspire.secret.uniqueVolumes" $volumeCandidates | nindent 8 }}
+        - name: ips-tmp
+          emptyDir: {}
+        - name: ips-chimenix
+          emptyDir: {}
+        - name: local-storage
+          emptyDir: {}
+        - name: ips-home
+          emptyDir: {}
+        - name: ips-data
+          emptyDir: {}
+        - name: ips-icmcache
+          emptyDir: {}
+        - name: ips-config-volume
+          configMap:
+            name: {{ include "inspire.applicationName" . }}-ips-config
+{{- end }}

@@ -262,6 +262,13 @@ icmTrustedDomains:
 #    port:
 #    domain:
 
+# -- Specifies a custom logger configuration to be used by Scaler.
+# Available since the 16.3 and 16.0 SP2 version of Scaler.
+customLoggerConfigContent: ""
+# -- Specifies an existing ConfigMap with a custom logger configuration to be used by Scaler (must contain the 'custom_logger_config.xml' key).
+# Available since the 16.3 and 16.0 SP2 version of Scaler.
+customLoggerConfigCM: ""
+
 ips:
   # -- Defines the number of processing threads to assign to Scaler's IPS.
   threadcount: 4
@@ -313,7 +320,7 @@ ips:
     # -- Defines the minimum consecutive successes for the IPS container probe to be considered successful after having failed
     successThreshold: 1
   # -- Allows you to specify custom environment variables for the IPS container.
-  customEnvs: { }
+  customEnvs: {}
 
 # -- Available since the 15.0 version (except for the 15.2 version) of Scaler.
 sen:
@@ -333,7 +340,7 @@ sen:
       # See memory limits for Scaler to learn about the purpose of the setting.
       memory: 3Gi
   # -- Allows you to specify custom environment variables for the Scenario Engine container.
-  customEnvs: { }
+  customEnvs: {}
   # -- Configures Scenario Engine to encrypt the communication between Scenario Engine and ICM using a custom certificate.
   # ICM must be configured to use a custom certificate as well.
   # For more information, see the 'ICM Trusted Domains' section of Inspire Scaler User Manual.
@@ -364,16 +371,23 @@ sen:
       useSecret: false
       secretName: ""
       secretKey: ""
-  #  Defines the maximum amount of batches that SEN can simultaneously submit to Scaler for processing.
+  # -- Defines the maximum amount of batches that SEN can simultaneously submit to Scaler for processing.
   maxParallelBatchCount: 4
-  #  Defines (in days) how long data in SEN's database is kept before it is automatically deleted from the database.
+  # -- Defines (in days) how long data in SEN's database is kept before it is automatically deleted from the database.
   retentionPeriodInDays: 30
+  # -- Specifies a custom logger configuration to be used by Scenario Engine.
+  # Available since the 16.3 and 16.0 SP2 version of Scenario Engine.
+  customLoggerConfigContent: ""
+  # -- Specifies an existing ConfigMap with a custom logger configuration to be used by Scenario Engine (must contain the 'custom_logger_config.xml' key).
+  # Available since the 16.3 and 16.0 SP2 version of Scenario Engine.
+  customLoggerConfigCM: ""
   # -- Defines additional JVM arguments.
   # For example, you can adjust SEN's allocated Java heap memory (using the -Xmx2048m property) whose value should be lower than the value of resources.limits.memory.
   # You can also use this variable to define the SEN properties listed in the 'SEN Properties' section of the Scaler User Manual.
   # An example value: "-Dsen.retentionTime='06:50'"
   addJvmArguments: ""
-  # Learn about startup probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.  # Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
+  # -- Learn about startup probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
+  # Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
   startupProbe:
     # -- Defines how often to perform the Scenario Engine container probe.
     periodSeconds: 5
@@ -383,7 +397,8 @@ sen:
     failureThreshold: 60
     # -- Defines the minimum consecutive successes for the Scenario Engine container probe to be considered successful after having failed.
     successThreshold: 1
-  # Learn about liveness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.  # Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
+  # -- Learn about liveness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
+  # Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
   livenessProbe:
     # -- Defines how often to perform the Scenario Engine container probe.
     periodSeconds: 5
@@ -482,7 +497,6 @@ resources:
     # and potentially restarted depending on the container restart policy.
     memory: 3Gi
 
-
 metricsAPI:
   # -- Since the 15.0 version, the following feature enables/disables Scaler's Metrics API endpoint.
   # It is useful as a resource for monitoring tools which can be used to scale an Inspire Scaler cluster based on custom metrics.
@@ -492,11 +506,11 @@ metricsAPI:
   enabled: true
 
 # -- Allows you to specify custom environment variables for the Scaler container.
-customEnvs: { }
+customEnvs: {}
 
 service:
   # -- Provide any additional annotations which may be required.
-  annotations: { }
+  annotations: {}
   # -- Defines the value for the service Kubernetes object.
   # It is recommended to keep the default value because it makes Scaler accessible only from within the Kubernetes cluster.
   # The LoadBalancer value makes Scaler accessible from the Internet. This should only be used for testing purposes. [ClusterIP/LoadBalancer]
@@ -532,8 +546,12 @@ ingress:
     # AKS (Application Gateway Kubernetes Ingress): https://azure.github.io/application-gateway-kubernetes-ingress/how-tos/lets-encrypt/#certificate-issuance-with-letsencryptorg
     # EKS (NGINX Ingress): https://cert-manager.io/docs/tutorials/acme/ingress/
     clusterIssuer:
-
+  # -- Allows to define annotations which influence the Ingress Controller behavior.
+  customAnnotations:
 
 deployment:
   # -- Provides the ability to customize Scaler's deployment using Kubernetes annotations.
-  annotations: { }
+  annotations: {}
+
+# -- Additional labels for Scaler pods
+podLabels: {}

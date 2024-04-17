@@ -6,7 +6,7 @@ Definition of environment variables for SAML configuration
   value: {{ .Values.authentication.saml2.enabled | quote }}
 {{- if .Values.authentication.saml2.enabled }}
 {{- $applicationName := include "inspire.applicationName" . -}}
-{{- $samlKeystoreDefinition := dict "value" .Values.authentication.saml2.keystore "source" .Values.authentication.saml2.keystoreSource "secretKey" "keystore" "mountPath" "/opt/Quadient/secrets/saml" "envFileName" "SAML_KEYSTORE_FILE" -}}
+{{- $samlKeystoreDefinition := dict "source" .Values.authentication.saml2.keystoreSource "secretKey" "keystore" "mountPath" "/opt/Quadient/secrets/saml" "envFileName" "SAML_KEYSTORE_FILE" -}}
 {{- $samlKeystorePasswordDefinition := dict "value" .Values.authentication.saml2.keystorePassword "source" .Values.authentication.saml2.keystorePasswordSource "secretName" (printf "%s-scaler-saml" $applicationName) "secretKey" "keystorePassword" "envName" "SAML_KEYSTORE_PASSWORD" "envOnly" true -}}
 {{- $samlServiceProviderKeystorePasswordDefinition := dict "value" .Values.authentication.saml2.serviceProviderKeypairPassword "source" .Values.authentication.saml2.serviceProviderKeypairPasswordSource "secretName" (printf "%s-scaler-saml" $applicationName) "secretKey" "serviceProviderKeypairPassword" "envName" "SAML_SP_KEYPAIR_PASSWORD" "envOnly" true }}
 - name: SAML_REGISTRATION_ALIAS

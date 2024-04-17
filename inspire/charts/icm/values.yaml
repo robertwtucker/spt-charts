@@ -124,7 +124,7 @@ ingress:
     #    To learn about Kubernetes TLS secrets, see Kubernetes documentation at https://kubernetes.io/docs/concepts/configuration/secret/#tls-secrets.
     # 2) If you intend to use the 'clusterIssuer' parameter to provide the required certificate, use the 'secretName' parameter to define a custom name for a secret that will be created by the cluster issuer.
     secretName:
-    # -- Allows you to defines the name of a cluster-issuer to be used for creating the certificate secret.
+    # -- Allows you to define the name of a cluster-issuer to be used for creating the certificate secret.
     # For more information about cluster issuer setup, see one of the following documentations based on which platform you use to deploy Inspire:
     # AKS (Application Gateway Kubernetes Ingress): https://azure.github.io/application-gateway-kubernetes-ingress/how-tos/lets-encrypt/#certificate-issuance-with-letsencryptorg
     # EKS (NGINX Ingress): https://cert-manager.io/docs/tutorials/acme/ingress/
@@ -256,3 +256,6 @@ service:
 deployment:
   # -- Provides the ability to customize ICM's deployment using Kubernetes annotations.
   annotations: {}
+
+# -- Additional labels for ICM pods
+podLabels: {}

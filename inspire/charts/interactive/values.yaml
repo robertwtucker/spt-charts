@@ -119,11 +119,11 @@ cookieHttpOnlySecure: false
 cookieProcessor: false
 # -- Sets the method of SSO (saml2 or oauth2).
 ssoEnvironmental: ""
+# -- Allows you to specify custom environment variables for the Interactive container.
+customEnvs: {}
 # -- [SPT] Name of a PVC to mount to the config directory for demo-mode use.
 # -- Note: Will be ignored when productionEnvironment is set to true.
 demoModeFiles: ""
-# -- [SPT] XML content to be mapped over the `configuration.xml` provided with the image.
-configurationXml: ""
 ips:
   resources:
     requests:
@@ -169,7 +169,8 @@ ips:
     failureThreshold: 10
     # -- Defines the minimum consecutive successes for the IPS container probe to be considered successful after having failed
     successThreshold: 1
-
+  # -- Allows you to specify custom environment variables for the IPS container.
+  customEnvs: {}
 fulltext:
   # -- Defines whether to enable the full-text search feature in Interactive.
   enabled: false
@@ -308,7 +309,7 @@ ingress:
     #    To learn about Kubernetes TLS secrets, see Kubernetes documentation at https://kubernetes.io/docs/concepts/configuration/secret/#tls-secrets.
     # 2) If you intend to use the 'clusterIssuer' parameter to provide the required certificate, use the 'secretName' parameter to define a custom name for a secret that will be created by the cluster issuer.
     secretName:
-    # -- Allows you to defines the name of a cluster-issuer to be used for creating the certificate secret.
+    # -- Allows you to define the name of a cluster-issuer to be used for creating the certificate secret.
     # For more information about cluster issuer setup, see one of the following documentations based on which platform you use to deploy Inspire:
     # AKS (Application Gateway Kubernetes Ingress): https://azure.github.io/application-gateway-kubernetes-ingress/how-tos/lets-encrypt/#certificate-issuance-with-letsencryptorg
     # EKS (NGINX Ingress): https://cert-manager.io/docs/tutorials/acme/ingress/
@@ -317,3 +318,6 @@ ingress:
 deployment:
   # -- Provides the ability to customize Interactive's deployment using Kubernetes annotations.
   annotations: {}
+
+# -- Additional labels for Interactive pods
+podLabels: {}

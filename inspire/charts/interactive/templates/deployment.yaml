@@ -252,11 +252,6 @@ spec:
         - name: interactive-demo-mode-files
           mountPath: /opt/QuadientInteractive/config/demo-mode
         {{- end }}
-        {{- if .Values.configurationXml}}
-        - name: interactive-configuration-xml
-          mountPath: /opt/QuadientInteractive/config/configuration.xml
-          subPath: configuration.xml
-        {{- end }}
         {{- include "inspire.secret.asMount" (dict "source" .Values.global.icm.adminPassOverrideSource "volumeName" "icm-admin-password" "mountPath" "/etc/secrets/icm" "withoutSubpath" true ) | nindent 8 }}
         {{- include "inspire.secret.asMount" (dict "source" .Values.global.interactive.passOverrideSource "volumeName" "icm-interactive-password" "mountPath" "/etc/secrets/icmUser" "withoutSubpath" true ) | nindent 8 }}
         {{- include "inspire.secret.asMount" (dict "source" .Values.db.passSource "volumeName" "interactive-database-password" "mountPath" "/etc/secrets/db" "withoutSubpath" true ) | nindent 8 }}
@@ -373,14 +368,6 @@ spec:
           persistentVolumeClaim:
             claimName: {{ .Values.demoModeFiles }}
             readOnly: true
-        {{- end }}
-        {{- if .Values.configurationXml }}
-        - name: interactive-configuration-xml
-          configMap:
-            name: {{ include "inspire.applicationName" . }}-interactive-configuration-xml
-            items:
-              - key: configuration.xml
-                path: configuration.xml
         {{- end }}
         - name: ips-config-volume
           configMap:

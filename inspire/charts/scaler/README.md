@@ -1,6 +1,6 @@
 # scaler
 
-![Version: 2.0.0](https://img.shields.io/badge/Version-2.0.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 16.0](https://img.shields.io/badge/AppVersion-16.0-informational?style=flat-square)
+![Version: 2.3.0](https://img.shields.io/badge/Version-2.3.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 16.4](https://img.shields.io/badge/AppVersion-16.4-informational?style=flat-square)
 
 Inspire Scaler
 
@@ -81,6 +81,8 @@ Inspire Scaler
 | libExtSidecar.image.tag | string | `""` | Defines a specific version of the 'lib-ext' sidecar image to be deployed. |
 | libExtSidecar.image.pullPolicy | string | `"IfNotPresent"` | Defines the 'lib-ext' sidecar image pull policy. [IfNotPresent/Always] |
 | icmTrustedDomains | string | `nil` | Configures Scaler to encrypt the communication between Scaler and ICM using a custom certificate. ICM must be configured to use a custom certificate as well. To enable trusted domains for IPS, you must update the 'ips.configfileContent' Helm variable by including the <ICMClientVerifyDomain/> element. For more information, see the 'ICM Trusted Domains' section of Inspire Scaler User Manual. |
+| customLoggerConfigContent | string | `""` | Specifies a custom logger configuration to be used by Scaler. Available since the 16.3 and 16.0 SP2 version of Scaler. |
+| customLoggerConfigCM | string | `""` | Specifies an existing ConfigMap with a custom logger configuration to be used by Scaler (must contain the 'custom_logger_config.xml' key). Available since the 16.3 and 16.0 SP2 version of Scaler. |
 | ips.threadcount | int | `4` | Defines the number of processing threads to assign to Scaler's IPS. |
 | ips.addParams | string | `"-allowdatarecording"` | Defines optional IPS commands for running as an application. For example, the -allowdatarecording command is necessary for Scaler's data recording feature. |
 | ips.configFileContent | string | `""` | Defines a configuration to be created in the inspireproductionserver.config file. For example: <AllowedDirectories>/opt/localStorage;/opt/scalerSharedFolder;icm://</AllowedDirectories><ForbidLocalWebRequests>1</ForbidLocalWebRequests> |
@@ -101,7 +103,7 @@ Inspire Scaler
 | ips.readinessProbe.failureThreshold | int | `10` | Defines the minimum consecutive failures for the IPS container probe to be considered failed after having succeeded. |
 | ips.readinessProbe.successThreshold | int | `1` | Defines the minimum consecutive successes for the IPS container probe to be considered successful after having failed |
 | ips.customEnvs | object | `{}` | Allows you to specify custom environment variables for the IPS container. |
-| sen | object | `{"addJvmArguments":"","customEnvs":{},"db":{"connectionString":"","connectionStringSource":{"secretKey":"","secretName":"","useSecret":false},"pass":"","passSource":{"secretKey":"","secretName":"","useSecret":false},"user":"","userSource":{"secretKey":"","secretName":"","useSecret":false}},"icmTrustedDomain":null,"livenessProbe":{"failureThreshold":5,"periodSeconds":5,"successThreshold":1,"timeoutSeconds":5},"maxParallelBatchCount":4,"readinessProbe":{"failureThreshold":10,"initialDelaySeconds":10,"periodSeconds":10,"successThreshold":1,"timeoutSeconds":2},"resources":{"limits":{"cpu":2,"memory":"3Gi"},"requests":{"cpu":2,"memory":"3Gi"}},"retentionPeriodInDays":30,"startupProbe":{"failureThreshold":60,"periodSeconds":5,"successThreshold":1,"timeoutSeconds":5}}` | Available since the 15.0 version (except for the 15.2 version) of Scaler. |
+| sen | object | `{"addJvmArguments":"","customEnvs":{},"customLoggerConfigCM":"","customLoggerConfigContent":"","db":{"connectionString":"","connectionStringSource":{"secretKey":"","secretName":"","useSecret":false},"pass":"","passSource":{"secretKey":"","secretName":"","useSecret":false},"user":"","userSource":{"secretKey":"","secretName":"","useSecret":false}},"icmTrustedDomain":null,"livenessProbe":{"failureThreshold":5,"periodSeconds":5,"successThreshold":1,"timeoutSeconds":5},"maxParallelBatchCount":4,"readinessProbe":{"failureThreshold":10,"initialDelaySeconds":10,"periodSeconds":10,"successThreshold":1,"timeoutSeconds":2},"resources":{"limits":{"cpu":2,"memory":"3Gi"},"requests":{"cpu":2,"memory":"3Gi"}},"retentionPeriodInDays":30,"startupProbe":{"failureThreshold":60,"periodSeconds":5,"successThreshold":1,"timeoutSeconds":5}}` | Available since the 15.0 version (except for the 15.2 version) of Scaler. |
 | sen.resources.requests.cpu | int | `2` | Defines the CPU requests for Scenario Engine. See CPU requests for Scaler to learn about the purpose of the setting. |
 | sen.resources.requests.memory | string | `"3Gi"` | Memory requests for Scenario Engine. See memory requests for Scaler to learn about the purpose of the setting. |
 | sen.resources.limits.cpu | int | `2` | Defines the CPU limits for Scenario Engine. See CPU limits for Scaler to learn about the purpose of the setting. |
@@ -114,11 +116,17 @@ Inspire Scaler
 | sen.db.userSource | object | `{"secretKey":"","secretName":"","useSecret":false}` | Uses a Secret to define the username of the database user. |
 | sen.db.pass | string | `""` | Defines (in plain text) the password of the database user. Use the 'passSource' variable instead if you wish to define the password using a Secret. |
 | sen.db.passSource | object | `{"secretKey":"","secretName":"","useSecret":false}` | Uses a Secret to define the password of the database user. |
+| sen.maxParallelBatchCount | int | `4` | Defines the maximum amount of batches that SEN can simultaneously submit to Scaler for processing. |
+| sen.retentionPeriodInDays | int | `30` | Defines (in days) how long data in SEN's database is kept before it is automatically deleted from the database. |
+| sen.customLoggerConfigContent | string | `""` | Specifies a custom logger configuration to be used by Scenario Engine. Available since the 16.3 and 16.0 SP2 version of Scenario Engine. |
+| sen.customLoggerConfigCM | string | `""` | Specifies an existing ConfigMap with a custom logger configuration to be used by Scenario Engine (must contain the 'custom_logger_config.xml' key). Available since the 16.3 and 16.0 SP2 version of Scenario Engine. |
 | sen.addJvmArguments | string | `""` | Defines additional JVM arguments. For example, you can adjust SEN's allocated Java heap memory (using the -Xmx2048m property) whose value should be lower than the value of resources.limits.memory. You can also use this variable to define the SEN properties listed in the 'SEN Properties' section of the Scaler User Manual. An example value: "-Dsen.retentionTime='06:50'" |
+| sen.startupProbe | object | `{"failureThreshold":60,"periodSeconds":5,"successThreshold":1,"timeoutSeconds":5}` | Learn about startup probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/. Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes. |
 | sen.startupProbe.periodSeconds | int | `5` | Defines how often to perform the Scenario Engine container probe. |
 | sen.startupProbe.timeoutSeconds | int | `5` | Defines when the Scenario Engine container probe times out. |
 | sen.startupProbe.failureThreshold | int | `60` | Defines the minimum consecutive failures for the Scenario Engine container probe to be considered failed after having succeeded. |
 | sen.startupProbe.successThreshold | int | `1` | Defines the minimum consecutive successes for the Scenario Engine container probe to be considered successful after having failed. |
+| sen.livenessProbe | object | `{"failureThreshold":5,"periodSeconds":5,"successThreshold":1,"timeoutSeconds":5}` | Learn about liveness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/. Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes. |
 | sen.livenessProbe.periodSeconds | int | `5` | Defines how often to perform the Scenario Engine container probe. |
 | sen.livenessProbe.timeoutSeconds | int | `5` | Defines when the Scenario Engine container probe times out. |
 | sen.livenessProbe.failureThreshold | int | `5` | Defines the minimum consecutive failures for the Scenario Engine container probe to be considered failed after having succeeded. |
@@ -168,5 +176,7 @@ Inspire Scaler
 | ingress.tls.enabled | bool | `true` | Enables HTTPS for Scaler. It is set to 'true' by default for security reasons. |
 | ingress.tls.secretName | string | `nil` | The functionality of the 'secretName' parameter differs based on how you intend to provide a Kubernetes secret that stores the required certificate: 1) If you create a Kubernetes TLS secret that stores the required certificate manually by yourself, enter the name of the secret in the 'secretName' parameter.    To learn about Kubernetes TLS secrets, see Kubernetes documentation at https://kubernetes.io/docs/concepts/configuration/secret/#tls-secrets. 2) If you intend to use the 'clusterIssuer' parameter to provide the required certificate, use the 'secretName' parameter to define a custom name for a secret that will be created by the cluster issuer. |
 | ingress.tls.clusterIssuer | string | `nil` | Allows you to define the name of a cluster-issuer to be used for creating the certificate secret. For more information about cluster issuer setup, see one of the following documentations based on which platform you use to deploy Inspire: AKS (Application Gateway Kubernetes Ingress): https://azure.github.io/application-gateway-kubernetes-ingress/how-tos/lets-encrypt/#certificate-issuance-with-letsencryptorg EKS (NGINX Ingress): https://cert-manager.io/docs/tutorials/acme/ingress/ |
+| ingress.customAnnotations | string | `nil` | Allows to define annotations which influence the Ingress Controller behavior. |
 | deployment.annotations | object | `{}` | Provides the ability to customize Scaler's deployment using Kubernetes annotations. |
+| podLabels | object | `{}` | Additional labels for Scaler pods |
 

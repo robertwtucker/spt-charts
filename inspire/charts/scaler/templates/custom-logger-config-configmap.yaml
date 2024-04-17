@@ -1,0 +1,11 @@
+{{- if .Values.global.scaler.enabled | and .Values.customLoggerConfigContent | and (not .Values.customLoggerConfigCM) }}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ include "inspire.applicationName" . }}-scaler-custom-logger-config
+  labels:
+    {{- include "inspire.labels" . | nindent 4 }}
+data:
+  custom_logger_config.xml: |
+    {{- .Values.customLoggerConfigContent | nindent 4 }}
+{{- end }}

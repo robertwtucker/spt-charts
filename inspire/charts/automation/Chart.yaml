@@ -1,6 +1,6 @@
 apiVersion: v2
 appVersion: "16.4"
-description: Inspire Content Manager
-name: icm
+description: Inspire Automation
+name: automation
 type: application
 version: 2.3.0

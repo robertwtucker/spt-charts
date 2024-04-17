@@ -1,0 +1,24 @@
+{{- if and .Values.global.automation.enabled .Values.ips.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "inspire.applicationName" . }}-ips
+  labels:
+    {{- include "inspire.labels.ips" . | nindent 4 }}
+  annotations:
+    description: Service for IPS
+{{- with .Values.ips.service.annotations }}
+{{ tpl (toYaml .) $ | indent 4 }}
+{{- end }}
+spec:
+  ports:
+    - name: {{ include "inspire.applicationName" . }}-ips-port
+      port: 30354
+      targetPort: 30354
+  selector:
+    app: {{ include "inspire.applicationName" . }}
+    role: ips
+  type: ClusterIP
+  sessionAffinity: None
+  clusterIP: None
+{{- end }}

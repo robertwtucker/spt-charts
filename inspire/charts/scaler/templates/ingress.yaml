@@ -5,6 +5,9 @@ metadata:
   name: {{ include "inspire.applicationName" . }}-scaler
   annotations:
     kubernetes.io/ingress.class: {{ .Values.ingress.className | quote }}
+{{- with .Values.ingress.customAnnotations }}
+{{ toYaml . | indent 4 }}
+{{- end }}
     {{- if .Values.ingress.tls.enabled | and .Values.ingress.tls.clusterIssuer }}
     cert-manager.io/cluster-issuer: {{ .Values.ingress.tls.clusterIssuer | quote }}
     {{- end }}

@@ -1,0 +1,178 @@
+{{- if .Values.global.automation.enabled }}
+  {{- include "inspire.secret.check" (dict "value" .Values.global.automation.passOverride "source" .Values.global.automation.passOverrideSource) }}
+  {{- include "inspire.secret.check" (dict "value" .Values.global.license.server "source" .Values.global.license.serverSource) }}
+  {{- include "inspire.secret.check" (dict "value" .Values.global.license.server2 "source" .Values.global.license.server2Source) }}
+  {{- include "inspire.secret.check" (dict "value" .Values.db.pass "source" .Values.db.passSource) }}
+  {{- include "inspire.secret.check" (dict "value" .Values.db.user "source" .Values.db.userSource) }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "inspire.applicationName" . }}-automation
+  labels:
+    {{- include "inspire.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "inspire.labels" . | nindent 6 }}
+  serviceName: {{ include "inspire.applicationName" . }}-automation
+  template:
+    metadata:
+      {{- with .Values.deployment.annotations }}
+      annotations:
+        {{- range $key, $value := . }}
+        {{ $key }}: {{ $value | quote  }}
+        {{- end }}
+      {{- end }}
+      labels:
+        {{- include "inspire.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- range $key, $value := . }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+        {{- end }}
+      name: {{ include "inspire.applicationName" . }}-automation-template
+    spec:
+{{- if .Values.existingServiceAccount }}
+      serviceAccountName: {{ .Values.existingServiceAccount }}
+{{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels: {{ include "inspire.labels" . | nindent 20 }}
+                topologyKey: "kubernetes.io/hostname"
+      {{- if .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+      {{- range .Values.global.imagePullSecrets }}
+        - name: {{ . }}
+      {{- end }}
+      {{- end }}
+      initContainers:
+      {{- if .Values.activateVolumes.enabled }}
+      - name: {{ include "inspire.applicationName" . }}-automation-volume-activation
+        image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command:
+          - sh
+          - -c
+          - ls -la /mnt/secrets/
+        securityContext:
+        {{- toYaml .Values.securityContext | nindent 10 }}
+        {{- with .Values.activateVolumes.volumes }}
+        volumeMounts:
+          {{- range $index, $value := . }}
+          - name: {{ required "A volume name is required" $value.name }}
+            mountPath: {{ printf "/mnt/secrets/%s" $value.name }}
+        {{- end }}
+      {{- end }}
+      {{- end }}
+      - name: {{ include "inspire.applicationName" . }}-automation-icm-wait
+        image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+        env:
+          {{- include "automation.env.icm" . | nindent 10 }}
+        command: ['sh', '-c', 'for i in {1..150}; do if $(timeout 4 bash -c "cat < /dev/null > /dev/tcp/$SECURITY_ICM_HOST/$SECURITY_ICM_PORT"); then echo OK && exit 0; else echo ICM not available yet; fi; done; echo ICM service availability timed-out && exit 1']
+      containers:
+      - name: {{ include "inspire.applicationName" . }}-automation
+        image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+        env:
+        {{- with .Values.customEnvs }}
+        {{- range $key, $value := . }}
+        - name: {{ $key }}
+          value: {{ $value | quote }}
+        {{- end }}
+        {{- end }}
+        {{- include "inspire.env.license" . | nindent 8 }}
+        {{- include "automation.env.icm" . | nindent 8 }}
+        {{- include "automation.env.database" . | nindent 8 }}
+        - name: LOG_AS_JSON
+          value: {{ .Values.logAsJson | quote }}
+        {{- if .Values.customLoggerConfigContent }}
+        - name: CUSTOM_LOGGER_CONFIG_FILE
+          value: "/opt/Quadient/InspireAutomation/loggerConfig/log4j2.custom_logger_config.xml"
+        {{- end}}
+        - name: SERVERNAME
+          value: {{ .Values.iaServerName }}
+        - name: DB_CONNECTIONS_COUNT
+          value: "5"
+        - name: MAX_SERVER_HEAP
+          value: {{ .Values.maxJavaHeap }}
+        - name: SECURITY_USER_STORAGE_TYPE
+          value: {{ .Values.securityStorageType }}
+        - name: ACTION_LOG_RETENTION_PERIOD
+          value: {{ .Values.actionLogRetentionPeriod | quote }}
+        - name: LOG4PA_RETENTION_PERIOD
+          value: {{ .Values.log4paRetentionPeriod | quote }}
+        - name: DELTA_TIME_AFTER_COMPLETION
+          value: {{ .Values.deltaTimeAfterCompletion | quote }}
+        - name: RETENTION_PERIOD_AFTER_ERROR
+          value: {{ .Values.retentionPeriodAfterError | quote }}
+        ports:
+          - containerPort: 10141
+            protocol: TCP
+        livenessProbe:
+          failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+          tcpSocket:
+            port: 10141
+          initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+          periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+          successThreshold: {{ .Values.livenessProbe.successThreshold }}
+        readinessProbe:
+          failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+          tcpSocket:
+            port: 10141
+          initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.readinessProbe.successThreshold }}
+          periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+        volumeMounts:
+          {{- include "inspire.secret.asMount" (dict "source" .Values.db.passSource "volumeName" "automation-db-password" "secretKey" "dbPass" "mountPath" "/opt/Quadient/secrets/db/password" "withoutSubpath" false) | nindent 10 }}
+          {{- include "inspire.secret.asMount" (dict "source" .Values.db.userSource "volumeName" "automation-db-username" "secretKey" "dbUser" "mountPath" "/opt/Quadient/secrets/db/username" "withoutSubpath" false) | nindent 10 }}
+          - name: automation-work-volume
+            mountPath: /opt/Quadient/InspireAutomation/work-dir
+          - name: automation-chimenix-volume
+            mountPath: /etc/Chimenix
+          - name: automation-tmp-volume
+            mountPath: /tmp
+          {{- if .Values.customLoggerConfigContent }}
+          - name: automation-custom-logger-config-volume
+            mountPath: /opt/Quadient/InspireAutomation/loggerConfig
+          {{- end}}
+      restartPolicy: Always
+      dnsPolicy: ClusterFirst
+      terminationGracePeriodSeconds: {{ .Values.shutdownTimeout }}
+      volumes:
+      {{- $volumeCandidates := list }}
+      {{- $applicationName := (include "inspire.applicationName" .) }}
+      {{- $volumeCandidates = append $volumeCandidates (dict "value" .Values.db.pass "source" .Values.db.passSource "volumeName" "automation-db-password" "secretName" (printf "%s-automation-database" $applicationName) )}}
+      {{- $volumeCandidates = append $volumeCandidates (dict "value" .Values.db.user "source" .Values.db.userSource "volumeName" "automation-db-username" "secretName" (printf "%s-automation-database" $applicationName) )}}
+      {{- include "inspire.secret.uniqueVolumes" $volumeCandidates | nindent 8 }}
+      {{- with .Values.volumes }}
+      {{ tpl (toYaml .) $ | nindent 8 }}
+      {{- end }}
+        - name: automation-work-volume
+          persistentVolumeClaim:
+            claimName: {{ .Values.workingDirectory.existingClaim | default (print (include "inspire.applicationName" .) "-automation-working-dir")}}
+        - name: automation-chimenix-volume
+          emptyDir: {}
+        - name: automation-tmp-volume
+          emptyDir: {}
+        {{- if .Values.customLoggerConfigContent }}
+        - name: automation-custom-logger-config-volume
+          configMap:
+            name: {{ include "inspire.applicationName" . }}-custom-logger-config
+        {{- end }}
+{{- end }}

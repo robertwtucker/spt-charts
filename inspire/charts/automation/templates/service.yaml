@@ -1,0 +1,30 @@
+{{- if .Values.global.automation.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "inspire.applicationName" . }}-automation
+  labels:
+    {{- include "inspire.labels" . | nindent 4 }}
+  annotations:
+    description: Service for Automation
+{{- with .Values.service.annotations }}
+{{ tpl (toYaml .) $ | indent 4 }}
+{{- end }}
+spec:
+  ports:
+  {{ $serverPort := .Values.global.automation.portOverride | default 10140 }}
+    - name: {{ include "inspire.applicationName" . }}-automation-server-port
+      port: {{ $serverPort }}
+      targetPort: 10140
+    - name: {{ include "inspire.applicationName" . }}-automation-client-port
+      port: {{ add $serverPort 1 }}
+      targetPort: 10141
+    - name: {{ include "inspire.applicationName" . }}-automation-http
+      port: 8080
+      targetPort: 8080
+  selector:
+    app: {{ include "inspire.applicationName" . }}
+    role: automation
+  type: {{ .Values.service.type }}
+  sessionAffinity: None
+{{- end }}

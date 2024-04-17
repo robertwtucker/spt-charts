@@ -3,7 +3,42 @@ global:
   # -- Defines an array of names of secrets, containing the connection settings to Docker image repositories.
   imagePullSecrets: []
   # -- Defines a unique name of an application within a Kubernetes namespace.
-  applicationName: inspire
+  applicationName: "inspire"
+
+  license:
+    # -- Defines the type of your license (cloud licensing or net licensing). [CL/LS]
+    method: "CL"
+    # -- Defines the URL address of your licensing server (Quadient Cloud server or Inspire License Manager server).
+    # Use the 'serverSource' variable instead if you wish to define the URL address using a Secret.
+    server: ""
+    # -- Uses a Secret to define the URL address of your licensing server.
+    serverSource:
+      useSecret: false
+      secretName: ""
+      secretKey: ""
+    # -- Defines the URL address of your backup licensing server (Quadient Cloud server or Inspire License Manager server).
+    # Use the 'server2Source' variable instead if you wish to define URL address using a Secret.
+    server2: ""
+    # -- Uses a Secret to define the URL address of your backup licensing server.
+    server2Source:
+      useSecret: false
+      secretName: ""
+      secretKey: ""
+
+  icm:
+    # -- Defines the password of the ICM admin user.
+    # If left undefined, ICM's deployment will provide you with a random alphanumeric password.
+    # Use the 'adminPassOverrideSource' variable instead if you wish to define the password using a Secret.
+    adminPassOverride: ~
+    # -- Uses a Secret to define the password of the ICM admin user.
+    adminPassOverrideSource:
+      useSecret: false
+      secretName: ""
+      secretKey: ""
+    # -- Defines the port to run ICM on.
+    # If left undefined, the default port 30353 is used.
+    portOverride:
+
   scaler:
     # -- Defines whether to deploy Scaler or not.
     enabled: true
@@ -23,6 +58,29 @@ global:
     # -- Defines the port to run Scaler on.
     # If left undefined, the default port 30600 is used.
     portOverride:
+
+  dataRecording:
+    # -- Since the R15.0 GA version, this defines whether or not you want to prepare the Inspire Flex components for the use of the Data Recording feature. The value of this setting must be set to 'true' for the Data recording feature to work in Kubernetes.
+    prepareEnvironment: false
+
+  # -- Available since the 15.0 version (except for the 15.2 version) of Scaler.
+  sen:
+    # -- Defines whether to deploy Scenario Engine or not.
+    enabled: false
+    # -- Defines (in plain text) the username of a Scenario Engine user to be created in ICM.
+    # If left undefined, the default user called 'sen' is created.
+    # The username value is not treated as a Secret.
+    userOverride: ""
+    # -- Defines (in plain text) the password of a Scenario Engine user to be created in ICM.
+    # If left undefined, Scaler's deployment will provide you with a random alphanumeric password.
+    # Use the 'passOverrideSource' variable instead if you wish to define the password using a Secret.
+    passOverride: ""
+    # -- Uses a Secret to define the password of a Scenario Engine user to be created in ICM.
+    passOverrideSource:
+      useSecret: false
+      secretName: ""
+      secretKey: ""
+
   interactive:
     # -- Defines whether to deploy Interactive or not.
     enabled: true
@@ -42,58 +100,26 @@ global:
     # -- Defines the port to run Interactive on.
     # If left undefined, the default port 30701 is used.
     portOverride:
-  icm:
-    # -- Defines the password of the ICM admin user.
-    # If left undefined, ICM's deployment will provide you with a random alphanumeric password.
-    # Use the 'adminPassOverrideSource' variable instead if you wish to define the password using a Secret.
-    adminPassOverride: ~
-    # -- Uses a Secret to define the password of the ICM admin user.
-    adminPassOverrideSource:
-      useSecret: false
-      secretName: ""
-      secretKey: ""
-    # -- Defines the port to run ICM on.
-    # If left undefined, the default port 30353 is used.
-    portOverride:
-  license:
-    # -- Defines the type of your license (cloud licensing or net licensing). [CL/LS]
-    method: CL
-    # -- Defines the URL address of your licensing server (Quadient Cloud server or Inspire License Manager server).
-    # Use the 'serverSource' variable instead if you wish to define the URL address using a Secret.
-    server: ""
-    # -- Uses a Secret to define the URL address of your licensing server.
-    serverSource:
-      useSecret: false
-      secretName: ""
-      secretKey: ""
-    # -- Defines the URL address of your backup licensing server (Quadient Cloud server or Inspire License Manager server).
-    # Use the 'server2Source' variable instead if you wish to define URL address using a Secret.
-    server2: ""
-    # -- Uses a Secret to define the URL address of your backup licensing server.
-    server2Source:
-      useSecret: false
-      secretName: ""
-      secretKey: ""
-  dataRecording:
-    # -- Since the R15.0 GA version, this defines whether or not you want to prepare the Inspire Flex components for the use of the Data Recording feature. The value of this setting must be set to 'true' for the Data recording feature to work in Kubernetes.
-    prepareEnvironment: false
-  # -- Available since the 15.0 version (except for the 15.2 version) of Scaler.
-  sen:
-    # -- Defines whether to deploy Scenario Engine or not.
+
+  automation:
+    # -- Defines whether to deploy Automation or not.
     enabled: false
-    # -- Defines (in plain text) the username of a Scenario Engine user to be created in ICM.
-    # If left undefined, the default user called 'sen' is created.
-    # The username value is not treated as a Secret.
-    userOverride: ""
-    # -- Defines (in plain text) the password of a Scenario Engine user to be created in ICM.
-    # If left undefined, Scaler's deployment will provide you with a random alphanumeric password.
-    # Use the 'passOverrideSource' variable instead if you wish to define the password using a Secret.
-    passOverride: ""
-    # -- Uses a Secret to define the password of a Scenario Engine user to be created in ICM.
+    # -- Defines (in plain text) the username of a Automation user.
+    # -- If left undefined, the default user called automation is created.
+    userOverride: ~
+    # -- Defines (in plain text) the password of a Automation user.
+    # -- If left undefined, Automation's deployment will provide you with a random alphanumeric password.
+    # -- Use the 'passOverrideSource' variable instead if you wish to define the password using a Secret.
+    passOverride: ~
+    # -- Uses a Secret to define the password of an Automation user to be created in ICM.
     passOverrideSource:
       useSecret: false
       secretName: ""
       secretKey: ""
+    # -- Defines the port to run Automation on.
+    # -- If left undefined, the default port 10140 is used.
+    portOverride:
+
   # -- SPT modifications
   spt:
     # -- Toggles load of the base demo content.
@@ -114,4 +140,3 @@ global:
         name: ghcr.io/groundnuty/k8s-wait-for
         # -- Specifies the k8s-wait-for version tag to use.
         tag: no-root-v2.0
-

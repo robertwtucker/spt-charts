@@ -10,9 +10,17 @@ app: {{ include "inspire.applicationName" . }}
 role: {{ .Values.role }}
 {{- end }}
 
+{{- define "inspire.labels.ips" -}}
+app: {{ include "inspire.applicationName" . }}
+role: {{ .Values.ips.role }}
+{{- end }}
 
 {{- define "inspire.env.icm.host" }}
 {{- include "inspire.applicationName" . }}-icm.{{ .Release.Namespace }}.svc.cluster.local
+{{- end }}
+
+{{- define "inspire.env.icm.port" }}
+{{- .Values.global.icm.portOverride | default 30353 }}
 {{- end }}
 
 {{- define "inspire.scaler.env.icm.user" }}
@@ -21,6 +29,10 @@ role: {{ .Values.role }}
 
 {{- define "inspire.interactive.env.icm.user" }}
 {{- .Values.global.interactive.userOverride | default "system" }}
+{{- end }}
+
+{{- define "inspire.automation.env.icm.user" }}
+{{- .Values.global.automation.userOverride | default "automation" }}
 {{- end }}
 
 {{/*
@@ -121,13 +133,24 @@ c) If envOnly evaluates to true, validation fails.
 {{- end }}
 {{- end }}
 
+{{/*
+Arguments:
+* source: {useSecret bool, secretName, secretKey string}
+* mountPath: string, a target filepath where the secret will be mounted
+* secretKey: string, a file name where the secret will be mounted by default when not using mountAll
+* envFileName: string, the name of the environment variable
+* mountAll: bool, if specified, the entire directory specified by mountPath is put into the value
+
+Returns:
+Environment variable with a mount path of the secret file pointer as a value
+*/}}
 {{- define "inspire.secret.asFilePointer" }}
-{{- if or (empty .source) (eq (include "inspire.secret.isDelegated" .source) "false") }}
-  {{- /* Variable is empty or is not delegated, but, variable should be mounted as a file, so we need to create a env pointer to this file */}}
-- name: {{ .envFileName }}
-  value: {{ printf "%s/%s" .mountPath .secretKey }}
-{{- else if and .mountAll }}
+{{- if and .mountAll }}
   {{- /* Variable is delegated and whole secret should be mounted without pointing to secret keys. So point to a directory */}}
+- name: {{ .envFileName }}
+  value: {{ .mountPath }}
+{{- else if or (empty .source) (eq (include "inspire.secret.isDelegated" .source) "false") }}
+  {{- /* Variable is empty or is not delegated, but, variable should be mounted as a file, so we need to create a env pointer to this file */}}
 - name: {{ .envFileName }}
   value: {{ printf "%s/%s" .mountPath .secretKey }}
 {{- else }}
@@ -141,37 +164,37 @@ c) If envOnly evaluates to true, validation fails.
 Arguments:
 * source: {useSecret bool, secretName, secretKey string}
 * mountPath: string, a target filepath that the volume should be mounted to.
-* withoutSubpath bool
-* value string
+* secretKey: string, the secret key which is used as subPath when mounting the file with withoutSubpath=false
+* withoutSubpath: bool
+* volumeName: string, a name of the volume this mount references when not using external secret source
 
 Returns:
-b) nothing otherwise.
+A new mount which references the specified volumeName. When using custom secret source, the mount name is composed from the secret name specified in this source.
 */}}
 {{- define "inspire.secret.asMount" -}}
 {{- if or (empty .source) ( eq (include "inspire.secret.isDelegated" .source) "false") -}}
-{{- /* if not .mountSecret: Variable is empty or is not delegated, so there is nothing to mount, because variable is passed via env variable from secret */}}
-{{- if .mountSecret }}
-  {{- /* Variable is empty or is not delegated, and variable must be mounted as a file, pointing to our secret created by helm chart */}}
-- name: {{ .secretName }}
+{{- /* Variable is empty or is not delegated, and variable must be mounted as a file, pointing to our secret created by helm chart */}}
+- name: {{ .volumeName }}
   {{- if not .withoutSubpath }}
+  {{- if empty .secretKey }}
+    {{- fail "'secretKey' parameter is required when mounting with a subpath" }}
+  {{- end }}
   mountPath: {{ .mountPath }}/{{ .secretKey }}
   subPath: {{ .secretKey }}
   {{- else }}
   mountPath: {{ .mountPath }}
   {{- end }}
   readOnly: true
-{{- end }}
-{{- else if .mountSecret | and .source.useSecret }}
+{{- else }}
 {{- /* Variable is delegated to use a secret, and simultaneously, variable is required to be mounted as a file */}}
 - name: {{ required "'secretName' is required" .source.secretName }}
   {{- if not .withoutSubpath }}
-  subPath: {{ required "'secretKey' is requried" .source.secretKey }}
+  subPath: {{ required "'secretKey' is required" .source.secretKey }}
   mountPath: {{ .mountPath }}/{{ .source.secretKey }}
   {{- else }}
   mountPath: {{ .mountPath }}
   {{- end }}
   readOnly: true
-{{- else -}}
 {{- end -}}
 {{- end -}}
 

@@ -1,0 +1,11 @@
+{{- if .Values.global.automation.enabled | and .Values.customLoggerConfigContent }}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ include "inspire.applicationName" . }}-custom-logger-config
+  labels:
+    {{- include "inspire.labels" . | nindent 4 }}
+data:
+  log4j2.custom_logger_config.xml: |
+    {{- .Values.customLoggerConfigContent | nindent 4 }}
+{{- end }}

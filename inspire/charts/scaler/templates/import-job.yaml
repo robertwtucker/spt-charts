@@ -34,7 +34,7 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         securityContext:
           {{- toYaml .Values.securityContext | nindent 10 }}
-        command: ['sh', '-c', 'echo Scaler url is $SCALER_URL; for i in {1..200}; do sleep 2; if $(curl --output /dev/null --silent --max-time 2 --head --fail $SCALER_URL/rest/web/system-healthy/non-restrictive); then curl -X POST -H "Authorization: Basic $(echo -n $SCALER_USER:$SCALER_PASS | base64)" $SCALER_URL/api/integration/v2/configurations --data "$IMPORT_REQUEST" && exit 0 || exit 1; else echo Scaler is not available yet ${i}/200; fi; done; echo Scaler Service timed-out && exit 1']
+        command: ['sh', '-c', 'echo Scaler url is $SCALER_URL; for i in {1..200}; do sleep 2; if $(curl --output /dev/null --silent --max-time 2 --head --fail $SCALER_URL/rest/web/system-healthy/non-restrictive); then curl -X POST -H "Authorization: Basic $(echo -n $SCALER_USER:$SCALER_PASS | base64)" -H "Content-Type: application/json" $SCALER_URL/api/integration/v2/configurations --data "$IMPORT_REQUEST" && exit 0 || exit 1; else echo Scaler is not available yet ${i}/200; fi; done; echo Scaler Service timed-out && exit 1']
         env:
         - name: INTERACTIVE_PORT
           value: {{ .Values.global.interactive.portOverride | default 30701 | quote }}

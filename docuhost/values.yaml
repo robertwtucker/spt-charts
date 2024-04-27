@@ -22,44 +22,44 @@ image:
 ##   - name: myRegistryKeySecretName
 ##
 imagePullSecrets: []
+## @param app.env Environment in which the application is running (usually `development` or `production`)
 ## @param app.url Fully-qualified URL to the `documents` resource (gets prepend to document ID)
 ##
 app:
-  url: http://localhost/v1/documents
-## @param server.port Port to listen on (must match containerPort)
-## @param server.timeout Time (in seconds) to wait before initiating shutdown or terminating read/write ops
+  env: development
+  url: http://localhost/api/v2/documents
+## @param auth0.audience Audience for scope assigned to token
+## @param auth0.clientId Auth0 Client ID for this application
+## @param auth0.clientSecret Auth0 Client Secret for this application
+## @param auth0.domain Domain associated with the Auth0 account
+## @param auth0.publicKey Auth0 Public key
 ##
-server:
-  port: 8080
-  timeout: 20
-## @param db.prefix Database prefix (identifies standard connection format for URI creation)
+auth0:
+  audience: "urn:docuhost"
+  clientId: ""
+  clientSecret: ""
+  domain: ""
+  publicKey: ""
 ## @param db.username Database user's name
 ## @param db.password Database user's password
 ## @param db.host Database host name
 ## @param db.port Database port
 ## @param db.name Database name
-## @param db.timeout Database connection timeout (seconds)
 ##
 db:
-  prefix: mongodb
   username: ""
   password: ""
   host: localhost
   port: 27017
   name: docuhost
-  timeout: 10
-## @param log.debug Use debug log settings
-## @param log.format Log output format (text/json)
-##
-log:
-  debug: false
-  format: text
-## @param shortlink.apikey API Key to use for authorization
+## @param shortlink.apiKey API Key to use for authorization
 ## @param shortlink.domain Domain name to use for short links
+## @param shortlink.serviceUrl URL to use for short link service
 ##
 shortlink:
-  apikey: ""
-  domain: tiny.one
+  apiKey: ""
+  domain: tinyurl.com
+  serviceUrl: https://api.tinyurl.com
 ## @param nameOverride Partially override the name used for chart objects
 ##
 nameOverride: ""
@@ -73,7 +73,7 @@ existingConfigMap: ""
 ##
 existingSecret: ""
 
-## @section DocuHost deployment paramaters
+## @section DocuHost deployment parameters
 ##
 
 ## @param replicaCount Number of DocuHost containers to deploy
@@ -95,13 +95,13 @@ podAnnotations: {}
 ## @param podSecurityContext.fsGroup Group ID for the volumes of the DocuHost pod(s)
 ##
 podSecurityContext:
-  fsGroup: 11000
+  fsGroup: 1001
 ## Docuhost container SecurityContext
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
 ## @param securityContext.runAsUser User ID for container(s) in the Docuhost pod(s)
 ##
 securityContext:
-  runAsUser: 11000
+  runAsUser: 1001
 ## It is usually recommend not to specify default resources and to leave this as a conscious
 ## choice for the user. This also increases chances charts run on environments with little
 ## resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -137,7 +137,7 @@ tolerations: []
 affinity: {}
 ## @param containerPort DocuHost container port
 ##
-containerPort: 8080
+containerPort: 3000
 ## DocuHost pod livenessProbe configuration
 ## ref https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
 ## @param livenessProbe.initialDelaySeconds Initial delay before the probe is initiated
@@ -189,7 +189,7 @@ service:
   ## @param service.type Type of service to create
   type: ClusterIP
   ## @param service.port DocuHost server port
-  port: 8080
+  port: 3000
   ## @param service.nodeport Nodeport to expose (type must be NodePort or LoadBalancer)
   nodeport: ""
 

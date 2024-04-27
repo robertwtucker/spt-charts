@@ -114,39 +114,29 @@ Return true if a configmap object should be created
 Return the DocuHost database environment settings
 */}}
 {{- define "docuhost.env.database" -}}
-- name: DB_PREFIX
-  valueFrom:
-    configMapKeyRef:
-      name: {{ include "docuhost.configMapName" . }}
-      key: db-prefix
-- name: DB_USER
+- name: MONGODB_USERNAME
   valueFrom:
     secretKeyRef:
       name: {{ include "docuhost.secretName" . }}
       key: db-username
-- name: DB_PASSWORD
+- name: MONGODB_PASSWORD
   valueFrom:
     secretKeyRef:
       name: {{ include "docuhost.secretName" . }}
       key: db-password
-- name: DB_HOST
+- name: MONGODB_HOST
   valueFrom:
     configMapKeyRef:
       name: {{ include "docuhost.configMapName" . }}
       key: db-host
-- name: DB_PORT
+- name: MONGODB_PORT
   valueFrom:
     configMapKeyRef:
       name: {{ include "docuhost.configMapName" . }}
       key: db-port
-- name: DB_NAME
+- name: MONGODB_DATABASE
   valueFrom:
     configMapKeyRef:
       name: {{ include "docuhost.configMapName" . }}
       key: db-name
-- name: DB_TIMEOUT
-  valueFrom:
-    configMapKeyRef:
-      name: {{ include "docuhost.configMapName" . }}
-      key: db-timeout
 {{- end }}

@@ -49,36 +49,51 @@ spec:
                 configMapKeyRef:
                   name: {{ include "docuhost.configMapName" . }}
                   key: app-url
-            - name: SERVER_PORT
+            - name: AUTH0_AUDIENCE
               valueFrom:
                 configMapKeyRef:
                   name: {{ include "docuhost.configMapName" . }}
-                  key: server-port
-            - name: SERVER_TIMEOUT
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "docuhost.configMapName" . }}
-                  key: server-timeout
-            - name: SHORTLINK_APIKEY
+                  key: auth0-audience
+            - name: AUTH0_CLIENT_ID
               valueFrom:
                 secretKeyRef:
                   name: {{ include "docuhost.secretName" . }}
-                  key: shortlink-apikey
+                  key: auth0-client-id
+            - name: AUTH0_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "docuhost.secretName" . }}
+                  key: auth0-client-secret
+            - name: AUTH0_DOMAIN
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "docuhost.configMapName" . }}
+                  key: auth0-domain
+            - name: AUTH0_PUBLIC_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "docuhost.secretName" . }}
+                  key: auth0-public-key
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "docuhost.configMapName" . }}
+                  key: app-env
+            - name: SHORTLINK_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "docuhost.secretName" . }}
+                  key: shortlink-apiKey
             - name: SHORTLINK_DOMAIN
               valueFrom:
                 configMapKeyRef:
                   name: {{ include "docuhost.configMapName" . }}
                   key: shortlink-domain
-            - name: LOG_DEBUG
+            - name: SHORTLINK_SERVICE_URL
               valueFrom:
                 configMapKeyRef:
                   name: {{ include "docuhost.configMapName" . }}
-                  key: log-debug
-            - name: LOG_FORMAT
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "docuhost.configMapName" . }}
-                  key: log-format
+                  key: shortlink-serviceUrl
           ports:
             - name: http
               containerPort: {{ .Values.containerPort }}
@@ -93,7 +108,7 @@ spec:
             successThreshold: {{ .Values.livenessProbe.successThreshold }}
           readinessProbe:
             httpGet:
-              path: /health
+              path: /api/v2/healthcheck
               port: http
             initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.readinessProbe.periodSeconds }}

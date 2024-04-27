@@ -1,10 +1,10 @@
 apiVersion: v2
-appVersion: 0.3.21
+appVersion: 0.4.0
 dependencies:
-  - name: mongodb
-    version: 13.15.5
-    repository: https://charts.bitnami.com/bitnami
+- name: mongodb
+  repository: https://charts.bitnami.com/bitnami
+  version: 15.1.5
 description: A Helm chart to deploy the Document Host (Docuhost) demo service
 name: docuhost
 type: application
-version: 0.1.28
+version: 0.2.0

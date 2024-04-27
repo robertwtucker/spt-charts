@@ -49,32 +49,33 @@ deletes the release.
 
 ### Document Host (DocuHost) parameters
 
-| Name                | Description                                                                        | Value                                |
-| ------------------- | ---------------------------------------------------------------------------------- | ------------------------------------ |
-| `image.repository`  | DocuHost image repository                                                          | `registry.sptcloud.com/spt/docuhost` |
-| `image.tag`         | DocuHost image tag                                                                 | `""`                                 |
-| `image.pullPolicy`  | DocuHost image pull policy                                                         | `IfNotPresent`                       |
-| `imagePullSecrets`  | Specify container registry Secrets as an array                                     | `[]`                                 |
-| `app.url`           | Fully-qualified URL to the `documents` resource (gets prepend to document ID)      | `http://localhost/v1/documents`      |
-| `server.port`       | Port to listen on (must match containerPort)                                       | `8080`                               |
-| `server.timeout`    | Time (in seconds) to wait before initiating shutdown or terminating read/write ops | `20`                                 |
-| `db.prefix`         | Database prefix (identifies standard connection format for URI creation)           | `mongodb`                            |
-| `db.username`       | Database user's name                                                               | `""`                                 |
-| `db.password`       | Database user's password                                                           | `""`                                 |
-| `db.host`           | Database host name                                                                 | `localhost`                          |
-| `db.port`           | Database port                                                                      | `27017`                              |
-| `db.name`           | Database name                                                                      | `docuhost`                           |
-| `db.timeout`        | Database connection timeout (seconds)                                              | `10`                                 |
-| `log.debug`         | Use debug log settings                                                             | `false`                              |
-| `log.format`        | Log output format (text/json)                                                      | `text`                               |
-| `shortlink.apikey`  | API Key to use for authorization                                                   | `""`                                 |
-| `shortlink.domain`  | Domain name to use for short links                                                 | `tiny.one`                           |
-| `nameOverride`      | Partially override the name used for chart objects                                 | `""`                                 |
-| `fullnameOverride`  | Fully override the name used for chart objects                                     | `""`                                 |
-| `existingConfigMap` | Name of a pre-existing configmap to use (if blank, one will be created by default) | `""`                                 |
-| `existingSecret`    | Name of a pre-existing secret to use (if blank, one will be created by default)    | `""`                                 |
+| Name                   | Description                                                                             | Value                                |
+| ---------------------- | --------------------------------------------------------------------------------------- | ------------------------------------ |
+| `image.repository`     | DocuHost image repository                                                               | `registry.sptcloud.com/spt/docuhost` |
+| `image.tag`            | DocuHost image tag                                                                      | `""`                                 |
+| `image.pullPolicy`     | DocuHost image pull policy                                                              | `IfNotPresent`                       |
+| `imagePullSecrets`     | Specify container registry Secrets as an array                                          | `[]`                                 |
+| `app.env`              | Environment in which the application is running (usually `development` or `production`) | `development`                        |
+| `app.url`              | Fully-qualified URL to the `documents` resource (gets prepend to document ID)           | `http://localhost/api/v2/documents`  |
+| `auth0.audience`       | Audience for scope assigned to token                                                    | `urn:docuhost`                       |
+| `auth0.clientId`       | Auth0 Client ID for this application                                                    | `""`                                 |
+| `auth0.clientSecret`   | Auth0 Client Secret for this application                                                | `""`                                 |
+| `auth0.domain`         | Domain associated with the Auth0 account                                                | `""`                                 |
+| `auth0.publicKey`      | Auth0 Public key                                                                        | `""`                                 |
+| `db.username`          | Database user's name                                                                    | `""`                                 |
+| `db.password`          | Database user's password                                                                | `""`                                 |
+| `db.host`              | Database host name                                                                      | `localhost`                          |
+| `db.port`              | Database port                                                                           | `27017`                              |
+| `db.name`              | Database name                                                                           | `docuhost`                           |
+| `shortlink.apiKey`     | API Key to use for authorization                                                        | `""`                                 |
+| `shortlink.domain`     | Domain name to use for short links                                                      | `tinyurl.com`                        |
+| `shortlink.serviceUrl` | URL to use for short link service                                                       | `https://api.tinyurl.com`            |
+| `nameOverride`         | Partially override the name used for chart objects                                      | `""`                                 |
+| `fullnameOverride`     | Fully override the name used for chart objects                                          | `""`                                 |
+| `existingConfigMap`    | Name of a pre-existing configmap to use (if blank, one will be created by default)      | `""`                                 |
+| `existingSecret`       | Name of a pre-existing secret to use (if blank, one will be created by default)         | `""`                                 |
 
-### DocuHost deployment paramaters
+### DocuHost deployment parameters
 
 | Name                                            | Description                                                                     | Value   |
 | ----------------------------------------------- | ------------------------------------------------------------------------------- | ------- |
@@ -83,14 +84,14 @@ deletes the release.
 | `serviceAccount.annotations`                    | Annotations to use with the service account                                     | `{}`    |
 | `serviceAccount.name`                           | Specify the name used for the service account                                   | `""`    |
 | `podAnnotations`                                | Annotations for DocuHost pods                                                   | `{}`    |
-| `podSecurityContext.fsGroup`                    | Group ID for the volumes of the DocuHost pod(s)                                 | `11000` |
-| `securityContext.runAsUser`                     | User ID for container(s) in the Docuhost pod(s)                                 | `11000` |
+| `podSecurityContext.fsGroup`                    | Group ID for the volumes of the DocuHost pod(s)                                 | `1001`  |
+| `securityContext.runAsUser`                     | User ID for container(s) in the Docuhost pod(s)                                 | `1001`  |
 | `resources.limits`                              | The resources limits for DocuHost containers                                    | `{}`    |
 | `resources.requests`                            | The requested resources for DocuHost containers                                 | `{}`    |
 | `nodeSelector`                                  | Node labels for pod assignment                                                  | `{}`    |
 | `tolerations`                                   | Tolerations for pod assignment                                                  | `[]`    |
 | `affinity`                                      | Affinity for pod assignment                                                     | `{}`    |
-| `containerPort`                                 | DocuHost container port                                                         | `8080`  |
+| `containerPort`                                 | DocuHost container port                                                         | `3000`  |
 | `livenessProbe.initialDelaySeconds`             | Initial delay before the probe is initiated                                     | `2`     |
 | `livenessProbe.periodSeconds`                   | Period between probes                                                           | `10`    |
 | `livenessProbe.timeoutSeconds`                  | Time after which the probe times out                                            | `1`     |
@@ -112,7 +113,7 @@ deletes the release.
 | Name                  | Description                                                                       | Value                    |
 | --------------------- | --------------------------------------------------------------------------------- | ------------------------ |
 | `service.type`        | Type of service to create                                                         | `ClusterIP`              |
-| `service.port`        | DocuHost server port                                                              | `8080`                   |
+| `service.port`        | DocuHost server port                                                              | `3000`                   |
 | `service.nodeport`    | Nodeport to expose (type must be NodePort or LoadBalancer)                        | `""`                     |
 | `ingress.enabled`     | Enable ingress record generation for Hello                                        | `false`                  |
 | `ingress.pathType`    | Ingress path type                                                                 | `ImplementationSpecific` |

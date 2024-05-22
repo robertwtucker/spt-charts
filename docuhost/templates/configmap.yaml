@@ -11,9 +11,10 @@ data:
   app-url: {{ required "A value for 'app.url' is required." .Values.app.url | quote }}
   auth0-audience: {{ required "A value for 'auth0.audience' is required." .Values.auth0.audience | quote }}
   auth0-domain: {{ required "A value for 'auth0.domain' is required." .Values.auth0.domain | quote }}
-  db-host: {{ required "A value for 'db.host' is required." .Values.db.host | quote }}
-  db-port: {{ required "A value for 'db.port' is required." .Values.db.port | quote }}
-  db-name: {{ required "A value for 'db.name' is required." .Values.db.name | quote }}
+  db-protocol: {{ .Values.db.protocol | default "mongodb" | quote }}
+  db-host: {{ .Values.db.host | default "localhost" | quote }}
+  db-port: {{ .Values.db.port | default "" | quote }}
+  db-name: {{ .Values.db.name | default "documents" | quote }}
   shortlink-domain: {{ required "A value for 'shortlink.domain' is required." .Values.shortlink.domain | quote }}
   shortlink-serviceUrl: {{ required "A value for 'shortlink.serviceUrl' is required." .Values.shortlink.serviceUrl | quote }}
 {{- end }}

@@ -40,17 +40,19 @@ auth0:
   clientSecret: ""
   domain: ""
   publicKey: ""
-## @param db.username Database user's name
+## @param db.username Database user's name (defaults to `docuhost`)
 ## @param db.password Database user's password
-## @param db.host Database host name
-## @param db.port Database port
-## @param db.name Database name
+## @param db.protocol Database protocol (defaults to `mongodb`)
+## @param db.host Database host name (defaults to `localhost`)
+## @param db.port Database port (can be left empty to use mongodb's default of `27017`)
+## @param db.name Database name (defaults to `documents`)
 ##
 db:
   username: ""
   password: ""
+  protocol: mongodb
   host: localhost
-  port: 27017
+  port: ""
   name: docuhost
 ## @param shortlink.apiKey API Key to use for authorization
 ## @param shortlink.domain Domain name to use for short links

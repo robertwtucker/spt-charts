@@ -62,11 +62,12 @@ deletes the release.
 | `auth0.clientSecret`   | Auth0 Client Secret for this application                                                | `""`                                 |
 | `auth0.domain`         | Domain associated with the Auth0 account                                                | `""`                                 |
 | `auth0.publicKey`      | Auth0 Public key                                                                        | `""`                                 |
-| `db.username`          | Database user's name                                                                    | `""`                                 |
+| `db.username`          | Database user's name                                                                    | `docuhost`                           |
 | `db.password`          | Database user's password                                                                | `""`                                 |
+| `db.protocol`          | Database protocol (usually `mongodb` or `mongodb+srv`)                                  | `mongodb`                            |
 | `db.host`              | Database host name                                                                      | `localhost`                          |
-| `db.port`              | Database port                                                                           | `27017`                              |
-| `db.name`              | Database name                                                                           | `docuhost`                           |
+| `db.port`              | Database port (can be left empty to use mongodb's default of `27017`)                   | `""`                                 |
+| `db.name`              | Database name                                                                           | `documents`                          |
 | `shortlink.apiKey`     | API Key to use for authorization                                                        | `""`                                 |
 | `shortlink.domain`     | Domain name to use for short links                                                      | `tinyurl.com`                        |
 | `shortlink.serviceUrl` | URL to use for short link service                                                       | `https://api.tinyurl.com`            |

@@ -124,6 +124,11 @@ Return the DocuHost database environment settings
     secretKeyRef:
       name: {{ include "docuhost.secretName" . }}
       key: db-password
+- name: MONGODB_PROTOCOL
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "docuhost.configMapName" . }}
+      key: db-protocol
 - name: MONGODB_HOST
   valueFrom:
     configMapKeyRef:

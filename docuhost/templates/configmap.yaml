@@ -9,8 +9,9 @@ metadata:
 data:
   app-env: {{ required "A value for 'app.env' is required." .Values.app.env | quote }}
   app-url: {{ required "A value for 'app.url' is required." .Values.app.url | quote }}
-  auth0-audience: {{ required "A value for 'auth0.audience' is required." .Values.auth0.audience | quote }}
-  auth0-domain: {{ required "A value for 'auth0.domain' is required." .Values.auth0.domain | quote }}
+  auth-trust-host: {{ required "A value for 'auth.trustHost' is required." .Values.auth.trustHost | quote }}
+  auth0-audience: {{ required "A value for 'auth.auth0.audience' is required." .Values.auth.auth0.audience | quote }}
+  auth0-issuer: {{ required "A value for 'auth.auth0.issuer' is required." .Values.auth.auth0.issuer | quote }}
   db-protocol: {{ .Values.db.protocol | default "mongodb" | quote }}
   db-host: {{ .Values.db.host | default "localhost" | quote }}
   db-port: {{ .Values.db.port | default "" | quote }}

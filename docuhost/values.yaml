@@ -28,18 +28,23 @@ imagePullSecrets: []
 app:
   env: development
   url: http://localhost/api/v2/documents
-## @param auth0.audience Audience for scope assigned to token
-## @param auth0.clientId Auth0 Client ID for this application
-## @param auth0.clientSecret Auth0 Client Secret for this application
-## @param auth0.domain Domain associated with the Auth0 account
-## @param auth0.publicKey Auth0 Public key
-##
-auth0:
-  audience: "urn:docuhost"
-  clientId: ""
-  clientSecret: ""
-  domain: ""
-  publicKey: ""
+auth:
+  ## @param auth.secret Secret used to encode the JWT and encrypt things in transit
+  ##
+  secret: "" # i.e. `openssl rand -base64 32`
+  ## @param auth.trustHost When set, tells Auth.js to trust the `X-Forwarded-Host` header from a reverse proxy
+  ##
+  trustHost: false
+  ## @param auth.auth0.audience Audience for scope assigned to token
+  ## @param auth.auth0.id Auth0 Client ID for this application
+  ## @param auth.auth0.secret Auth0 Client Secret for this application
+  ## @param auth.auth0.issuer Domain associated with the Auth0 account
+  ##
+  auth0:
+    audience: "urn:docuhost"
+    id: ""
+    secret: ""
+    issuer: ""
 ## @param db.username Database user's name
 ## @param db.password Database user's password
 ## @param db.protocol Database protocol (usually `mongodb` or `mongodb+srv`)

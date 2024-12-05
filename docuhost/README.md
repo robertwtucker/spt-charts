@@ -57,11 +57,12 @@ deletes the release.
 | `imagePullSecrets`     | Specify container registry Secrets as an array                                          | `[]`                                 |
 | `app.env`              | Environment in which the application is running (usually `development` or `production`) | `development`                        |
 | `app.url`              | Fully-qualified URL to the `documents` resource (gets prepend to document ID)           | `http://localhost/api/v2/documents`  |
-| `auth0.audience`       | Audience for scope assigned to token                                                    | `urn:docuhost`                       |
-| `auth0.clientId`       | Auth0 Client ID for this application                                                    | `""`                                 |
-| `auth0.clientSecret`   | Auth0 Client Secret for this application                                                | `""`                                 |
-| `auth0.domain`         | Domain associated with the Auth0 account                                                | `""`                                 |
-| `auth0.publicKey`      | Auth0 Public key                                                                        | `""`                                 |
+| `auth.secret`          | Secret used to encode the JWT and encrypt things in transit                             | `""`                                 |
+| `auth.trustHost`       | When set, tells Auth.js to trust the `X-Forwarded-Host` header from a reverse proxy     | `false`                              |
+| `auth.auth0.audience`  | Audience for scope assigned to token                                                    | `urn:docuhost`                       |
+| `auth.auth0.id`        | Auth0 Client ID for this application                                                    | `""`                                 |
+| `auth.auth0.secret`    | Auth0 Client Secret for this application                                                | `""`                                 |
+| `auth.auth0.issuer`    | Domain associated with the Auth0 account                                                | `""`                                 |
 | `db.username`          | Database user's name                                                                    | `docuhost`                           |
 | `db.password`          | Database user's password                                                                | `""`                                 |
 | `db.protocol`          | Database protocol (usually `mongodb` or `mongodb+srv`)                                  | `mongodb`                            |

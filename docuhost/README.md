@@ -59,6 +59,7 @@ deletes the release.
 | `app.url`              | Fully-qualified URL to the `documents` resource (gets prepend to document ID)           | `http://localhost/api/v2/documents`  |
 | `auth.secret`          | Secret used to encode the JWT and encrypt things in transit                             | `""`                                 |
 | `auth.trustHost`       | When set, tells Auth.js to trust the `X-Forwarded-Host` header from a reverse proxy     | `false`                              |
+| `auth.url`             | Sets the AUTH_URL environment variable for the client, when not blank                   | `""`                                 |
 | `auth.auth0.audience`  | Audience for scope assigned to token                                                    | `urn:docuhost`                       |
 | `auth.auth0.id`        | Auth0 Client ID for this application                                                    | `""`                                 |
 | `auth.auth0.secret`    | Auth0 Client Secret for this application                                                | `""`                                 |

@@ -35,6 +35,9 @@ auth:
   ## @param auth.trustHost When set, tells Auth.js to trust the `X-Forwarded-Host` header from a reverse proxy
   ##
   trustHost: false
+  ## @param auth.url Sets the AUTH_URL environment variable for the client, when not blank
+  ##
+  url: ""
   ## @param auth.auth0.audience Audience for scope assigned to token
   ## @param auth.auth0.id Auth0 Client ID for this application
   ## @param auth.auth0.secret Auth0 Client Secret for this application

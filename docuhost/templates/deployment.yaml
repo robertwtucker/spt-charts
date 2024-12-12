@@ -59,6 +59,10 @@ spec:
                 configMapKeyRef:
                   name: {{ include "docuhost.configMapName" . }}
                   key: auth-trust-host
+            {{- if .Values.auth.url }}
+            - name: AUTH_URL
+              value: {{ .Values.auth.url }}
+            {{- end }}
             - name: AUTH_AUTH0_AUDIENCE
               valueFrom:
                 configMapKeyRef:

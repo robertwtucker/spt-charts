@@ -162,4 +162,9 @@ Return the DocuHost database environment settings
     configMapKeyRef:
       name: {{ include "docuhost.configMapName" . }}
       key: db-name
+- name: MONGODB_OPTIONS
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "docuhost.configMapName" . }}
+      key: db-options
 {{- end }}

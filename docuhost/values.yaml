@@ -54,6 +54,7 @@ auth:
 ## @param db.host Database host name
 ## @param db.port Database port (can be left empty to use mongodb's default of `27017`)
 ## @param db.name Database name
+## @param db.options Connection string options (e.g. `authSource=admin`)
 ##
 db:
   username: docuhost
@@ -62,6 +63,7 @@ db:
   host: ""
   port: ""
   name: documents
+  options: ""
 ## @param shortlink.apiKey API Key to use for authorization
 ## @param shortlink.domain Domain name to use for short links
 ## @param shortlink.serviceUrl URL to use for short link service

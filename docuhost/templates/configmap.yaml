@@ -16,6 +16,7 @@ data:
   db-host: {{ include "docuhost.mongodb.host" . | quote }}
   db-port: {{ .Values.db.port | default "" | quote }}
   db-name: {{ .Values.db.name | default "documents" | quote }}
+  db-options: {{ .Values.db.options | default "" | quote }}
   shortlink-domain: {{ required "A value for 'shortlink.domain' is required." .Values.shortlink.domain | quote }}
   shortlink-serviceUrl: {{ required "A value for 'shortlink.serviceUrl' is required." .Values.shortlink.serviceUrl | quote }}
 {{- end }}

@@ -28,13 +28,15 @@ spec:
       {{- if .Values.podSecurityContext }}
       securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
       {{- end }}
+      {{- if .Values.mongodb.enabled }}
       initContainers:
         - name: wait-for-db
           image: {{ .Values.wait.image.name }}:{{ .Values.wait.image.tag }}
           imagePullPolicy: {{ .Values.wait.image.pullPolicy }}
           args:
             - pod
-            - -lapp.kubernetes.io/component=mongodb
+            - -lapp.kubernetes.io/component=mongodb,app.kubernetes.io/instance={{ .Release.Name }}
+      {{- end }}
       containers:
         - name: docuhost
           {{- if .Values.securityContext }}

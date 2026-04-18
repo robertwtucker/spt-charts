@@ -13,9 +13,10 @@ data:
   auth0-audience: {{ required "A value for 'auth.auth0.audience' is required." .Values.auth.auth0.audience | quote }}
   auth0-issuer: {{ required "A value for 'auth.auth0.issuer' is required." .Values.auth.auth0.issuer | quote }}
   db-protocol: {{ .Values.db.protocol | default "mongodb" | quote }}
-  db-host: {{ .Values.db.host | default "localhost" | quote }}
+  db-host: {{ include "docuhost.mongodb.host" . | quote }}
   db-port: {{ .Values.db.port | default "" | quote }}
   db-name: {{ .Values.db.name | default "documents" | quote }}
+  db-options: {{ .Values.db.options | default "" | quote }}
   shortlink-domain: {{ required "A value for 'shortlink.domain' is required." .Values.shortlink.domain | quote }}
   shortlink-serviceUrl: {{ required "A value for 'shortlink.serviceUrl' is required." .Values.shortlink.serviceUrl | quote }}
 {{- end }}

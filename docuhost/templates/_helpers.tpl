@@ -111,6 +111,24 @@ Return true if a configmap object should be created
 {{- end }}
 
 {{/*
+MongoDB fullname
+*/}}
+{{- define "docuhost.mongodb.fullname" -}}
+{{- printf "%s-mongodb" (include "docuhost.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+Return the MongoDB host (defaults to the embedded service name)
+*/}}
+{{- define "docuhost.mongodb.host" -}}
+{{- if .Values.db.host }}
+{{- .Values.db.host }}
+{{- else }}
+{{- include "docuhost.mongodb.fullname" . }}
+{{- end }}
+{{- end }}
+
+{{/*
 Return the DocuHost database environment settings
 */}}
 {{- define "docuhost.env.database" -}}
@@ -144,4 +162,9 @@ Return the DocuHost database environment settings
     configMapKeyRef:
       name: {{ include "docuhost.configMapName" . }}
       key: db-name
+- name: MONGODB_OPTIONS
+  valueFrom:
+    configMapKeyRef:
+      name: {{ include "docuhost.configMapName" . }}
+      key: db-options
 {{- end }}

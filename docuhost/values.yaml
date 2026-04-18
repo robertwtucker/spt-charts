@@ -54,14 +54,16 @@ auth:
 ## @param db.host Database host name
 ## @param db.port Database port (can be left empty to use mongodb's default of `27017`)
 ## @param db.name Database name
+## @param db.options Connection string options (e.g. `authSource=admin`)
 ##
 db:
   username: docuhost
   password: ""
   protocol: mongodb
-  host: localhost
+  host: ""
   port: ""
   name: documents
+  options: ""
 ## @param shortlink.apiKey API Key to use for authorization
 ## @param shortlink.domain Domain name to use for short links
 ## @param shortlink.serviceUrl URL to use for short link service
@@ -239,6 +241,49 @@ ingress:
   ## TLS certificates will be retrieved from a TLS secret with name: `{{- printf "%s-tls" .Values.ingress.hostname }}`
   ##
   tls: false
+
+## @section MongoDB parameters
+##
+
+## @param mongodb.enabled Enable the embedded MongoDB deployment
+##
+mongodb:
+  enabled: true
+  ## @param mongodb.image.repository MongoDB image repository
+  ## @param mongodb.image.tag MongoDB image tag
+  ## @param mongodb.image.pullPolicy MongoDB image pull policy
+  ##
+  image:
+    repository: mongo
+    tag: "7"
+    pullPolicy: IfNotPresent
+  ## @param mongodb.auth.rootPassword MongoDB root password
+  ##
+  auth:
+    rootPassword: ""
+  ## @param mongodb.persistence.enabled Enable MongoDB data persistence using PVC
+  ## @param mongodb.persistence.storageClass PVC Storage Class for MongoDB data volume
+  ## @param mongodb.persistence.size PVC Storage size for MongoDB data volume
+  ##
+  persistence:
+    enabled: true
+    storageClass: ""
+    size: 8Gi
+  ## @param mongodb.resources.limits The resource limits for the MongoDB container
+  ## @param mongodb.resources.requests The requested resources for the MongoDB container
+  ##
+  resources:
+    limits: {}
+    requests: {}
+  ## @param mongodb.containerPort MongoDB container port
+  ##
+  containerPort: 27017
+  ## @param mongodb.nodeSelector Node labels for MongoDB pod assignment
+  ##
+  nodeSelector: {}
+  ## @param mongodb.tolerations Tolerations for MongoDB pod assignment
+  ##
+  tolerations: []
 
 ## @section k8s-wait-for parameters
 ##

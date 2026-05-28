@@ -1,6 +1,6 @@
 # automation
 
-![Version: 2.3.0](https://img.shields.io/badge/Version-2.3.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 16.4](https://img.shields.io/badge/AppVersion-16.4-informational?style=flat-square)
+![Version: 4.0.0](https://img.shields.io/badge/Version-4.0.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 17.4](https://img.shields.io/badge/AppVersion-17.4-informational?style=flat-square)
 
 Inspire Automation
 
@@ -15,20 +15,28 @@ Inspire Automation
 | activateVolumes | object | `{"enabled":false,"volumes":[{"name":"my-csi-storage"}]}` | Creates an Init Container that will mount the given volumes to the application pod. It also instructs the CSI driver to create Kubernetes Secrets from Secrets stored in external storage (e.g. AWS Secrets Manager). It uses the 'SecretProviderClass' definition to manage the Secret synchronization. |
 | activateVolumes.enabled | bool | `false` | Defines whether or not to create the Init Container. |
 | activateVolumes.volumes | list | `[{"name":"my-csi-storage"}]` | Defines an array of volumes to be mounted. |
+| volumeMounts | list | `[]` | Defines an array of volumeMounts to be mounted to the Automation pod. For example when using custom volume with files needed for processing, you can define how to mount it to the Automation pod: |
 | iaServerName | string | `"automation"` | Specifies the server custom name. |
 | maxJavaHeap | string | `"4096M"` | Specifies the maximum amount of Inspire Automation´s heap memory. |
 | actionLogRetentionPeriod | int | `2419200` | Specifies (in seconds) the retention time for user action logs. Every 500th time a log is recorded, old logs are deleted. |
 | log4paRetentionPeriod | int | `2419200` | Specifies (in seconds) the retention time for log4pa logs. Every 500th time a log is recorded, old logs are deleted. |
 | deltaTimeAfterCompletion | int | `1800` | Specifies (in seconds) the default time to keep successfully completed jobs. |
 | retentionPeriodAfterError | int | `3600` | Specifies (in seconds) the default time to keep completed jobs with errors. |
-| logAsJson | bool | `true` | Available since the 16.0 SP1 version (except for the 16.2 version) of Automation. Specifies if the Inspire Automation server should output logs to console in JSON format. |
-| customLoggerConfigContent | string | `""` | Available since the 16.0 SP1 version (except for the 16.2 version) of Automation. Specifies custom logger configuration for the Inspire Automation server to use. |
+| logAsJson | bool | `true` | Specifies if the Inspire Automation server should output logs to console in JSON format. Available since the 16.0 SP1 version (except for the 16.2 version) of Automation. |
+| customLoggerConfigContent | string | `""` | Specifies custom logger configuration for the Inspire Automation server to use. Available since the 16.0 SP1 version (except for the 16.2 version) of Automation. |
+| portableClientEnabled | bool | `true` | Specifies if downloading Portable Client from server will be enabled. Available since the 17.0 version of Automation. |
+| configurationFileCM | string | `""` | Specifies an existing ConfigMap with a configuration file to be used by Automation (must contain the 'configuration_file.xml' key). Specifying this parameter uses the recfrom command to start the server. Available since the 17.3 version of Automation. |
+| securityConfigurationFileCM | string | `""` | Specifies an existing ConfigMap with a security configuration file to be used by Automation (must contain the 'security_configuration_file.xml' key). Specifying this parameter uses the recfrom command to start the server. Available since the 17.3 version of Automation. |
 | db.host | string | `""` | Defines the hostname of the server that runs the database. |
 | db.port | string | `""` | Defines the port of the server that runs the database. |
 | db.user | string | `""` | Defines (in plain text) the username of the database user. Use the 'userSource' variable instead if you wish to define the username using a Secret. |
 | db.userSource | object | `{"secretKey":"","secretName":"","useSecret":false}` | Uses a Secret to define the username of the database user. |
 | db.pass | string | `""` | Defines (in plain text) the password of the database user. Use the 'passSource' variable instead if you wish to define the password using a Secret. |
 | db.passSource | object | `{"secretKey":"","secretName":"","useSecret":false}` | Uses a Secret to define the password of the database user. |
+| db.encryptConnection | string | `"disabled"` | Defines encryption for the database connection. [verified/required/disabled] |
+| db.truststoreSource | object | `{"secretKey":"","secretName":"","useSecret":false}` | Uses a Secret to define certificate for the database connection |
+| db.truststorePass | string | `""` | Defines (in plain text) the password for accessing the database certificate Use the 'truststorePassSource' variable instead if you wish to define the password using a Secret. |
+| db.truststorePassSource | object | `{"secretKey":"","secretName":"","useSecret":false}` | Uses a Secret to define password for accessing the database certificate |
 | db.driverClass | string | `""` | Specifies the driver class name for the database connection. |
 | db.driver | string | `""` | Specifies the path to JDBC driver. |
 | db.name | string | `""` | Defines the name of an existing database that will be used. |
@@ -42,6 +50,10 @@ Inspire Automation
 | workingDirectory.storageClass | string | `""` | Defines the name of the storage class that you have prepared as a prerequisite. Optional if an existing claim is used. |
 | workingDirectory.size | string | `"15Gi"` | Defines the size (in gigabytes) the storage will be created with. |
 | workingDirectory.existingClaim | string | `""` | Defines the name of an existing persistent volume claim. |
+| useLibPluginServerSidecar | bool | `false` | Defines whether you wish to import the 'lib/plugin/server' folder with external libraries (e.g. the MySQL database driver) into Automation. Build a docker image containing the 'lib/plugin/server' folder you wish to import. The container starts as an init sidecar container and its script copies libraries to '/opt/Quadient/InspireAutomation/lib/plugin/server'. |
+| libPluginServerSidecar.image.name | string | `""` | Defines the URL address of the 'lib-plugin-server' sidecar image stored in a Docker image repository. |
+| libPluginServerSidecar.image.tag | string | `""` | Defines a specific version of the 'lib-plugin-server' sidecar image to be deployed. |
+| libPluginServerSidecar.image.pullPolicy | string | `"IfNotPresent"` | Defines the 'lib-plugin-server' sidecar image pull policy. [IfNotPresent/Always] |
 | ips.enabled | bool | `true` | Defines whether or not to create Ips pod |
 | ips.ipsCount | int | `1` | Defines the number of IPS images (i.e. nodes) to be deployed at launch. |
 | ips.image.name | string | `""` | Defines the URL address of the IPS image stored in a Docker image repository. |
@@ -55,7 +67,6 @@ Inspire Automation
 | ips.automationPodAffinity | bool | `true` | Schedule an IPS pod on the same node as Automation pod for better performance. |
 | ips.resources.requests.cpu | int | `2` | Specifies the number of CPUs that a container requests within its Kubernetes pod. Kubernetes uses CPU requests to find a machine that best fits the container. It defines a minimum number of CPUs that the container may consume. If there is no contention for CPU, it may use as many CPUs as is available on the machine. If there is CPU contention on the machine, CPU requests provide a relative weight across all containers on the system for how much CPU time the container may use. |
 | ips.resources.requests.memory | string | `"3Gi"` | Specifies the amount of memory required for a container to run. Even though each container is able to consume as much memory on the machine as possible, this parameter improves placement of pods in the cluster. Kubernetes then takes available memory into account prior to binding your pod to a machine. |
-| ips.resources.limits.cpu | int | `2` | Defines the number of CPUs that an IPS container is limited to use within its Kubernetes pod. CPU limits are used to control the maximum number of CPUs that the container may use independent of contention on the machine. If a container attempts to use more than the specified limit, the system will throttle the container. This allows your container to have a consistent level of service independent of the number of pods on the machine. |
 | ips.resources.limits.memory | string | `"3Gi"` | Defines the amount of memory an IPS container is limited to use. If the container exceeds the specified memory limit, it will be terminated and potentially restarted depending on the container restart policy. |
 | ips.podSecurityContext.runAsUser | int | `1001` | Learn about this setting at https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod. |
 | ips.podSecurityContext.fsGroup | int | `1001` | Learn about this setting at https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod. |
@@ -107,7 +118,6 @@ Inspire Automation
 | customEnvs | object | `{}` | Allows you to specify custom environment variables for the Automation container. |
 | resources.requests.cpu | int | `2` | Specifies the number of CPUs that a container requests within its Kubernetes pod. Kubernetes uses CPU requests to find a machine that best fits the container. It defines a minimum number of CPUs that the container may consume. If there is no contention for CPU, it may use as many CPUs as is available on the machine. If there is CPU contention on the machine, CPU requests provide a relative weight across all containers on the system for how much CPU time the container may use. |
 | resources.requests.memory | string | `"3Gi"` | Specifies the amount of memory required for a container to run. Even though each container is able to consume as much memory on the machine as possible, this parameter improves placement of pods in the cluster. Kubernetes then takes available memory into account prior to binding your pod to a machine. |
-| resources.limits.cpu | int | `2` | Defines the number of CPUs that an Automation container is limited to use within its Kubernetes pod. CPU limits are used to control the maximum number of CPUs that the container may use independent of contention on the machine. If a container attempts to use more than the specified limit, the system will throttle the container. This allows your container to have a consistent level of service independent of the number of pods on the machine. |
 | resources.limits.memory | string | `"3Gi"` | Defines the amount of memory an Automation container is limited to use. If the container exceeds the specified memory limit, it will be terminated and potentially restarted depending on the container restart policy. |
 | service.annotations | object | `{}` | Provide any additional annotations which may be required. |
 | service.type | string | `"ClusterIP"` | Defines the value for the service Kubernetes object. It is recommended to keep the default value because it makes Automation accessible only from within the Kubernetes cluster. The LoadBalancer value makes Automation accessible from the Internet. This should only be used for testing purposes. [ClusterIP/LoadBalancer] |

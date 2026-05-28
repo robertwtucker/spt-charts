@@ -110,19 +110,6 @@ spec:
         - name: lib-ext-sidecar
           mountPath: /opt/Quadient/Inspire-Scaler/lib-ext
       {{- end }}
-{{- if .Values.global.spt.loadBaseContent }}
-      - name: {{ include "inspire.applicationName" . }}-spt-content-sidecar
-        image: "{{ .Values.global.spt.image.name }}:{{ .Values.global.spt.image.tag }}"
-        imagePullPolicy: {{ .Values.global.spt.image.pullPolicy }}
-        securityContext:
-          {{- toYaml .Values.securityContext | nindent 10 }}
-        command: ['/app', 'demo', 'stage', '-r', '{{ include "inspire.applicationName" . }}', '-n', '{{ .Release.Namespace }}', '-d']
-        volumeMounts:
-  {{- if .Values.additionalStorage.enabled }}
-        - name: additional-storage
-          mountPath: {{ .Values.additionalStorage.mountPath }}
-  {{- end }}
-{{- end }}
       - name: {{ include "inspire.applicationName" . }}-scaler-init
         image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
@@ -244,6 +231,14 @@ spec:
         - name: ICM_TRUSTED_DOMAINS_FILE
           value: /opt/Quadient/trustedDomains/icmTrustedDomains
         {{- include "scaler.env.saml" . | nindent 8 }}
+        {{- if .Values.authentication.openid.enabled }}
+        - name: OPENID_ENABLED
+          value: "true"
+        {{- if .Values.authentication.openid.syncpointName }}
+        - name: OPENID_SYNCPOINT_NAME
+          value: {{ .Values.authentication.openid.syncpointName | quote }}
+        {{- end }}
+        {{- end }}
         livenessProbe:
           tcpSocket:
             port: 30600
@@ -254,7 +249,7 @@ spec:
           successThreshold: {{ .Values.livenessProbe.successThreshold }}
         readinessProbe:
           httpGet:
-            path: /rest/web/system-healthy/healthy-and-http-workflows-running
+            path: {{ .Values.readinessProbe.httpGet.path }}
             port: 30600
             scheme: HTTP
           initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
@@ -405,7 +400,7 @@ spec:
           value: {{ .Values.sen.maxParallelBatchCount | quote }}
         - name: SEN_RETENTION_PERIOD_IN_DAYS
           value: {{ .Values.sen.retentionPeriodInDays | quote }}
-        - name: JDK_JAVA_OPTIONS
+        - name: CUSTOM_JVM_ARGS
           value: {{ .Values.sen.addJvmArguments | quote }}
         - name: ICM_TRUSTED_DOMAIN
           value: {{ .Values.sen.icmTrustedDomain | quote }}

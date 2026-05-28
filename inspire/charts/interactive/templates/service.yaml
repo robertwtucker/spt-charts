@@ -13,7 +13,7 @@ metadata:
 spec:
   ports:
     - name: {{ include "inspire.applicationName" . }}-interactive-port
-      port: {{ .Values.global.interactive.portOverride | default 30701 }}
+      port: {{ include "inspire.env.interactive.port" . }}
       targetPort: 30701
   selector:
     app: {{ include "inspire.applicationName" . }}

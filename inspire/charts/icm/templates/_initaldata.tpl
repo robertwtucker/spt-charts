@@ -20,24 +20,24 @@
           }
         }
       }
-{{- if .Values.global.scaler.enabled }}
+{{- if or .Values.global.scaler.enabled .Values.global.scaler.forceIcmInitImport }}
       ,{
         "userName": {{ .Values.global.scaler.userOverride | default "scaler" | quote }},
         "userPasswordPath": "$(SCALER_PASS_FILE)",
         "accessRights": {
-          "admin": {
-            "rightStatus": "allow"
-          },
-          "allowImpersonate": {
-            "rightStatus": "allow"
-          },
-          "serverExportImport": {
-            "rightStatus": "allow"
+          {{- $rights := .Values.global.scaler.icmInitImport.accessRights }}
+          {{- $first := true }}
+          {{- range $key, $value := $rights }}
+            {{- if not $first }},{{ end }}
+          "{{ $key }}": {
+            "rightStatus": {{ $value.rightsStatus | quote }}
           }
+            {{- $first = false }}
+          {{- end }}
         }
       }
 {{- end }}
-{{- if .Values.global.automation.enabled }}
+{{- if or .Values.global.automation.enabled .Values.global.automation.forceIcmInitImport }}
       ,{
         "userName": {{ .Values.global.automation.userOverride | default "automation" | quote }},
         "userPasswordPath": "$(AUTOMATION_PASS_FILE)",
@@ -54,7 +54,7 @@
         }
       }
 {{- end }}
-{{- if .Values.global.sen.enabled }}
+{{- if or .Values.global.sen.enabled .Values.global.sen.forceIcmInitImport }}
       ,{
         "userName": {{ .Values.global.sen.userOverride | default "sen" | quote }},
         "userPasswordPath": "$(SEN_PASS_FILE)"

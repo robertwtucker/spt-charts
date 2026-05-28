@@ -4,15 +4,15 @@ Your release is called '{{ .Release.Name }}'.
 ** Wait for the chart to be deployed. **
 
 Your deployed applications can be accessed on the following DNS names from within your cluster
-  ICM: {{ include "inspire.applicationName" . }}-icm.{{ .Release.Namespace }}.svc.cluster.local:{{ (include "inspire.env.icm.port" .) }}
+  ICM: {{ include "inspire.env.icm.host" . }}:{{ include "inspire.env.icm.port" . }}
 {{- if .Values.global.interactive.enabled }}
-  Interactive: {{ include "inspire.applicationName" . }}-interactive.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.global.interactive.portOverride | default 30701 }}
+  Interactive: {{ include "inspire.env.interactive.host" . }}:{{ include "inspire.env.interactive.port" . }}
 {{- end }}
 {{- if .Values.global.scaler.enabled }}
-  Scaler: {{ include "inspire.applicationName" . }}-scaler.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.global.scaler.portOverride | default 30600 }}
+  Scaler: {{ include "inspire.env.scaler.host" . }}:{{ include "inspire.env.scaler.port" . }}
 {{- end }}
 {{- if .Values.global.automation.enabled }}
-  {{ $serverPort := .Values.global.automation.portOverride | default 10140 }}
+  {{- $serverPort := .Values.global.automation.portOverride | default 10140 }}
   Automation server: {{ include "inspire.applicationName" . }}-automation.{{ .Release.Namespace }}.svc.cluster.local:{{ $serverPort }}
   Automation client: {{ include "inspire.applicationName" . }}-automation.{{ .Release.Namespace }}.svc.cluster.local:{{ add $serverPort 1 }}
   {{- if .Values.automation.ips.enabled }}
@@ -56,25 +56,29 @@ To get the authentication details, execute the following commands:
   {{- end }}
 {{- end }}
 
-
 {{- if .Values.global.scaler.enabled | and .Values.global.interactive.enabled | and .Release.IsInstall }}
+
 ** Configuration **
 The job with the name '{{ include "inspire.applicationName" . }}-scaler-import' has been asynchronously launched to import the initial configuration into Scaler.
 Monitor this pod until the import job is completed. You can delete the pod afterwards.
+{{- if .Values.scaler.importJob.ttl.enabled }}
+Otherwise, the finished job will be automatically deleted after {{ .Values.scaler.importJob.ttl.secondsAfterFinished }} seconds.
+{{- end }}
   $ kubectl logs job/{{ include "inspire.applicationName" . }}-scaler-import
   $ kubectl wait --for=condition=complete job/{{ include "inspire.applicationName" . }}-scaler-import
   $ kubectl delete job/{{ include "inspire.applicationName" . }}-scaler-import
 {{- end }}
 
-
 ** Port Forwarding **
 To connect to your applications execute the following commands:
-  $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "inspire.applicationName" . }}-icm {{ (include "inspire.env.icm.port" .) }}:{{ (include "inspire.env.icm.port" .) }}
+{{- if not .Values.global.icm.externalConnection.enabled }}
+  $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "inspire.applicationName" . }}-icm {{ include "inspire.env.icm.port" . }}:{{ include "inspire.env.icm.port" . }}
+{{- end }}
 {{- if .Values.global.interactive.enabled }}
-  $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "inspire.applicationName" . }}-interactive {{ .Values.global.interactive.portOverride | default 30701 }}:{{ .Values.global.interactive.portOverride | default 30701 }}
+  $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "inspire.applicationName" . }}-interactive {{ include "inspire.env.interactive.port" . }}:{{ include "inspire.env.interactive.port" . }}
 {{- end }}
 {{- if .Values.global.scaler.enabled }}
-  $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "inspire.applicationName" . }}-scaler {{ .Values.global.scaler.portOverride | default 30600 }}:{{ .Values.global.scaler.portOverride | default 30600 }}
+  $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "inspire.applicationName" . }}-scaler {{ include "inspire.env.scaler.port" . }}:{{ include "inspire.env.scaler.port" . }}
 {{- end }}
 {{- if .Values.global.automation.enabled }}
   {{- $serverPort := .Values.global.automation.portOverride | default 10140 }}

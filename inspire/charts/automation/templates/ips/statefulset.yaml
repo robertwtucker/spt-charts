@@ -70,7 +70,7 @@ spec:
         securityContext: {{- toYaml .Values.securityContext | nindent 10 }}
         env:
         - name: ICM_HOST
-          value: {{ (include "inspire.env.icm.host" .) }}
+          value: {{ (include "inspire.env.icm.host" .) | quote }}
         - name: ICM_PORT
           value: {{ (include "inspire.env.icm.port" .) | quote }}
         command: [ 'sh', '-c', 'for i in {1..150}; do if $(timeout 4 bash -c "cat < /dev/null > /dev/tcp/$ICM_HOST/$ICM_PORT"); then echo OK && exit 0; else echo ICM not available yet; fi; done; echo ICM service availability timed-out && exit 1' ]

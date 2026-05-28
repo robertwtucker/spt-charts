@@ -16,11 +16,35 @@ role: {{ .Values.ips.role }}
 {{- end }}
 
 {{- define "inspire.env.icm.host" }}
+{{- if .Values.global.icm.externalConnection.enabled }}
+{{- .Values.global.icm.externalConnection.host }}
+{{- else }}
 {{- include "inspire.applicationName" . }}-icm.{{ .Release.Namespace }}.svc.cluster.local
+{{- end }}
 {{- end }}
 
 {{- define "inspire.env.icm.port" }}
+{{- if .Values.global.icm.externalConnection.enabled }}
+{{- .Values.global.icm.externalConnection.port }}
+{{- else }}
 {{- .Values.global.icm.portOverride | default 30353 }}
+{{- end }}
+{{- end }}
+
+{{- define "inspire.env.scaler.host" }}
+{{- include "inspire.applicationName" . }}-scaler.{{ .Release.Namespace }}.svc.cluster.local
+{{- end }}
+
+{{- define "inspire.env.scaler.port" }}
+{{- .Values.global.scaler.portOverride | default 30600 }}
+{{- end }}
+
+{{- define "inspire.env.interactive.host" }}
+{{- include "inspire.applicationName" . }}-interactive.{{ .Release.Namespace }}.svc.cluster.local
+{{- end }}
+
+{{- define "inspire.env.interactive.port" }}
+{{- .Values.global.interactive.portOverride | default 30701 }}
 {{- end }}
 
 {{- define "inspire.scaler.env.icm.user" }}
@@ -250,5 +274,13 @@ Multiple sources can have same source and thus the source should be specified as
 - name: {{ . }}
   secret:
     secretName: {{ . }}
+{{- end }}
+{{- end }}
+
+{{- define "inspire.ingress.type.check" }}
+{{- $ingressType := (.Values.global.ingress.type | trim | lower) }}
+{{- $allowedTypes := list "appgw" "haproxy" "nginx" }}
+{{- if not (has $ingressType $allowedTypes) }}
+{{ fail (printf "Invalid ingress type '%s'. Allowed values are: appgw, haproxy, nginx" .Values.global.ingress.type) }}
 {{- end }}
 {{- end }}

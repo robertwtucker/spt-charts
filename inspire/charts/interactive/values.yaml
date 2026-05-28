@@ -90,8 +90,11 @@ initImport:
     pullPolicy: IfNotPresent
 
 # -- Defines additional JVM arguments.
-# For example, you can adjust Scaler's allocated Java heap memory (using the -Xmx2048m property) whose value should be lower than the value of resources.limits.memory.
 addJvmArguments: ""
+
+# -- Defines maximum Java heap memory assigned to Interactive.
+# You can adjust Interactive's allocated Java heap memory whose value should be lower than the value of 'resources.limits.memory'. The value is passed to the '-Xmx' Java option (e.g. "2g").
+catalinaMaxRam: ""
 
 # -- Defines the ICM root folder for Interactive's installation.
 icmRoot: "icm://Interactive/"
@@ -121,9 +124,6 @@ cookieProcessor: false
 ssoEnvironmental: ""
 # -- Allows you to specify custom environment variables for the Interactive container.
 customEnvs: {}
-# -- [SPT] Name of a PVC to mount to the config directory for demo-mode use.
-# -- Note: Will be ignored when productionEnvironment is set to true.
-demoModeFiles: ""
 ips:
   resources:
     requests:
@@ -132,8 +132,6 @@ ips:
       # -- Memory requests for Interactive's IPS. See memory requests for Interactive to learn about the purpose.
       memory: 3Gi
     limits:
-      # -- CPU limits for Interactive's IPS. See CPU limits for Interactive to learn about the purpose.
-      cpu: 2
       # -- Memory limits for Interactive's IPS. See memory limits for Interactive to learn about the purpose.
       memory: 3Gi
   # -- Defines the number of processing threads to assign to Interactive's IPS.
@@ -268,10 +266,6 @@ resources:
     # this parameter improves placement of pods in the cluster. Kubernetes then takes available memory into account prior to binding your pod to a machine.
     memory: 3Gi
   limits:
-    # -- Defines the number of CPUs that an Interactive container is limited to use within its Kubernetes pod.
-    # CPU limits are used to control the maximum number of CPUs that the container may use independent of contention on the machine. If a container attempts to use more than the specified limit,
-    # the system will throttle the container. This allows your container to have a consistent level of service independent of the number of pods on the machine.
-    cpu: 2
     # -- Defines the amount of memory an Interactive container is limited to use. If the container exceeds the specified memory limit,
     # it will be terminated and potentially restarted depending on the container restart policy.
     memory: 3Gi
@@ -287,33 +281,25 @@ service:
 ingress:
   # -- Enables Ingress, a Kubernetes API object that provides load balancing.
   enabled: false
-  # -- Name of the IngressClass cluster resource to use.
-  # e.g: azure/application-gateway
-  className:
-  # -- Additional annotations for the Ingress resource.
-  # e.g:
-  # annotations:
-  #   appgw.ingress.kubernetes.io/backend-path-prefix: "/interactive/"
-  #   appgw.ingress.kubernetes.io/cookie-based-affinity: "true"
-  annotations: {}
+  # -- Defines the name of the Ingress class to use.
+  ingressClassName: ""
   # -- Defines the Ingress host.
-  host:
-  # -- A path mapping that corresponds to the ICM backend. If left blank, the path
-  # defaults to `/interactive/*`.
-  path:
+  host: ""
   tls:
-    # -- Enables HTTPS for Scaler. It is set to 'true' by default for security reasons.
+    # -- Enables HTTPS for Interactive. It is set to 'true' by default for security reasons.
     enabled: true
     # -- The functionality of the 'secretName' parameter differs based on how you intend to provide a Kubernetes secret that stores the required certificate:
     # 1) If you create a Kubernetes TLS secret that stores the required certificate manually by yourself, enter the name of the secret in the 'secretName' parameter.
     #    To learn about Kubernetes TLS secrets, see Kubernetes documentation at https://kubernetes.io/docs/concepts/configuration/secret/#tls-secrets.
     # 2) If you intend to use the 'clusterIssuer' parameter to provide the required certificate, use the 'secretName' parameter to define a custom name for a secret that will be created by the cluster issuer.
-    secretName:
+    secretName: ""
     # -- Allows you to define the name of a cluster-issuer to be used for creating the certificate secret.
     # For more information about cluster issuer setup, see one of the following documentations based on which platform you use to deploy Inspire:
     # AKS (Application Gateway Kubernetes Ingress): https://azure.github.io/application-gateway-kubernetes-ingress/how-tos/lets-encrypt/#certificate-issuance-with-letsencryptorg
     # EKS (NGINX Ingress): https://cert-manager.io/docs/tutorials/acme/ingress/
-    clusterIssuer:
+    clusterIssuer: ""
+  # -- Allows to define annotations which influence the Ingress Controller behavior.
+  customAnnotations: {}
 
 deployment:
   # -- Provides the ability to customize Interactive's deployment using Kubernetes annotations.

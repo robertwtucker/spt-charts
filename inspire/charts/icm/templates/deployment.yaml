@@ -1,3 +1,4 @@
+{{- if not .Values.global.icm.externalConnection.enabled }}
 {{- include "inspire.secret.check" (dict "value" .Values.global.icm.adminPassOverride "source" .Values.global.icm.adminPassOverrideSource) }}
 {{- include "inspire.secret.check" (dict "value" .Values.global.license.server "source" .Values.global.license.serverSource) }}
 {{- include "inspire.secret.check" (dict "value" .Values.global.license.server2 "source" .Values.global.license.server2Source) }}
@@ -96,15 +97,21 @@ spec:
           image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-            {{- if .Values.global.scaler.enabled }}
+            {{- with .Values.customEnvs }}
+            {{- range $key, $value := . }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- end }}
+            {{- if or .Values.global.scaler.enabled .Values.global.scaler.forceIcmInitImport  }}
             {{- $scalerPassDefinition := (dict "source" .Values.global.scaler.passOverrideSource "secretKey" "pass" "mountPath" "/opt/Quadient/secrets/scaler" "envFileName" "SCALER_PASS_FILE") -}}
             {{- include "inspire.secret.asFilePointer" $scalerPassDefinition | nindent 12 }}
             {{- end }}
-            {{- if .Values.global.automation.enabled }}
+            {{- if or .Values.global.automation.enabled .Values.global.automation.forceIcmInitImport }}
             {{- $automationPassDefinition := (dict "source" .Values.global.automation.passOverrideSource "secretKey" "pass" "mountPath" "/opt/Quadient/secrets/automation" "envFileName" "AUTOMATION_PASS_FILE") -}}
             {{- include "inspire.secret.asFilePointer" $automationPassDefinition | nindent 12 }}
             {{- end }}
-            {{- if .Values.global.sen.enabled }}
+            {{- if or .Values.global.sen.enabled .Values.global.sen.forceIcmInitImport }}
             {{- $senPassDefinition := (dict "source" .Values.global.sen.passOverrideSource "secretKey" "pass" "mountPath" "/opt/Quadient/secrets/sen" "envFileName" "SEN_PASS_FILE") -}}
             {{- include "inspire.secret.asFilePointer" $senPassDefinition | nindent 12 }}
             {{- end }}
@@ -113,7 +120,8 @@ spec:
             {{- include "inspire.env.license" . | nindent 12 }}
             {{- include "icm.env.database" . | nindent 12 }}
             - name: CX_ICMINITIALDATA
-              value: {{ include "icm.initialdata" . | quote }}
+              value: |
+                {{- include "icm.initialdata" . | nindent 16 }}
             {{- if .Values.externalAccess.enabled }}
             - name: ADD_PARAMS
               value: "-enablehttpconnections -waitingtime 15 {{ .Values.addParams }}"
@@ -168,13 +176,13 @@ spec:
               mountPath: /opt/Quadient/Designer/configs
             - name: home
               mountPath: /home/quadient/.quadient
-            {{- if .Values.global.scaler.enabled }}
+            {{- if or .Values.global.scaler.enabled .Values.global.scaler.forceIcmInitImport }}
             {{- include "inspire.secret.asMount" (dict "source" .Values.global.scaler.passOverrideSource "volumeName" "scaler-icm" "secretKey" "pass" "mountPath" "/opt/Quadient/secrets/scaler" "withoutSubpath" false ) | nindent 12 }}
             {{- end }}
-            {{- if .Values.global.automation.enabled }}
+            {{- if or .Values.global.automation.enabled .Values.global.automation.forceIcmInitImport }}
             {{- include "inspire.secret.asMount" (dict "source" .Values.global.automation.passOverrideSource "volumeName" "automation-icm" "secretKey" "pass" "mountPath" "/opt/Quadient/secrets/automation" "withoutSubpath" false ) | nindent 12 }}
             {{- end }}
-            {{- if .Values.global.sen.enabled }}
+            {{- if or .Values.global.sen.enabled .Values.global.sen.forceIcmInitImport }}
             {{- include "inspire.secret.asMount" (dict "source" .Values.global.sen.passOverrideSource "volumeName" "scaler-sen-icm" "secretKey" "pass" "mountPath" "/opt/Quadient/secrets/sen" "withoutSubpath" false ) | nindent 12 }}
             {{- end }}
             {{- include "inspire.secret.asMount" (dict "source" .Values.global.icm.adminPassOverrideSource "volumeName" "admin" "secretKey" "pass" "mountPath" "/opt/Quadient/secrets/admin" "withoutSubpath" false ) | nindent 12 }}
@@ -192,13 +200,13 @@ spec:
 {{- if .Values.db.connectionString | or (eq (include "inspire.secret.isDelegated" .Values.db.connectionStringSource) "true") }}
 {{- $volumeCandidates = append $volumeCandidates (dict "value" .Values.db.connectionString "source" .Values.db.connectionStringSource "volumeName" "icm-connectstring" "secretName" (printf "%s-icm-database" $applicationName) )}}
 {{- end }}
-{{- if .Values.global.scaler.enabled }}
+{{- if or .Values.global.scaler.enabled .Values.global.scaler.forceIcmInitImport }}
   {{- $volumeCandidates = append $volumeCandidates (dict "value" .Values.global.scaler.passOverride "source" .Values.global.scaler.passOverrideSource "volumeName" "scaler-icm" "secretName" (printf "%s-scaler-icm" $applicationName) )}}
 {{- end }}
-{{- if .Values.global.automation.enabled }}
+{{- if or .Values.global.automation.enabled .Values.global.automation.forceIcmInitImport }}
   {{- $volumeCandidates = append $volumeCandidates (dict "value" .Values.global.automation.passOverride "source" .Values.global.automation.passOverrideSource "volumeName" "automation-icm" "secretName" (printf "%s-automation-icm" $applicationName) )}}
 {{- end }}
-{{- if .Values.global.sen.enabled }}
+{{- if or .Values.global.sen.enabled .Values.global.sen.forceIcmInitImport }}
   {{- $volumeCandidates = append $volumeCandidates (dict "value" .Values.global.sen.passOverride "source" .Values.global.sen.passOverrideSource "volumeName" "scaler-sen-icm" "secretName" (printf "%s-scaler-sen" $applicationName) )}}
 {{- end }}
 {{- include "inspire.secret.uniqueVolumes" $volumeCandidates | nindent 8 }}
@@ -219,3 +227,4 @@ spec:
           emptyDir: {}
         - name: home
           emptyDir: {}
+{{- end }}

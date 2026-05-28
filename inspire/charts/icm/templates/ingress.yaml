@@ -1,4 +1,6 @@
+{{- if not .Values.global.icm.externalConnection.enabled }}
 {{- if (and .Values.ingress .Values.ingress.enabled) -}}
+{{- include "inspire.ingress.type.check" . -}}
 {{- if not .Values.externalAccess.enabled -}}
 {{- fail "External access `icm.externalAccess.enabled=true` must be configured in order to expose ICM" -}}
 {{- end -}}
@@ -10,27 +12,31 @@ kind: Ingress
 metadata:
   name: {{ include "inspire.applicationName" . }}-icm
   annotations:
-    {{- if (.Values.ingress.tls.enabled) | and .Values.ingress.tls.clusterIssuer }}
-    cert-manager.io/cluster-issuer: {{ .Values.ingress.tls.clusterIssuer | quote }}
+    {{- include "inspire.icm.ingress.annotations" . | indent 4 }}
+    {{- with .Values.ingress.customAnnotations }}
+    {{- toYaml . | nindent 4 }}
     {{- end }}
-    {{- with .Values.ingress.annotations }}
-      {{- toYaml . | nindent 4 }}
+    {{- if .Values.ingress.tls.enabled | and .Values.ingress.tls.clusterIssuer }}
+    cert-manager.io/cluster-issuer: {{ .Values.ingress.tls.clusterIssuer }}
     {{- end }}
 spec:
-  ingressClassName: {{ .Values.ingress.className | quote }}
+  {{- if .Values.ingress.ingressClassName }}
+  ingressClassName: {{ .Values.ingress.ingressClassName | quote }}
+  {{- end }}
   tls:
   - hosts:
     - {{ .Values.ingress.host }}
-    secretName: {{ .Values.ingress.tls.secretName | default (printf "%s-tls" .Values.ingress.host) }}
+    secretName: {{ .Values.ingress.tls.secretName | default (printf "tls-secret-%s" .Values.ingress.host) }}
   rules:
   - host: {{ .Values.ingress.host }}
     http:
       paths:
-      - path: {{ .Values.ingress.path | default "/icm/*" | quote }}
+      - path: {{ include "inspire.icm.ingress.path" . }}
         pathType: ImplementationSpecific
         backend:
           service:
             name: {{ include "inspire.applicationName" . }}-icm
             port:
               number: 8080
+{{- end }}
 {{- end }}

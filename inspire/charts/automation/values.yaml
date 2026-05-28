@@ -27,6 +27,12 @@ activateVolumes:
   volumes:
     - name: my-csi-storage
 
+# -- Defines an array of volumeMounts to be mounted to the Automation pod.
+# For example when using custom volume with files needed for processing, you can define how to mount it to the Automation pod:
+volumeMounts: []
+#  - name: file-templates
+#    mountPath: /templates
+
 # -- Specifies the server custom name.
 iaServerName: automation
 # -- Specifies the maximum amount of Inspire Automation´s heap memory.
@@ -39,12 +45,23 @@ log4paRetentionPeriod: 2419200
 deltaTimeAfterCompletion: 1800
 # -- Specifies (in seconds) the default time to keep completed jobs with errors.
 retentionPeriodAfterError: 3600
-# -- Available since the 16.0 SP1 version (except for the 16.2 version) of Automation.
-# Specifies if the Inspire Automation server should output logs to console in JSON format.
+# -- Specifies if the Inspire Automation server should output logs to console in JSON format.
+# Available since the 16.0 SP1 version (except for the 16.2 version) of Automation.
 logAsJson: true
-# -- Available since the 16.0 SP1 version (except for the 16.2 version) of Automation.
-# Specifies custom logger configuration for the Inspire Automation server to use.
+# -- Specifies custom logger configuration for the Inspire Automation server to use.
+# Available since the 16.0 SP1 version (except for the 16.2 version) of Automation.
 customLoggerConfigContent: ""
+# -- Specifies if downloading Portable Client from server will be enabled.
+# Available since the 17.0 version of Automation.
+portableClientEnabled: true
+# -- Specifies an existing ConfigMap with a configuration file to be used by Automation (must contain the 'configuration_file.xml' key).
+# Specifying this parameter uses the recfrom command to start the server.
+# Available since the 17.3 version of Automation.
+configurationFileCM: ""
+# -- Specifies an existing ConfigMap with a security configuration file to be used by Automation (must contain the 'security_configuration_file.xml' key).
+# Specifying this parameter uses the recfrom command to start the server.
+# Available since the 17.3 version of Automation.
+securityConfigurationFileCM: ""
 
 db:
   # -- Defines the hostname of the server that runs the database.
@@ -64,6 +81,21 @@ db:
   pass: ""
   # -- Uses a Secret to define the password of the database user.
   passSource:
+    useSecret: false
+    secretName: ""
+    secretKey: ""
+  # -- Defines encryption for the database connection. [verified/required/disabled]
+  encryptConnection: "disabled"
+  # -- Uses a Secret to define certificate for the database connection
+  truststoreSource:
+    useSecret: false
+    secretName: ""
+    secretKey: ""
+  # -- Defines (in plain text) the password for accessing the database certificate
+  # Use the 'truststorePassSource' variable instead if you wish to define the password using a Secret.
+  truststorePass: ""
+  # -- Uses a Secret to define password for accessing the database certificate
+  truststorePassSource:
     useSecret: false
     secretName: ""
     secretKey: ""
@@ -103,6 +135,19 @@ workingDirectory:
   # -- Defines the name of an existing persistent volume claim.
   existingClaim: ""
 
+# -- Defines whether you wish to import the 'lib/plugin/server' folder with external libraries (e.g. the MySQL database driver) into Automation.
+# Build a docker image containing the 'lib/plugin/server' folder you wish to import.
+# The container starts as an init sidecar container and its script copies libraries to '/opt/Quadient/InspireAutomation/lib/plugin/server'.
+useLibPluginServerSidecar: false
+libPluginServerSidecar:
+  image:
+    # -- Defines the URL address of the 'lib-plugin-server' sidecar image stored in a Docker image repository.
+    name: ""
+    # -- Defines a specific version of the 'lib-plugin-server' sidecar image to be deployed.
+    tag: ""
+    # -- Defines the 'lib-plugin-server' sidecar image pull policy. [IfNotPresent/Always]
+    pullPolicy: IfNotPresent
+
 ips:
   # -- Defines whether or not to create Ips pod
   enabled: true
@@ -139,11 +184,6 @@ ips:
       # this parameter improves placement of pods in the cluster. Kubernetes then takes available memory into account prior to binding your pod to a machine.
       memory: 3Gi
     limits:
-      # -- Defines the number of CPUs that an IPS container is limited to use within its Kubernetes pod.
-      # CPU limits are used to control the maximum number of CPUs that the container may use independent of contention on the machine.
-      # If a container attempts to use more than the specified limit, the system will throttle the container.
-      # This allows your container to have a consistent level of service independent of the number of pods on the machine.
-      cpu: 2
       # -- Defines the amount of memory an IPS container is limited to use. If the container exceeds the specified memory limit, it will be terminated
       # and potentially restarted depending on the container restart policy.
       memory: 3Gi
@@ -275,11 +315,6 @@ resources:
     # this parameter improves placement of pods in the cluster. Kubernetes then takes available memory into account prior to binding your pod to a machine.
     memory: 3Gi
   limits:
-    # -- Defines the number of CPUs that an Automation container is limited to use within its Kubernetes pod.
-    # CPU limits are used to control the maximum number of CPUs that the container may use independent of contention on the machine.
-    # If a container attempts to use more than the specified limit, the system will throttle the container.
-    # This allows your container to have a consistent level of service independent of the number of pods on the machine.
-    cpu: 2
     # -- Defines the amount of memory an Automation container is limited to use. If the container exceeds the specified memory limit, it will be terminated
     # and potentially restarted depending on the container restart policy.
     memory: 3Gi

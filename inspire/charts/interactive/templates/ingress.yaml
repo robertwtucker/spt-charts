@@ -1,32 +1,36 @@
 {{- if .Values.ingress.enabled | and .Values.global.interactive.enabled }}
+{{- include "inspire.ingress.type.check" . -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ include "inspire.applicationName" . }}-interactive
   annotations:
-    {{- if .Values.ingress.tls.enabled | and .Values.ingress.tls.clusterIssuer }}
-    cert-manager.io/cluster-issuer: {{ .Values.ingress.tls.clusterIssuer | quote }}
+    {{- include "inspire.interactive.ingress.annotations" . | indent 4 }}
+    {{- with .Values.ingress.customAnnotations }}
+    {{- toYaml . | nindent 4 }}
     {{- end }}
-    {{- with .Values.ingress.annotations }}
-      {{- toYaml . | nindent 4 }}
+    {{- if .Values.ingress.tls.enabled | and .Values.ingress.tls.clusterIssuer }}
+    cert-manager.io/cluster-issuer: {{ .Values.ingress.tls.clusterIssuer }}
     {{- end }}
 spec:
-  ingressClassName: {{ .Values.ingress.className | quote }}
+  {{- if .Values.ingress.ingressClassName }}
+  ingressClassName: {{ .Values.ingress.ingressClassName | quote }}
+  {{- end }}
   {{- if .Values.ingress.tls.enabled }}
   tls:
   - hosts:
     - {{ .Values.ingress.host }}
-    secretName: {{ .Values.ingress.tls.secretName | default (printf "%s-tls" .Values.ingress.host) }}
+    secretName: {{ .Values.ingress.tls.secretName | default (printf "tls-secret-%s" .Values.ingress.host) }}
   {{- end }}
   rules:
   - host: {{ .Values.ingress.host }}
     http:
       paths:
-      - path: {{ .Values.ingress.path | default "/interactive/*" | quote }}
+      - path: {{ include "inspire.interactive.ingress.path" . }}
         pathType: ImplementationSpecific
         backend:
           service:
             name: {{ include "inspire.applicationName" . }}-interactive
             port:
-              number: {{ .Values.global.interactive.portOverride | default 30701 }}
+              number: {{ include "inspire.env.interactive.port" . }}
 {{- end }}

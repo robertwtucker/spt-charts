@@ -32,8 +32,19 @@ Definition of environment variables of database
   value: {{ .Values.db.driverClass }}
 - name: DB_DRIVER
   value: {{ .Values.db.driver }}
+- name: DB_ENCRYPT_CONNECTION
+  value: {{ .Values.db.encryptConnection }}
 {{- $dbPassDefinition := dict "source" .Values.db.passSource "mountPath" "/opt/Quadient/secrets/db/password" "secretKey" "dbPass" "envFileName" "DB_PASS" -}}
 {{- $dbUserDefinition := dict "source" .Values.db.userSource "mountPath" "/opt/Quadient/secrets/db/username" "secretKey" "dbUser" "envFileName" "DB_USER" -}}
 {{- include "inspire.secret.asFilePointer" ($dbUserDefinition) -}}
 {{- include "inspire.secret.asFilePointer" ($dbPassDefinition) -}}
+{{- if eq "verified" (.Values.db.encryptConnection | trim | lower) }}
+{{- $dbTruststoreDefinition := dict "source" .Values.db.truststoreSource "mountPath" "/opt/Quadient/secrets/db/truststore" "secretKey" "dbTruststore" "envFileName" "DB_TRUSTSTORE" -}}
+{{- include "inspire.secret.asFilePointer" ($dbTruststoreDefinition) -}}
+{{- if not (eq "postgresql" (.Values.db.type | trim | lower)) }}
+{{- $dbTruststorePassDefinition := dict "source" .Values.db.truststorePassSource "mountPath" "/opt/Quadient/secrets/db/truststorePassword" "secretKey" "dbTruststorePass" "envFileName" "DB_TRUSTSTORE_PASSWORD" -}}
+{{- include "inspire.secret.asFilePointer" ($dbTruststorePassDefinition) -}}
+{{- end }}
+{{- end }}
+
 {{- end }}

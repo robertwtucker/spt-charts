@@ -1,7 +1,6 @@
-
 global:
   # -- Defines an array of names of secrets, containing the connection settings to Docker image repositories.
-  imagePullSecrets: []
+  imagePullSecrets: [ ]
   # -- Defines a unique name of an application within a Kubernetes namespace.
   applicationName: "inspire"
 
@@ -26,6 +25,12 @@ global:
       secretKey: ""
 
   icm:
+    # -- Defines the connection for an external ICM instance.
+    # If the connection is defined, ICM pod will not be deployed.
+    externalConnection:
+      enabled: false
+      host: ""
+      port:
     # -- Defines the password of the ICM admin user.
     # If left undefined, ICM's deployment will provide you with a random alphanumeric password.
     # Use the 'adminPassOverrideSource' variable instead if you wish to define the password using a Secret.
@@ -58,6 +63,40 @@ global:
     # -- Defines the port to run Scaler on.
     # If left undefined, the default port 30600 is used.
     portOverride:
+    # -- Defines whether or not to import Scaler's user data into ICM. Set to 'true' if you intend to deploy this application after deploying ICM.
+    forceIcmInitImport: false
+    icmInitImport:
+      # -- Defines which user access rights to grant to imported Scaler user during the initial import process.
+      accessRights:
+        admin:
+          rightsStatus: "allow"
+        allowImpersonate:
+          rightsStatus: "allow"
+        serverExportImport:
+          rightsStatus: "allow"
+        # -- ChangeSet access rights are available since ICM version 17.4.
+        # Uncomment the following rights when using ICM 17.4 or later.
+        # For backwards compatibility with ICM 17.3 and earlier, leave them commented out.
+        # changeSetCreate:
+        #   rightsStatus: "allow"
+        # changeSetClose:
+        #   rightsStatus: "allow"
+        # changeSetApprove:
+        #   rightsStatus: "allow"
+        # changeSetReject:
+        #   rightsStatus: "allow"
+        # changeSetInvalidate:
+        #   rightsStatus: "allow"
+        # changeSetRemove:
+        #   rightsStatus: "allow"
+        # changeSetImport:
+        #   rightsStatus: "allow"
+        # changeSetExport:
+        #   rightsStatus: "allow"
+        # changeSetListAndView:
+        #   rightsStatus: "allow"
+        # changeSetEdit:
+        #   rightsStatus: "allow"
 
   dataRecording:
     # -- Since the R15.0 GA version, this defines whether or not you want to prepare the Inspire Flex components for the use of the Data Recording feature. The value of this setting must be set to 'true' for the Data recording feature to work in Kubernetes.
@@ -80,6 +119,8 @@ global:
       useSecret: false
       secretName: ""
       secretKey: ""
+    # -- Defines whether or not to import SEN's user data into ICM. Set to 'true' if you intend to deploy this application after deploying ICM.
+    forceIcmInitImport: false
 
   interactive:
     # -- Defines whether to deploy Interactive or not.
@@ -104,12 +145,12 @@ global:
   automation:
     # -- Defines whether to deploy Automation or not.
     enabled: false
-    # -- Defines (in plain text) the username of a Automation user.
-    # -- If left undefined, the default user called automation is created.
+    # -- Defines (in plain text) the username of an Automation user.
+    # If left undefined, the default user called automation is created.
     userOverride: ~
-    # -- Defines (in plain text) the password of a Automation user.
-    # -- If left undefined, Automation's deployment will provide you with a random alphanumeric password.
-    # -- Use the 'passOverrideSource' variable instead if you wish to define the password using a Secret.
+    # -- Defines (in plain text) the password of an Automation user.
+    # If left undefined, Automation's deployment will provide you with a random alphanumeric password.
+    # Use the 'passOverrideSource' variable instead if you wish to define the password using a Secret.
     passOverride: ~
     # -- Uses a Secret to define the password of an Automation user to be created in ICM.
     passOverrideSource:
@@ -117,26 +158,11 @@ global:
       secretName: ""
       secretKey: ""
     # -- Defines the port to run Automation on.
-    # -- If left undefined, the default port 10140 is used.
+    # If left undefined, the default port 10140 is used.
     portOverride:
+    # -- Defines whether or not to import Automation's user data into ICM. Set to 'true' if you intend to deploy this application after deploying ICM.
+    forceIcmInitImport: false
 
-  # -- SPT modifications
-  spt:
-    # -- Toggles load of the base demo content.
-    # -- NB: Assumes that:
-    #  - Scaler value 'additionalStorage.enabled' == true.
-    #  - Scaler value 'additionalStorage.mountPath' == "/opt/scalerAdditionalStorage".
-    loadBaseContent: false
-    image:
-      # -- Defines the name of the SPT content image stored in a container repository.
-      name: registry.sptcloud.com/spt/spt-util
-      # -- Defines a specific version of the SPT content image to be deployed.
-      tag: 0.2.1
-      # -- Defines the SPT content image pull policy. [IfNotPresent/Always]
-      pullPolicy: IfNotPresent
-    k8sWaitFor:
-      image:
-        # -- Defines the name of the k8s-wait-for image stored in a container repository.
-        name: ghcr.io/groundnuty/k8s-wait-for
-        # -- Specifies the k8s-wait-for version tag to use.
-        tag: no-root-v2.0
+  ingress:
+    # -- Defines the type of ingress instance you need to run. Use 'appgw' for Azure Kubernetes Service and 'hproxy' or 'nginx' for any other platform. [haproxy/nginx/appgw]
+    type: ""

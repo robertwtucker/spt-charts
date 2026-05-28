@@ -4,6 +4,7 @@
   {{- include "inspire.secret.check" (dict "value" .Values.global.license.server2 "source" .Values.global.license.server2Source) }}
   {{- include "inspire.secret.check" (dict "value" .Values.db.pass "source" .Values.db.passSource) }}
   {{- include "inspire.secret.check" (dict "value" .Values.db.user "source" .Values.db.userSource) }}
+  {{- include "inspire.secret.check" (dict "value" .Values.db.truststorePass "source" .Values.db.truststorePassSource) }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -79,6 +80,16 @@ spec:
         env:
           {{- include "automation.env.icm" . | nindent 10 }}
         command: ['sh', '-c', 'for i in {1..150}; do if $(timeout 4 bash -c "cat < /dev/null > /dev/tcp/$SECURITY_ICM_HOST/$SECURITY_ICM_PORT"); then echo OK && exit 0; else echo ICM not available yet; fi; done; echo ICM service availability timed-out && exit 1']
+      {{- if .Values.useLibPluginServerSidecar }}
+      - name: {{ include "inspire.applicationName" . }}-automation-lib-plugin-server-sidecar
+        image: "{{ .Values.libPluginServerSidecar.image.name }}:{{ .Values.libPluginServerSidecar.image.tag }}"
+        imagePullPolicy: {{ .Values.libPluginServerSidecar.image.pullPolicy }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+        volumeMounts:
+          - name: lib-plugin-server-sidecar
+            mountPath: /opt/Quadient/InspireAutomation/lib/plugin/server
+      {{- end }}
       containers:
       - name: {{ include "inspire.applicationName" . }}-automation
         image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
@@ -97,12 +108,20 @@ spec:
         {{- include "inspire.env.license" . | nindent 8 }}
         {{- include "automation.env.icm" . | nindent 8 }}
         {{- include "automation.env.database" . | nindent 8 }}
+        {{- if .Values.configurationFileCM }}
+        - name: IA_CONFIGURATION_FILE
+          value: /opt/Quadient/InspireAutomation/config/configuration/configuration_file.xml
+        {{- end }}
+        {{- if .Values.securityConfigurationFileCM }}
+        - name: IA_SECURITY_CONFIGURATION_FILE
+          value: /opt/Quadient/InspireAutomation/config/securityConfiguration/security_configuration_file.xml
+        {{- end }}
         - name: LOG_AS_JSON
           value: {{ .Values.logAsJson | quote }}
         {{- if .Values.customLoggerConfigContent }}
         - name: CUSTOM_LOGGER_CONFIG_FILE
-          value: "/opt/Quadient/InspireAutomation/loggerConfig/log4j2.custom_logger_config.xml"
-        {{- end}}
+          value: /opt/Quadient/InspireAutomation/loggerConfig/log4j2.custom_logger_config.xml
+        {{- end }}
         - name: SERVERNAME
           value: {{ .Values.iaServerName }}
         - name: DB_CONNECTIONS_COUNT
@@ -119,6 +138,8 @@ spec:
           value: {{ .Values.deltaTimeAfterCompletion | quote }}
         - name: RETENTION_PERIOD_AFTER_ERROR
           value: {{ .Values.retentionPeriodAfterError | quote }}
+        - name: IA_PORTABLE_CLIENT_ENABLED
+          value: {{ .Values.portableClientEnabled | quote }}
         ports:
           - containerPort: 10141
             protocol: TCP
@@ -141,6 +162,8 @@ spec:
         volumeMounts:
           {{- include "inspire.secret.asMount" (dict "source" .Values.db.passSource "volumeName" "automation-db-password" "secretKey" "dbPass" "mountPath" "/opt/Quadient/secrets/db/password" "withoutSubpath" false) | nindent 10 }}
           {{- include "inspire.secret.asMount" (dict "source" .Values.db.userSource "volumeName" "automation-db-username" "secretKey" "dbUser" "mountPath" "/opt/Quadient/secrets/db/username" "withoutSubpath" false) | nindent 10 }}
+          {{- include "inspire.secret.asMount" (dict "source" .Values.db.truststoreSource "volumeName" "automation-db-truststore" "secretKey" "dbTruststore" "mountPath" "/opt/Quadient/secrets/db/truststore" "withoutSubpath" false) | nindent 10 }}
+          {{- include "inspire.secret.asMount" (dict "source" .Values.db.truststorePassSource "volumeName" "automation-db-truststore-password" "secretKey" "dbTruststorePass" "mountPath" "/opt/Quadient/secrets/db/truststorePassword" "withoutSubpath" false) | nindent 10 }}
           - name: automation-work-volume
             mountPath: /opt/Quadient/InspireAutomation/work-dir
           - name: automation-chimenix-volume
@@ -150,7 +173,22 @@ spec:
           {{- if .Values.customLoggerConfigContent }}
           - name: automation-custom-logger-config-volume
             mountPath: /opt/Quadient/InspireAutomation/loggerConfig
-          {{- end}}
+          {{- end }}
+          {{- if .Values.useLibPluginServerSidecar }}
+          - name: lib-plugin-server-sidecar
+            mountPath: /opt/Quadient/InspireAutomation/lib/plugin/server
+          {{- end }}
+          {{- if .Values.configurationFileCM }}
+          - name: automation-configuration-file
+            mountPath: /opt/Quadient/InspireAutomation/config/configuration
+          {{- end }}
+          {{- if .Values.securityConfigurationFileCM }}
+          - name: automation-security-configuration-file
+            mountPath: /opt/Quadient/InspireAutomation/config/securityConfiguration
+          {{- end }}
+          {{- with .Values.volumeMounts }}
+          {{ tpl (toYaml .) $ | nindent 10 }}
+          {{- end }}
       restartPolicy: Always
       dnsPolicy: ClusterFirst
       terminationGracePeriodSeconds: {{ .Values.shutdownTimeout }}
@@ -159,6 +197,8 @@ spec:
       {{- $applicationName := (include "inspire.applicationName" .) }}
       {{- $volumeCandidates = append $volumeCandidates (dict "value" .Values.db.pass "source" .Values.db.passSource "volumeName" "automation-db-password" "secretName" (printf "%s-automation-database" $applicationName) )}}
       {{- $volumeCandidates = append $volumeCandidates (dict "value" .Values.db.user "source" .Values.db.userSource "volumeName" "automation-db-username" "secretName" (printf "%s-automation-database" $applicationName) )}}
+      {{- $volumeCandidates = append $volumeCandidates (dict "source" .Values.db.truststoreSource "volumeName" "automation-db-truststore" "secretName" (printf "%s-automation-database" $applicationName) )}}
+      {{- $volumeCandidates = append $volumeCandidates (dict "value" .Values.db.truststorePass "source" .Values.db.truststorePassSource "volumeName" "automation-db-truststore-password" "secretName" (printf "%s-automation-database" $applicationName) )}}
       {{- include "inspire.secret.uniqueVolumes" $volumeCandidates | nindent 8 }}
       {{- with .Values.volumes }}
       {{ tpl (toYaml .) $ | nindent 8 }}
@@ -174,5 +214,19 @@ spec:
         - name: automation-custom-logger-config-volume
           configMap:
             name: {{ include "inspire.applicationName" . }}-custom-logger-config
+        {{- end }}
+        {{- if .Values.useLibPluginServerSidecar }}
+        - name: lib-plugin-server-sidecar
+          emptyDir: {}
+        {{- end }}
+        {{- if .Values.configurationFileCM }}
+        - name: automation-configuration-file
+          configMap:
+            name: {{ .Values.configurationFileCM }}
+        {{- end }}
+        {{- if .Values.securityConfigurationFileCM }}
+        - name: automation-security-configuration-file
+          configMap:
+            name: {{ .Values.securityConfigurationFileCM }}
         {{- end }}
 {{- end }}

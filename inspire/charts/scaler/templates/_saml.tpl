@@ -28,6 +28,8 @@ Definition of environment variables for SAML configuration
   value: {{ .Values.authentication.saml2.updateStrategy }}
 - name: SAML_MISSING_GROUP_STRATEGY
   value: {{ .Values.authentication.saml2.missingGroupStrategy }}
+- name: SAML_CREATE_USER_WITH_ICM_ACCESS
+  value: {{ .Values.authentication.saml2.createUserWithIcmAccess }}
 - name: SAML_ATTRIBUTE_MAPPING_USER
   value: {{ .Values.authentication.saml2.attributeMappingUser }}
 - name: SAML_ATTRIBUTE_MAPPING_MAIL

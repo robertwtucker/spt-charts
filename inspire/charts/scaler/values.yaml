@@ -86,8 +86,15 @@ db:
   mssqlInstanceName: ""
 
 authentication:
+  # -- Available since the 17.4 version of Scaler
+  # These settings configure the Single Sign-On (SSO) functionality via OpenID Connect protocol.
+  openid:
+    # -- Defines whether or not to enable OpenID Connect SSO for Scaler.
+    enabled: false
+    # -- Optionally, defines the name of the ICM synchronization point to use for the OpenID Connect SSO.
+    syncpointName: ""
   # -- Available since the 15.5 version of Scaler
-  # These settings configure the Single Sign-On (SSO) functionality.
+  # These settings configure the Single Sign-On (SSO) functionality via SAML 2.0 protocol.
   saml2:
     # -- Defines whether or not to configure the SAML configuration for Scaler.
     enabled: false
@@ -134,6 +141,8 @@ authentication:
     # -- Optionally, defines how Scaler manages users who sign in to Scaler via SSO but whose groups (provided by the identity provider) do not exist in ICM.
     # This setting is only applied if the updateStrategy setting is configured.
     missingGroupStrategy: ""
+    # -- Optionally, defines that the user created by the selected update strategy is created in ICM with a 'Synced' designation, indicating that their authentication is managed via SAML, eliminating the need for a locally stored password.
+    createUserWithIcmAccess: ""
     # -- Defines the name of an assertion attribute that the identity provider uses to pass the username to Scaler.
     attributeMappingUser: ""
     # -- Optionally, defines the name of an assertion attribute that the identity provider uses to pass the user's email address to Scaler.
@@ -173,14 +182,13 @@ autoscaling:
   minReplicas: 1
   # -- Defines the upper limit for the number of Inspire Scaler nodes that can be set by the autoscaling configuration.
   maxReplicas: 10
-  # -- Kubernetes calculates average utilization this way: ((pod cpu usage)/(scaler.request + ips.request).
-  # CPU requests and CPU limits must be configured using the same values.
+  # -- Kubernetes calculates average utilization this way: (pod cpu usage)/(scaler.request + ips.request).
   # Scenario 1: IPS.requests 1CPU, Scaler.requests 1CPU:
-  #  If IPS reaches 100% of its utilization capacity but Scaler is under no load, the average percentage is 50% -> not scaling.
+  #  If IPS reaches 100% of its requested utilization capacity but Scaler is under no load, the average percentage is 50% -> not scaling.
   # Scenario 2: IPS.requests 2CPU, Scaler.requests 1CPU:
-  #  If IPS reaches 100% of its utilization capacity but Scaler is under no load, the average percentage is 66% -> scaling.
-  # Scanerio 3: IPS.requests 1CPU, Scaler.request 1CPU, Scaler.limit 3CPU
-  #  If Scaler reaches 100% of its utilization capacity, the average percentage is 150%.
+  #  If IPS reaches 100% of its requested utilization capacity but Scaler is under no load, the average percentage is 66% -> scaling.
+  # Scenario 3: IPS.requests 1CPU, Scaler.request 1CPU:
+  #  If Scaler reaches 300% of its requested utilization capacity, the average percentage is 150%.
   # If not specified, at least one custom metric must be created.
   targetCPUUtilizationPercentage: 60
   # -- The following is a list of all the custom metrics that are passed to the 'HorizontalPodAutoscaler' object.
@@ -193,7 +201,7 @@ addJvmArguments: ""
 cluster:
   # -- Since the 15.0 version, the following feature enables the configuration of the backup count.
   # Learn about that feature in the 'Backup Count' section of Scaler User Manual.
-  # By default if you do not specify a value, the most suitable value is automatically determined.
+  # By default, if you do not specify a value, the most suitable value is automatically determined.
   # Note the feature has no effect on stateless architecture.
   backupCount: ~
 
@@ -269,6 +277,17 @@ customLoggerConfigContent: ""
 # Available since the 16.3 and 16.0 SP2 version of Scaler.
 customLoggerConfigCM: ""
 
+importJob:
+  # -- Provides the ability to customize annotations for the import job. The default "helm.sh/resource-policy: keep" annotation protects the job from deletion
+  # even when a Helm upgrade is performed before the job is finished.
+  annotations:
+    helm.sh/resource-policy: keep
+  ttl:
+    # -- Enables automatic deletion of the import job after it finishes.
+    enabled: false
+    # -- Sets the value of ttlSecondsAfterFinished of the import job.
+    secondsAfterFinished: 600
+
 ips:
   # -- Defines the number of processing threads to assign to Scaler's IPS.
   threadcount: 4
@@ -287,9 +306,6 @@ ips:
       # See memory requests for Scaler to learn about the purpose of the setting.
       memory: 3Gi
     limits:
-      # -- Defines the CPU limits for Scaler's IPS.
-      # See CPU limits for Scaler to learn about the purpose of the setting.
-      cpu: 2
       # -- Defines the memory limits for Scaler's IPS.
       # See memory limits for Scaler to learn about the purpose of the setting.
       memory: 3Gi
@@ -333,9 +349,6 @@ sen:
       # See memory requests for Scaler to learn about the purpose of the setting.
       memory: 3Gi
     limits:
-      # -- Defines the CPU limits for Scenario Engine.
-      # See CPU limits for Scaler to learn about the purpose of the setting.
-      cpu: 2
       # -- Defines the memory limits for Scenario Engine.
       # See memory limits for Scaler to learn about the purpose of the setting.
       memory: 3Gi
@@ -440,6 +453,9 @@ livenessProbe:
 # -- Learn about readiness probes at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/.
 # Learn about the probe's configuration settings at https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes.
 readinessProbe:
+  httpGet:
+    # -- Defines the HTTP GET request endpoint used to perform the Inspire Scaler container readiness probe.
+    path: /rest/web/system-healthy/healthy-and-http-workflows-running
   # -- Defines the delay before the Scaler container readiness probe is initiated.
   initialDelaySeconds: 30
   # -- Defines how often to perform the Scaler container probe.
@@ -488,11 +504,6 @@ resources:
     # this parameter improves placement of pods in the cluster. Kubernetes then takes available memory into account prior to binding your pod to a machine.
     memory: 3Gi
   limits:
-    # -- Defines the number of CPUs that a Scaler container is limited to use within its Kubernetes pod.
-    # CPU limits are used to control the maximum number of CPUs that the container may use independent of contention on the machine.
-    # If a container attempts to use more than the specified limit, the system will throttle the container.
-    # This allows your container to have a consistent level of service independent of the number of pods on the machine.
-    cpu: 2
     # -- Defines the amount of memory a Scaler container is limited to use. If the container exceeds the specified memory limit, it will be terminated
     # and potentially restarted depending on the container restart policy.
     memory: 3Gi
@@ -519,20 +530,13 @@ service:
 ingress:
   # -- Enables Ingress, a Kubernetes API object that provides load balancing.
   enabled: false
-  # -- Name of the IngressClass cluster resource to use.
-  # e.g: azure/application-gateway
-  className:
-  # -- Additional annotations for the Ingress resource.
-  # e.g:
-  # annotations:
-  #   appgw.ingress.kubernetes.io/backend-path-prefix: "/"
-  #   appgw.ingress.kubernetes.io/cookie-based-affinity: "true"
-  annotations: {}
+  # -- Defines the name of the Ingress class to use.
+  ingressClassName: ""
   # -- Defines the Ingress host.
-  host:
-  # -- A path mapping that corresponds to the ICM backend. If left blank, the path
-  # defaults to `/scaler/*`.
-  path:
+  host: ""
+  # -- Defines the URL for the application sub-path (e.g. 'https://cluster_url/scaler_app_subpath').
+  # The value must start with "/". For example: "/", "/scaler", "/example/custom/path".
+  applicationPath: /scaler
   tls:
     # -- Enables HTTPS for Scaler. It is set to 'true' by default for security reasons.
     enabled: true
@@ -540,14 +544,14 @@ ingress:
     # 1) If you create a Kubernetes TLS secret that stores the required certificate manually by yourself, enter the name of the secret in the 'secretName' parameter.
     #    To learn about Kubernetes TLS secrets, see Kubernetes documentation at https://kubernetes.io/docs/concepts/configuration/secret/#tls-secrets.
     # 2) If you intend to use the 'clusterIssuer' parameter to provide the required certificate, use the 'secretName' parameter to define a custom name for a secret that will be created by the cluster issuer.
-    secretName:
+    secretName: ""
     # -- Allows you to define the name of a cluster-issuer to be used for creating the certificate secret.
     # For more information about cluster issuer setup, see one of the following documentations based on which platform you use to deploy Inspire:
     # AKS (Application Gateway Kubernetes Ingress): https://azure.github.io/application-gateway-kubernetes-ingress/how-tos/lets-encrypt/#certificate-issuance-with-letsencryptorg
     # EKS (NGINX Ingress): https://cert-manager.io/docs/tutorials/acme/ingress/
-    clusterIssuer:
+    clusterIssuer: ""
   # -- Allows to define annotations which influence the Ingress Controller behavior.
-  customAnnotations:
+  customAnnotations: {}
 
 deployment:
   # -- Provides the ability to customize Scaler's deployment using Kubernetes annotations.

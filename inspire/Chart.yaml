@@ -10,13 +10,13 @@ annotations:
 dependencies:
   - name: automation
     version: "4.0.0"
-    repository: "file:charts/automation"
+    repository: "file://charts/automation"
   - name: icm
     version: "4.0.0"
-    repository: "file:charts/icm"
+    repository: "file://charts/icm"
   - name: interactive
     version: "4.0.0"
-    repository: "file:charts/interactive"
+    repository: "file://charts/interactive"
   - name: scaler
     version: "4.0.0"
-    repository: "file:charts/scaler"
+    repository: "file://charts/scaler"

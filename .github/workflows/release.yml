@@ -96,6 +96,13 @@ jobs:
           echo "digest=${digest}" >> "$GITHUB_OUTPUT"
           echo "ref=${REGISTRY}/${REPOSITORY}/inspire@${digest}" >> "$GITHUB_OUTPUT"
 
+      - name: Log in to GHCR for cosign
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_USER: ${{ github.actor }}
+        run: |
+          cosign login "$REGISTRY" --username "$GHCR_USER" --password "$GITHUB_TOKEN"
+
       - name: Sign chart with cosign (keyless OIDC)
         env:
           ARTIFACT_REF: ${{ steps.push.outputs.ref }}

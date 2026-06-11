@@ -1,0 +1,124 @@
+# CI for the inspire chart (Tier 1: schema-only).
+#
+# This workflow validates that the chart and its CI fixtures render and
+# admit cleanly. It does NOT install or pull real Inspire images — those
+# live behind credentialled Harbor that GitHub-hosted runners cannot reach,
+# and putting Harbor/ACR creds in repo secrets is the wrong trust boundary.
+# Real-image smoke-testing is a local pre-tag step (see RELEASING.md when added).
+#
+# Gates (fast → slow):
+#   1. helm lint       — deprecated APIs, missing Chart.yaml fields
+#   2. helm template   — every fixture under inspire/ci/ must render
+#   3. kubeconform     — rendered manifests validate against K8s OpenAPI
+#   4. helm install --dry-run=server on KinD — admission/webhook checks
+#
+# Scope: inspire only. Other charts will get their own workflow when ready.
+
+name: ci
+
+on:
+  pull_request:
+    paths:
+      - "inspire/**"
+      - ".github/workflows/ci.yml"
+  push:
+    branches: [master]
+    paths:
+      - "inspire/**"
+      - ".github/workflows/ci.yml"
+  workflow_call:
+
+env:
+  HELM_VERSION: v3.16.3
+  KUBECONFORM_VERSION: v0.6.7
+  K8S_API_VERSION: "1.29.0"
+
+jobs:
+  lint-and-template:
+    name: Lint & template
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: ${{ env.HELM_VERSION }}
+
+      - name: Install kubeconform
+        run: |
+          curl -sSL "https://github.com/yannh/kubeconform/releases/download/${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz" \
+            | tar -xz -C /usr/local/bin kubeconform
+          kubeconform -v
+
+      - name: helm lint (defaults)
+        run: helm lint inspire
+
+      - name: helm lint + template (every inspire/ci/*.yaml)
+        run: |
+          shopt -s nullglob
+          fixtures=(inspire/ci/*.yaml)
+          if [[ ${#fixtures[@]} -eq 0 ]]; then
+            echo "::error::no fixtures found under inspire/ci/"
+            exit 1
+          fi
+          mkdir -p /tmp/rendered
+          for f in "${fixtures[@]}"; do
+            name=$(basename "$f" .yaml)
+            echo "::group::lint $name"
+            helm lint inspire -f "$f"
+            echo "::endgroup::"
+            echo "::group::template $name"
+            helm template ci-test inspire -f "$f" > "/tmp/rendered/${name}.yaml"
+            echo "rendered $(grep -c '^kind:' /tmp/rendered/${name}.yaml) kinds → /tmp/rendered/${name}.yaml"
+            echo "::endgroup::"
+          done
+
+      - name: kubeconform (rendered manifests)
+        run: |
+          kubeconform \
+            -strict \
+            -summary \
+            -kubernetes-version "${K8S_API_VERSION}" \
+            -schema-location default \
+            -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
+            /tmp/rendered/*.yaml
+
+      - name: Upload rendered manifests
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rendered-manifests
+          path: /tmp/rendered/
+          retention-days: 7
+
+  dry-run-on-kind:
+    name: helm install --dry-run on KinD
+    runs-on: ubuntu-latest
+    needs: lint-and-template
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: ${{ env.HELM_VERSION }}
+
+      - name: Create KinD cluster
+        uses: helm/kind-action@v1
+        with:
+          cluster_name: spt-ci
+
+      - name: helm install --dry-run=server (every inspire/ci/*.yaml)
+        run: |
+          shopt -s nullglob
+          for f in inspire/ci/*.yaml; do
+            name=$(basename "$f" .yaml)
+            echo "::group::dry-run $name"
+            helm install ci-test inspire \
+              --dry-run=server \
+              --namespace ci-test \
+              --create-namespace \
+              -f "$f"
+            echo "::endgroup::"
+          done

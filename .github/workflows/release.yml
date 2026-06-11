@@ -1,0 +1,111 @@
+# Release the inspire chart on tag push.
+#
+# Triggered by tags of the form `inspire-v*`. Re-runs Tier 1 gates from
+# ci.yml (via workflow_call), then packages the chart, pushes it as an
+# OCI artifact to GHCR, and signs the pushed artifact with cosign using
+# keyless OIDC (no long-lived signing keys).
+#
+# Chart bytes only — no Inspire image bytes are touched in this workflow.
+# Real-image smoke is a local pre-tag step (see RELEASING.md when added).
+#
+# The tag version (stripped of the `inspire-v` prefix) must match
+# inspire/Chart.yaml's `version:` field, or the workflow fails before push.
+
+name: release
+
+on:
+  push:
+    tags:
+      - "inspire-v*"
+
+concurrency:
+  group: release-inspire-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  HELM_VERSION: v3.16.3
+  COSIGN_VERSION: v2.4.1
+  REGISTRY: ghcr.io
+  REPOSITORY: ${{ github.repository_owner }}/charts
+
+jobs:
+  validate:
+    uses: ./.github/workflows/ci.yml
+
+  package-and-push:
+    name: Package, push, sign
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write   # required for cosign keyless OIDC
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: ${{ env.HELM_VERSION }}
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+        with:
+          cosign-release: ${{ env.COSIGN_VERSION }}
+
+      - name: Verify tag matches Chart.yaml version
+        env:
+          TAG_REF: ${{ github.ref_name }}
+        run: |
+          tag_version="${TAG_REF#inspire-v}"
+          chart_version=$(awk '/^version:/ {print $2}' inspire/Chart.yaml | tr -d '"')
+          echo "tag version:   ${tag_version}"
+          echo "chart version: ${chart_version}"
+          if [[ "${tag_version}" != "${chart_version}" ]]; then
+            echo "::error::tag (${tag_version}) does not match inspire/Chart.yaml version (${chart_version})"
+            exit 1
+          fi
+          echo "CHART_VERSION=${chart_version}" >> "$GITHUB_ENV"
+
+      - name: Package chart
+        run: |
+          mkdir -p dist
+          helm package inspire --destination dist
+          ls -la dist/
+
+      - name: Log in to GHCR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_USER: ${{ github.actor }}
+        run: |
+          echo "$GITHUB_TOKEN" \
+            | helm registry login "$REGISTRY" --username "$GHCR_USER" --password-stdin
+
+      - name: Push chart to GHCR (OCI)
+        id: push
+        run: |
+          chart_tgz="dist/inspire-${CHART_VERSION}.tgz"
+          oci_target="oci://${REGISTRY}/${REPOSITORY}"
+          # `helm push` writes Pushed/Digest lines to stderr; capture both streams.
+          push_out=$(helm push "$chart_tgz" "$oci_target" 2>&1 | tee /dev/stderr)
+          digest=$(echo "$push_out" | awk '/^Digest:/ {print $2}')
+          if [[ -z "$digest" ]]; then
+            echo "::error::could not parse digest from helm push output"
+            exit 1
+          fi
+          echo "digest=${digest}" >> "$GITHUB_OUTPUT"
+          echo "ref=${REGISTRY}/${REPOSITORY}/inspire@${digest}" >> "$GITHUB_OUTPUT"
+
+      - name: Sign chart with cosign (keyless OIDC)
+        env:
+          ARTIFACT_REF: ${{ steps.push.outputs.ref }}
+        run: |
+          cosign sign --yes "$ARTIFACT_REF"
+
+      - name: Verify signature
+        env:
+          ARTIFACT_REF: ${{ steps.push.outputs.ref }}
+        run: |
+          cosign verify "$ARTIFACT_REF" \
+            --certificate-identity-regexp "^https://github.com/${GITHUB_REPOSITORY}/" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com"

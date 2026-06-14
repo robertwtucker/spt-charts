@@ -19,3 +19,25 @@ Access the Application:
   echo "Visit http://127.0.0.1:8080 to use your application"
   kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8080:$CONTAINER_PORT
 {{- end }}
+
+{{- if .Values.mongodb.enabled }}
+
+MongoDB application user:
+  The "{{ .Values.db.username | default "docuhost" }}" user is auto-created on the FIRST mongo start
+  (the init script under /docker-entrypoint-initdb.d only runs against an empty
+  data volume). If you are upgrading an existing install where the volume
+  already has data, create the user once manually:
+
+    ROOT_PW=$(kubectl --namespace {{ .Release.Namespace }} get secret {{ include "docuhost.mongodb.fullname" . }} \
+      -o jsonpath='{.data.mongodb-root-password}' | base64 -d)
+    APP_PW=$(kubectl --namespace {{ .Release.Namespace }} get secret {{ include "docuhost.mongodb.fullname" . }} \
+      -o jsonpath='{.data.mongodb-password}' | base64 -d)
+    kubectl --namespace {{ .Release.Namespace }} exec -i {{ include "docuhost.mongodb.fullname" . }}-0 -- \
+      mongosh --quiet -u root -p "$ROOT_PW" --authenticationDatabase admin --eval "
+        db = db.getSiblingDB('{{ .Values.db.name | default "documents" }}');
+        db.createUser({
+          user:  '{{ .Values.db.username | default "docuhost" }}',
+          pwd:   '$APP_PW',
+          roles: [{ role: 'readWrite', db: '{{ .Values.db.name | default "documents" }}' }]
+        });"
+{{- end }}

@@ -38,6 +38,15 @@ spec:
                   key: mongodb-root-password
             - name: MONGO_INITDB_DATABASE
               value: {{ .Values.db.name | default "documents" | quote }}
+            - name: MONGO_APP_DB
+              value: {{ .Values.db.name | default "documents" | quote }}
+            - name: MONGO_APP_USERNAME
+              value: {{ .Values.db.username | default "docuhost" | quote }}
+            - name: MONGO_APP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "docuhost.mongodb.fullname" . }}
+                  key: mongodb-password
           {{- if .Values.mongodb.resources }}
           resources: {{- .Values.mongodb.resources | toYaml | nindent 12 }}
           {{- end }}
@@ -59,11 +68,19 @@ spec:
             initialDelaySeconds: 15
             periodSeconds: 20
             timeoutSeconds: 5
-          {{- if .Values.mongodb.persistence.enabled }}
           volumeMounts:
+            {{- if .Values.mongodb.persistence.enabled }}
             - name: data
               mountPath: /data/db
-          {{- end }}
+            {{- end }}
+            - name: init-scripts
+              mountPath: /docker-entrypoint-initdb.d
+              readOnly: true
+      volumes:
+        - name: init-scripts
+          configMap:
+            name: {{ include "docuhost.mongodb.fullname" . }}-init
+            defaultMode: 0755
       {{- if .Values.mongodb.nodeSelector }}
       nodeSelector: {{- .Values.mongodb.nodeSelector | toYaml | nindent 8 }}
       {{- end }}

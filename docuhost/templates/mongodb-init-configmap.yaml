@@ -1,0 +1,24 @@
+{{- if .Values.mongodb.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "docuhost.mongodb.fullname" . }}-init
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "docuhost.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mongodb
+data:
+  init-user.sh: |
+    #!/usr/bin/env bash
+    set -euo pipefail
+    mongosh --quiet \
+      --username "$MONGO_INITDB_ROOT_USERNAME" \
+      --password "$MONGO_INITDB_ROOT_PASSWORD" \
+      --authenticationDatabase admin <<EOF
+    db = db.getSiblingDB("$MONGO_APP_DB");
+    db.createUser({
+      user:  "$MONGO_APP_USERNAME",
+      pwd:   "$MONGO_APP_PASSWORD",
+      roles: [{ role: "readWrite", db: "$MONGO_APP_DB" }]
+    });
+    EOF
+{{- end }}

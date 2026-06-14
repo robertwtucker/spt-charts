@@ -15,8 +15,17 @@ spec:
     type: Recreate
   template:
     metadata:
-      {{- if .Values.podAnnotations }}
-      annotations: {{ .Values.podAnnotations | toYaml | nindent 8 }}
+      {{- if or (include "docuhost.createConfigMap" .) (include "docuhost.createSecret" .) .Values.podAnnotations }}
+      annotations:
+        {{- if include "docuhost.createConfigMap" . }}
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- end }}
+        {{- if include "docuhost.createSecret" . }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+        {{- end }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       {{- end }}
       labels: {{- include "docuhost.labels" . | nindent 8 }}
         app.kubernetes.io/component: docuhost

@@ -105,7 +105,7 @@ Return the configuration configmap name
 Return true if a configmap object should be created
 */}}
 {{- define "docuhost.createConfigMap" }}
-{{- if empty .Values.existingConfigmap }}
+{{- if empty .Values.existingConfigMap }}
     {{- true }}
 {{- end }}
 {{- end }}

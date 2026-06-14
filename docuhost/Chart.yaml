@@ -1,6 +1,6 @@
 apiVersion: v2
-appVersion: 0.5.10
+appVersion: 0.6.1
 description: A Helm chart to deploy the Document Host (Docuhost) demo service
 name: docuhost
 type: application
-version: 0.3.1
+version: 0.4.0

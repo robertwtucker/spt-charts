@@ -67,9 +67,10 @@ deletes the release.
 | `db.username`          | Database user's name                                                                    | `docuhost`                           |
 | `db.password`          | Database user's password                                                                | `""`                                 |
 | `db.protocol`          | Database protocol (usually `mongodb` or `mongodb+srv`)                                  | `mongodb`                            |
-| `db.host`              | Database host name                                                                      | `localhost`                          |
+| `db.host`              | Database host name                                                                      | `""`                                 |
 | `db.port`              | Database port (can be left empty to use mongodb's default of `27017`)                   | `""`                                 |
 | `db.name`              | Database name                                                                           | `documents`                          |
+| `db.options`           | Connection string options (e.g. `authSource=admin`)                                     | `""`                                 |
 | `shortlink.apiKey`     | API Key to use for authorization                                                        | `""`                                 |
 | `shortlink.domain`     | Domain name to use for short links                                                      | `tinyurl.com`                        |
 | `shortlink.serviceUrl` | URL to use for short link service                                                       | `https://api.tinyurl.com`            |
@@ -125,6 +126,24 @@ deletes the release.
 | `ingress.path`        | Default path for the ingress record                                               | `/`                      |
 | `ingress.annotations` | Default/additional annotations for the ingress record                             | `{}`                     |
 | `ingress.tls`         | Enable TLS configuration for the host defined by the `ingress.hostname` parameter | `false`                  |
+
+### MongoDB parameters
+
+| Name                               | Description                                       | Value          |
+| ---------------------------------- | ------------------------------------------------- | -------------- |
+| `mongodb.enabled`                  | Enable the embedded MongoDB deployment            | `true`         |
+| `mongodb.image.repository`         | MongoDB image repository                          | `mongo`        |
+| `mongodb.image.tag`                | MongoDB image tag                                 | `7`            |
+| `mongodb.image.pullPolicy`         | MongoDB image pull policy                         | `IfNotPresent` |
+| `mongodb.auth.rootPassword`        | MongoDB root password                             | `""`           |
+| `mongodb.persistence.enabled`      | Enable MongoDB data persistence using PVC         | `true`         |
+| `mongodb.persistence.storageClass` | PVC Storage Class for MongoDB data volume         | `""`           |
+| `mongodb.persistence.size`         | PVC Storage size for MongoDB data volume          | `8Gi`          |
+| `mongodb.resources.limits`         | The resource limits for the MongoDB container     | `{}`           |
+| `mongodb.resources.requests`       | The requested resources for the MongoDB container | `{}`           |
+| `mongodb.containerPort`            | MongoDB container port                            | `27017`        |
+| `mongodb.nodeSelector`             | Node labels for MongoDB pod assignment            | `{}`           |
+| `mongodb.tolerations`              | Tolerations for MongoDB pod assignment            | `[]`           |
 
 ### k8s-wait-for parameters
 

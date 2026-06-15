@@ -1,0 +1,20 @@
+# CI fixture: representative values for the docuhost chart with the
+# bundled mongo StatefulSet. Used by ci-docuhost.yml to verify the
+# chart renders under realistic configuration.
+# NOT a deployable values file — secrets are placeholders.
+
+auth:
+  secret: "ci-auth-secret-padded-to-32-chars-aa"
+  auth0:
+    id: "ci-auth0-id"
+    secret: "ci-auth0-secret"
+    issuer: "https://ci.example.auth0.com/"
+
+shortlink:
+  apiKey: "ci-shortlink-apikey"
+
+db:
+  password: "ci-db-password"
+
+mongodb:
+  enabled: true

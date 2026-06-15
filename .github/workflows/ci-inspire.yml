@@ -12,20 +12,20 @@
 #   3. kubeconform     — rendered manifests validate against K8s OpenAPI
 #   4. helm install --dry-run=server on KinD — admission/webhook checks
 #
-# Scope: inspire only. Other charts will get their own workflow when ready.
+# Scope: inspire only. Docuhost has its own pipeline (ci-docuhost.yml).
 
-name: ci
+name: ci (inspire)
 
 on:
   pull_request:
     paths:
       - "inspire/**"
-      - ".github/workflows/ci.yml"
+      - ".github/workflows/ci-inspire.yml"
   push:
     branches: [master]
     paths:
       - "inspire/**"
-      - ".github/workflows/ci.yml"
+      - ".github/workflows/ci-inspire.yml"
   workflow_call:
 
 env:

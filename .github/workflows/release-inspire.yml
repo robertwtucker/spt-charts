@@ -1,9 +1,9 @@
 # Release the inspire chart on tag push.
 #
 # Triggered by tags of the form `inspire-v*`. Re-runs Tier 1 gates from
-# ci.yml (via workflow_call), then packages the chart, pushes it as an
-# OCI artifact to GHCR, and signs the pushed artifact with cosign using
-# keyless OIDC (no long-lived signing keys).
+# ci-inspire.yml (via workflow_call), then packages the chart, pushes it
+# as an OCI artifact to GHCR, and signs the pushed artifact with cosign
+# using keyless OIDC (no long-lived signing keys).
 #
 # Chart bytes only — no Inspire image bytes are touched in this workflow.
 # Real-image smoke is a local pre-tag step (see RELEASING.md when added).
@@ -11,7 +11,7 @@
 # The tag version (stripped of the `inspire-v` prefix) must match
 # inspire/Chart.yaml's `version:` field, or the workflow fails before push.
 
-name: release
+name: release (inspire)
 
 on:
   push:
@@ -30,7 +30,7 @@ env:
 
 jobs:
   validate:
-    uses: ./.github/workflows/ci.yml
+    uses: ./.github/workflows/ci-inspire.yml
 
   package-and-push:
     name: Package, push, sign

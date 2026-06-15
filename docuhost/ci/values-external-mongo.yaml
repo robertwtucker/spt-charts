@@ -1,0 +1,20 @@
+# CI fixture: docuhost configured to use an external mongo (no bundled
+# StatefulSet). Exercises the `mongodb.enabled=false` + `db.host` path,
+# which is supported by the chart but not covered by the vanilla fixture.
+
+auth:
+  secret: "ci-auth-secret-padded-to-32-chars-aa"
+  auth0:
+    id: "ci-auth0-id"
+    secret: "ci-auth0-secret"
+    issuer: "https://ci.example.auth0.com/"
+
+shortlink:
+  apiKey: "ci-shortlink-apikey"
+
+db:
+  host: "external-mongo.example.internal"
+  password: "ci-db-password"
+
+mongodb:
+  enabled: false

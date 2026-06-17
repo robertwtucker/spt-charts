@@ -1,0 +1,175 @@
+# CI for the adapt chart (Tier 1: schema-only).
+#
+# This workflow validates that the chart and its CI fixtures render and
+# admit cleanly. It does NOT install or pull real Adapt/Inspire images —
+# those live behind credentialled registries that GitHub-hosted runners
+# cannot reach, and putting those creds in repo secrets is the wrong trust
+# boundary. Real-image smoke (Tier 3) is a local pre-tag step (RELEASING.md).
+#
+# Two things make adapt's pipeline differ from inspire/docuhost:
+#
+#   * Helm 4 is REQUIRED, not optional. The post-renderer ships as a Helm 4
+#     plugin (`type: postrenderer/v1`, subprocess runtime) and CI invokes it
+#     by name (`--post-renderer adapt-scaler-inject`) — both are Helm 4-only.
+#     The v3.16.3 pin used by the other charts would fail on plugin install.
+#
+#   * The chart has an OCI subchart dependency (inspire). `*.tgz` is
+#     gitignored, so a fresh checkout has only Chart.lock — `helm dependency
+#     build` reconstructs adapt/charts/ from the locked digest (public GHCR,
+#     anonymous pull) before anything else can lint/template/render.
+#
+# The post-renderer is applied to EVERY fixture. kustomize-post.sh passes
+# input through unchanged when no `inspire-scaler` Deployment is present, so
+# it is safe to run unconditionally — no per-fixture branching needed.
+#
+# Gates (fast → slow):
+#   1. helm lint       — deprecated APIs, missing Chart.yaml fields
+#   2. helm template   — every fixture under adapt/ci/ must render (+inject)
+#   3. kubeconform     — rendered manifests validate against K8s OpenAPI
+#   4. helm install --dry-run=server on KinD — admission/webhook checks
+#
+# Scope: adapt only. Inspire and docuhost have their own pipelines.
+
+name: ci (adapt)
+
+on:
+  pull_request:
+    paths:
+      - "adapt/**"
+      - ".github/workflows/ci-adapt.yml"
+  push:
+    branches: [master]
+    paths:
+      - "adapt/**"
+      - ".github/workflows/ci-adapt.yml"
+  workflow_call:
+
+env:
+  HELM_VERSION: v4.2.1
+  KUBECTL_VERSION: v1.36.2
+  KUBECONFORM_VERSION: v0.6.7
+  K8S_API_VERSION: "1.29.0"
+
+jobs:
+  lint-and-template:
+    name: Lint & template
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v5
+        with:
+          version: ${{ env.HELM_VERSION }}
+
+      # The post-renderer shells out to `kubectl kustomize`. Install via
+      # curl (not azure/setup-kubectl, which still targets Node.js 20);
+      # matches the kubeconform install below.
+      - name: Install kubectl
+        run: |
+          curl -sSLO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+          sudo install -m 0755 kubectl /usr/local/bin/kubectl
+          kubectl version --client
+
+      - name: Install kubeconform
+        run: |
+          curl -sSL "https://github.com/yannh/kubeconform/releases/download/${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz" \
+            | tar -xz -C /usr/local/bin kubeconform
+          kubeconform -v
+
+      # Reconstruct adapt/charts/ from Chart.lock (inspire subchart is an
+      # OCI dep; the .tgz is gitignored). Anonymous pull from public GHCR.
+      - name: helm dependency build
+        run: helm dependency build adapt
+
+      # Install the Helm 4 post-renderer plugin so `--post-renderer
+      # adapt-scaler-inject` resolves by name below.
+      - name: Install post-renderer plugin
+        run: helm plugin install ./adapt/post-renderer
+
+      - name: helm lint (defaults)
+        run: helm lint adapt
+
+      - name: helm lint + template (every adapt/ci/*.yaml)
+        run: |
+          shopt -s nullglob
+          fixtures=(adapt/ci/*.yaml)
+          if [[ ${#fixtures[@]} -eq 0 ]]; then
+            echo "::error::no fixtures found under adapt/ci/"
+            exit 1
+          fi
+          mkdir -p /tmp/rendered
+          for f in "${fixtures[@]}"; do
+            name=$(basename "$f" .yaml)
+            echo "::group::lint $name"
+            helm lint adapt -f "$f"
+            echo "::endgroup::"
+            echo "::group::template $name"
+            helm template ci-test adapt -f "$f" \
+              --post-renderer adapt-scaler-inject > "/tmp/rendered/${name}.yaml"
+            echo "rendered $(grep -c '^kind:' /tmp/rendered/${name}.yaml) kinds → /tmp/rendered/${name}.yaml"
+            echo "::endgroup::"
+          done
+
+      - name: kubeconform (rendered manifests)
+        run: |
+          kubeconform \
+            -strict \
+            -summary \
+            -kubernetes-version "${K8S_API_VERSION}" \
+            -schema-location default \
+            -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
+            /tmp/rendered/*.yaml
+
+      - name: Upload rendered manifests
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: rendered-manifests-adapt
+          path: /tmp/rendered/
+          retention-days: 7
+
+  dry-run-on-kind:
+    name: helm install --dry-run on KinD
+    runs-on: ubuntu-latest
+    needs: lint-and-template
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v5
+        with:
+          version: ${{ env.HELM_VERSION }}
+
+      # kubectl for the post-renderer's `kubectl kustomize` (see lint job).
+      - name: Install kubectl
+        run: |
+          curl -sSLO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+          sudo install -m 0755 kubectl /usr/local/bin/kubectl
+          kubectl version --client
+
+      - name: helm dependency build
+        run: helm dependency build adapt
+
+      - name: Install post-renderer plugin
+        run: helm plugin install ./adapt/post-renderer
+
+      - name: Create KinD cluster
+        uses: helm/kind-action@v1
+        with:
+          cluster_name: spt-ci-adapt
+
+      - name: helm install --dry-run=server (every adapt/ci/*.yaml)
+        run: |
+          shopt -s nullglob
+          for f in adapt/ci/*.yaml; do
+            name=$(basename "$f" .yaml)
+            echo "::group::dry-run $name"
+            helm install ci-test adapt \
+              --dry-run=server \
+              --namespace ci-test \
+              --create-namespace \
+              --post-renderer adapt-scaler-inject \
+              -f "$f"
+            echo "::endgroup::"
+          done

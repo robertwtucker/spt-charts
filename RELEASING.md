@@ -2,7 +2,7 @@
 
 How to cut a release of a chart in this repo.
 
-Currently in scope: **inspire**. Other charts will document their own release path here when their workflows come online.
+Currently in scope: **inspire** and **adapt**. Other charts will document their own release path here when their workflows come online.
 
 ## inspire
 
@@ -86,4 +86,101 @@ OCI artifacts in GHCR cannot be overwritten by re-pushing the same version. To r
 
 1. Delete the tag locally and on origin: `git tag -d inspire-v1.0.1 && git push origin :inspire-v1.0.1`
 2. Delete the package version from GHCR (Settings → Packages → `inspire` → version → Delete)
+3. Fix the issue, bump the patch version (don't reuse the deleted version), re-tag
+
+## adapt
+
+The CI workflow (`.github/workflows/ci-adapt.yml`) validates schema correctness on every PR. The release workflow (`.github/workflows/release-adapt.yml`) packages, pushes to GHCR, and signs with cosign on tag push. As with inspire, these validate the chart artifact, not the deployed application — Tier 3 (real-image smoke against a real cluster) is a manual pre-tag step.
+
+Two things make adapt's release differ from inspire's:
+
+- **OCI subchart dependency.** adapt depends on `inspire` pulled from `oci://ghcr.io/robertwtucker/charts`. `*.tgz` is gitignored, so only `adapt/Chart.lock` is committed — both CI and release run `helm dependency build adapt` to reconstruct `adapt/charts/` from the locked digest. The published adapt chart bundles its locked inspire subchart.
+- **Post-renderer ships separately.** The Helm 4 post-renderer plugin (`adapt-scaler-inject`) lives at `adapt/post-renderer/` but is excluded from the package by `adapt/.helmignore`. It is NOT in the published OCI artifact; consumers install it once per machine via `helm plugin install`. Because it requires `--post-renderer` resolution by plugin name, **adapt requires Helm 4** (the workflows pin `v4.2.1`).
+
+### 1. Tier 3 local smoke install
+
+Before tagging, install the chart locally against a working K8s cluster and confirm the License Server serves licenses and (on the integrated path) the Scaler can exec UA end-to-end. This is the gate that catches what Tier 1 (`ci-adapt.yml`) cannot — real binary-license validation, init-container ordering, and the post-renderer's Scaler injection running against live images.
+
+```bash
+# Prereqs: cluster up, registry pull-secret + spt-secrets/postgresql secrets
+# present in the target namespace, inspire dependencies (db, etc.) available.
+
+# Reconstruct the inspire subchart (matches what CI/release do).
+helm dependency build ./adapt
+
+# Install the post-renderer plugin once per machine.
+helm plugin install ./adapt/post-renderer
+
+# Real Adapt licenses are binary — pass them with --set-file, not --set.
+helm upgrade --install adapt ./adapt \
+  --namespace adapt \
+  --create-namespace \
+  --set-file licenseServer.license=./LicSer.lic \
+  --set-file ua.license=./adeptua.lic \
+  --values <your-registry-pointing-values>.yaml \
+  --post-renderer adapt-scaler-inject \
+  --wait --timeout 10m
+```
+
+Verify:
+
+- License Server pod Ready; `cdplicser` serving on its Service (LS clients can check out a license)
+- On the integrated path: Inspire Scaler pod Ready, `deploy-ua` initContainer completed, and Scaler can exec UA binaries from `/opt/adapt/ua`
+- No `CrashLoopBackOff` or `ImagePullBackOff` events in the last 5 minutes
+
+If any of the above fails, **do not tag**. Open an issue / fix the chart / iterate values.
+
+### 2. Bump Chart.yaml version
+
+Reset the chart's `version:` field to the new refarch SemVer. The refarch tracks its own SemVer line, decoupled from the upstream Adapt component versions (see the `com.quadient.spt.refarch.adapt-*-version` annotations for the derivation pointers).
+
+```yaml
+# adapt/Chart.yaml
+version: 1.0.1 # or whatever the next refarch version is
+```
+
+The release workflow verifies the tag version equals this field; mismatch fails the workflow before any push.
+
+### 3. Tag and push
+
+```bash
+git tag adapt-v1.0.1
+git push origin adapt-v1.0.1
+```
+
+The push triggers `.github/workflows/release-adapt.yml`. Expected steps:
+
+1. `validate` job — re-runs `ci-adapt.yml` Tier 1 gates
+2. Tag-vs-Chart.yaml version equality check
+3. `helm dependency build adapt` (so the package bundles inspire)
+4. `helm package adapt`
+5. GHCR login (uses `GITHUB_TOKEN`)
+6. `helm push` to `oci://ghcr.io/<owner>/charts`
+7. `cosign sign` with keyless OIDC (no long-lived signing keys)
+8. `cosign verify` to confirm the signature is queryable
+
+If any step fails, the GHCR artifact may be partially published. Re-running requires deleting the tag, deleting the GHCR artifact version (if present), and re-pushing the tag. Prefer to dry-run via PR first.
+
+### 4. Post-release verification
+
+```bash
+# Confirm the artifact is pullable
+helm pull oci://ghcr.io/<owner>/charts/adapt --version 1.0.1
+
+# Confirm the signature
+cosign verify ghcr.io/<owner>/charts/adapt:1.0.1 \
+  --certificate-identity-regexp "^https://github.com/<owner>/spt-charts/" \
+  --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
+
+# Confirm annotations are present
+helm show chart oci://ghcr.io/<owner>/charts/adapt --version 1.0.1 \
+  | grep -A2 '^annotations:'
+```
+
+### 5. Rollback (if needed)
+
+OCI artifacts in GHCR cannot be overwritten by re-pushing the same version. To replace a bad release:
+
+1. Delete the tag locally and on origin: `git tag -d adapt-v1.0.1 && git push origin :adapt-v1.0.1`
+2. Delete the package version from GHCR (Settings → Packages → `adapt` → version → Delete)
 3. Fix the issue, bump the patch version (don't reuse the deleted version), re-tag

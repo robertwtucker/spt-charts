@@ -62,12 +62,14 @@ jobs:
         with:
           version: ${{ env.HELM_VERSION }}
 
-      # The post-renderer shells out to `kubectl kustomize`; pin it rather
-      # than rely on the runner image's bundled kubectl.
-      - name: Set up kubectl
-        uses: azure/setup-kubectl@v4
-        with:
-          version: ${{ env.KUBECTL_VERSION }}
+      # The post-renderer shells out to `kubectl kustomize`. Install via
+      # curl (not azure/setup-kubectl, which still targets Node.js 20);
+      # matches the kubeconform install below.
+      - name: Install kubectl
+        run: |
+          curl -sSLO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+          sudo install -m 0755 kubectl /usr/local/bin/kubectl
+          kubectl version --client
 
       - name: Install kubeconform
         run: |
@@ -139,10 +141,12 @@ jobs:
         with:
           version: ${{ env.HELM_VERSION }}
 
-      - name: Set up kubectl
-        uses: azure/setup-kubectl@v4
-        with:
-          version: ${{ env.KUBECTL_VERSION }}
+      # kubectl for the post-renderer's `kubectl kustomize` (see lint job).
+      - name: Install kubectl
+        run: |
+          curl -sSLO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+          sudo install -m 0755 kubectl /usr/local/bin/kubectl
+          kubectl version --client
 
       - name: helm dependency build
         run: helm dependency build adapt

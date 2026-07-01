@@ -42,7 +42,7 @@ jobs:
       packages: write
       id-token: write   # required for cosign keyless OIDC
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Set up Helm
         uses: azure/setup-helm@v5
